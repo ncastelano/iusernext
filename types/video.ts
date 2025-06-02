@@ -1,6 +1,7 @@
 export type Video = {
-  id: string
-  thumbnailUrl?: string
-  artistSongName: string
-  userName: string
+  id: string;
+  videoUrl?: string;
+  thumbnailUrl?: string;
+  artistSongName: string;
+  userName: string;
 }

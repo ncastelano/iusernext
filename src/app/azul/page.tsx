@@ -15,12 +15,14 @@ export default function TelaAzul() {
       const fetchedVideos: Video[] = []
       querySnapshot.forEach((doc) => {
         const data = doc.data()
-        fetchedVideos.push({
-          id: doc.id,
-          thumbnailUrl: data.thumbnailUrl,
-          artistSongName: data.artistSongName,
-          userName: data.userName,
-        })
+      fetchedVideos.push({
+  id: doc.id,
+  videoUrl: data.videoUrl,  // garante string, mesmo que vazio
+  thumbnailUrl: data.thumbnailUrl,
+  artistSongName: data.artistSongName,
+  userName: data.userName,
+})
+
       })
       setVideos(fetchedVideos)
     }
