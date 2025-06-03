@@ -3,9 +3,9 @@
 import { useEffect, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import Destaques from 'src/app/components/Destaques'
+import Destaques from '@/app/components/Destaques'
 import { Video } from 'types/video'
-import Image from 'next/image'  // <== IMPORTAÇÃO ESSENCIAL
+import Image from 'next/image'
 
 export default function TelaAzul() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -18,10 +18,10 @@ export default function TelaAzul() {
         const data = doc.data()
         fetchedVideos.push({
           id: doc.id,
-          videoUrl: data.videoUrl,
-          thumbnailUrl: data.thumbnailUrl,
-          artistSongName: data.artistSongName,
-          userName: data.userName,
+          videoUrl: data.videoUrl || '',
+          thumbnailUrl: data.thumbnailUrl || '',
+          artistSongName: data.artistSongName || '',
+          userName: data.userName || '',
         })
       })
       setVideos(fetchedVideos)
