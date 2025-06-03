@@ -36,8 +36,12 @@ export default function CadastroPage() {
       })
 
       router.push('/home')
-    } catch (error: any) {
-      alert(error.message)
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message)
+      } else {
+        alert('Erro desconhecido ao cadastrar usuário.')
+      }
     }
   }
 
@@ -48,8 +52,7 @@ export default function CadastroPage() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        background:
-          'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
+        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
         padding: 16,
       }}
     >
@@ -72,7 +75,7 @@ export default function CadastroPage() {
             fontWeight: 'bold',
             textAlign: 'center',
             letterSpacing: '1.5px',
-            color: '#4f46e5', // Indigo accent
+            color: '#4f46e5',
           }}
         >
           Criar Conta
@@ -85,17 +88,7 @@ export default function CadastroPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
-            style={{
-              padding: 14,
-              borderRadius: 10,
-              border: 'none',
-              backgroundColor: '#323b47',
-              color: 'white',
-              fontSize: 16,
-              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
-              outline: 'none',
-              transition: 'background-color 0.3s',
-            }}
+            style={inputStyle}
             onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
             onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
@@ -106,17 +99,7 @@ export default function CadastroPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            style={{
-              padding: 14,
-              borderRadius: 10,
-              border: 'none',
-              backgroundColor: '#323b47',
-              color: 'white',
-              fontSize: 16,
-              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
-              outline: 'none',
-              transition: 'background-color 0.3s',
-            }}
+            style={inputStyle}
             onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
             onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
@@ -127,17 +110,7 @@ export default function CadastroPage() {
             value={senha}
             onChange={(e) => setSenha(e.target.value)}
             required
-            style={{
-              padding: 14,
-              borderRadius: 10,
-              border: 'none',
-              backgroundColor: '#323b47',
-              color: 'white',
-              fontSize: 16,
-              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
-              outline: 'none',
-              transition: 'background-color 0.3s',
-            }}
+            style={inputStyle}
             onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
             onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
@@ -183,4 +156,16 @@ export default function CadastroPage() {
       </div>
     </main>
   )
+}
+
+const inputStyle: React.CSSProperties = {
+  padding: 14,
+  borderRadius: 10,
+  border: 'none',
+  backgroundColor: '#323b47',
+  color: 'white',
+  fontSize: 16,
+  boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
+  outline: 'none',
+  transition: 'background-color 0.3s',
 }
