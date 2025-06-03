@@ -5,6 +5,7 @@ import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import Destaques from 'src/app/components/Destaques'
 import { Video } from 'types/video'
+import Image from 'next/image'  // <== IMPORTAÇÃO ESSENCIAL
 
 export default function TelaAzul() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -15,14 +16,13 @@ export default function TelaAzul() {
       const fetchedVideos: Video[] = []
       querySnapshot.forEach((doc) => {
         const data = doc.data()
-      fetchedVideos.push({
-  id: doc.id,
-  videoUrl: data.videoUrl,  // garante string, mesmo que vazio
-  thumbnailUrl: data.thumbnailUrl,
-  artistSongName: data.artistSongName,
-  userName: data.userName,
-})
-
+        fetchedVideos.push({
+          id: doc.id,
+          videoUrl: data.videoUrl,
+          thumbnailUrl: data.thumbnailUrl,
+          artistSongName: data.artistSongName,
+          userName: data.userName,
+        })
       })
       setVideos(fetchedVideos)
     }
@@ -60,12 +60,14 @@ function VideoGrid({ videos }: { videos: Video[] }) {
           key={video.id}
           className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden"
         >
-          <div className="w-full aspect-video bg-gray-300 dark:bg-gray-700">
+          <div className="w-full aspect-video bg-gray-300 dark:bg-gray-700 relative">
             {video.thumbnailUrl ? (
-              <img
+              <Image
                 src={video.thumbnailUrl}
                 alt={video.artistSongName}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, 320px"
               />
             ) : (
               <div className="flex items-center justify-center w-full h-full text-gray-500 text-sm">

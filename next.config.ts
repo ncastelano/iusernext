@@ -1,14 +1,13 @@
 import withPWA from 'next-pwa'
-import type { Configuration } from 'webpack'
 
 const isDev = process.env.NODE_ENV === 'development'
 
 const nextConfig = {
-  reactStrictMode: true, // mantém
+  reactStrictMode: true,
   images: {
-    domains: ['firebasestorage.googleapis.com'],
+    domains: ['firebasestorage.googleapis.com'],  // adiciona seu domínio Firebase Storage aqui
   },
-  devIndicators: false, // se quiser desativar a barra de dev tools
+  devIndicators: false, // desativa a barra de dev tools, se quiser
 }
 
 export default withPWA(

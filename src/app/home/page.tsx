@@ -3,9 +3,7 @@
 import { useState, useEffect } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@lib/firebase'
-
-
-
+import Image from 'next/image'
 
 type User = {
   name: string
@@ -54,11 +52,15 @@ export default function HomePage() {
               gap: 16,
             }}
           >
-            <img
-              src={user.image}
-              alt={`${user.name} avatar`}
-              style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover' }}
-            />
+            <div style={{ position: 'relative', width: 64, height: 64 }}>
+              <Image
+                src={user.image}
+                alt={`${user.name} avatar`}
+                fill
+                style={{ borderRadius: '50%', objectFit: 'cover' }}
+                sizes="64px"
+              />
+            </div>
             <div>
               <p style={{ margin: 0, fontWeight: 'bold', fontSize: 18 }}>{user.name}</p>
               <p style={{ margin: 0, color: '#555' }}>{user.email}</p>
