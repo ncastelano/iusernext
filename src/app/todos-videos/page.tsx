@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '@/lib/firebase'; // ajuste o caminho conforme sua estrutura
 
 type Video = {
   id: string;
@@ -12,17 +14,33 @@ type Video = {
   userName: string;
 };
 
-type DestaquesProps = {
-  videos: Video[];
-};
-
-export default function Destaques({ videos }: DestaquesProps) {
-  const limitedVideos = videos.slice(0, 5);
+export default function TodosVideosPage() {
+  const [videos, setVideos] = useState<Video[]>([]);
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    limitedVideos.forEach((_, idx) => {
+    async function fetchVideos() {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'videos'));
+        const data: Video[] = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })) as Video[];
+        setVideos(data);
+      } catch (error) {
+        console.error('Erro ao buscar vídeos:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchVideos();
+  }, []);
+
+  useEffect(() => {
+    videos.forEach((_, idx) => {
       const vidEl = videoRefs.current[idx];
       if (!vidEl) return;
 
@@ -39,27 +57,25 @@ export default function Destaques({ videos }: DestaquesProps) {
           }
         });
       } else {
-        vidEl.pause();
-        vidEl.currentTime = 0;
+        vidEl?.pause();
+        if (vidEl) vidEl.currentTime = 0;
       }
     });
-  }, [hoveredIndex, limitedVideos]);
+  }, [hoveredIndex, videos]);
 
-  if (limitedVideos.length === 0) {
-    return <p>Carregando vídeos...</p>;
-  }
+  if (loading) return <p className="p-4">Carregando vídeos...</p>;
 
   return (
-    <section className="mb-8">
+    <section className="mb-8 px-4">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl text-blue-600 dark:text-blue-400">Destaques</h2>
-        <Link href="/todos-videos" className="text-sm text-blue-500 hover:underline">
-          Ver todos
+        <h2 className="text-xl text-blue-600 dark:text-blue-400">Todos os Vídeos</h2>
+        <Link href="/" className="text-sm text-blue-500 hover:underline">
+          Ver menos
         </Link>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
-        {limitedVideos.map((video, idx) => (
+        {videos.map((video, idx) => (
           <div
             key={video.id}
             className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer"
