@@ -1,61 +1,69 @@
-'use client';
+'use client'
 
-import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
-import Link from 'next/link';
+import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 
 type Video = {
-  id: string;
-  videoUrl?: string;
-  thumbnailUrl?: string;
-  artistSongName: string;
-  userName: string;
-};
+  id: string
+  videoUrl?: string
+  thumbnailUrl?: string
+  artistSongName: string
+  userName: string
+}
 
 type DestaquesProps = {
-  videos: Video[];
-};
+  videos: Video[]
+  limit?: number
+  showSeeMoreButton?: boolean
+}
 
-export default function Destaques({ videos }: DestaquesProps) {
-  const limitedVideos = videos.slice(0, 5);
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
+export default function Destaques({
+  videos,
+  limit = 5,
+  showSeeMoreButton = false,
+}: DestaquesProps) {
+  const limitedVideos = videos.slice(0, limit)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
   useEffect(() => {
     limitedVideos.forEach((_, idx) => {
-      const vidEl = videoRefs.current[idx];
-      if (!vidEl) return;
+      const vidEl = videoRefs.current[idx]
+      if (!vidEl) return
 
       if (hoveredIndex === idx && vidEl.src) {
-        vidEl.currentTime = 0;
-        vidEl.muted = true;
+        vidEl.currentTime = 0
+        vidEl.muted = true
         vidEl.play().catch((err) => {
           if (
             !err.message.includes(
               'interrupted because video-only background media'
             )
           ) {
-            console.error('Erro ao reproduzir vídeo:', err);
+            console.error('Erro ao reproduzir vídeo:', err)
           }
-        });
+        })
       } else {
-        vidEl.pause();
-        vidEl.currentTime = 0;
+        vidEl.pause()
+        vidEl.currentTime = 0
       }
-    });
-  }, [hoveredIndex, limitedVideos]);
+    })
+  }, [hoveredIndex, limitedVideos])
 
   if (limitedVideos.length === 0) {
-    return <p>Carregando vídeos...</p>;
+    return <p>Carregando vídeos...</p>
   }
 
   return (
     <section className="mb-8">
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl text-blue-600 dark:text-blue-400">Destaques</h2>
-        <Link href="/todos-videos" className="text-sm text-blue-500 hover:underline">
-          Ver todos
-        </Link>
+        {showSeeMoreButton && (
+          <Link href="/todos-videos" className="text-sm text-blue-500 hover:underline">
+            Ver todos
+          </Link>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
@@ -70,7 +78,7 @@ export default function Destaques({ videos }: DestaquesProps) {
               {hoveredIndex === idx && video.videoUrl ? (
                 <video
                   ref={(el) => {
-                    videoRefs.current[idx] = el;
+                    videoRefs.current[idx] = el
                   }}
                   src={video.videoUrl}
                   muted
@@ -105,5 +113,5 @@ export default function Destaques({ videos }: DestaquesProps) {
         ))}
       </div>
     </section>
-  );
+  )
 }
