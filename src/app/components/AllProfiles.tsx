@@ -1,9 +1,8 @@
-// components/Outdoor.tsx
 'use client'
 
 import { useState, useEffect } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
-import { db } from '@lib/firebase'
+import { db } from '@/lib/firebase'
 import Image from 'next/image'
 
 type User = {
@@ -34,45 +33,56 @@ export default function AllProfiles() {
   }, [])
 
   if (loading) {
-    return <p style={{ color: '#fff', textAlign: 'center' }}>Carregando usuários...</p>
+    return <p className="text-white text-center py-4">Carregando usuários...</p>
   }
 
   return (
-    <section style={{ padding: '16px 0' }}>
-      <ul
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: 24,
-          padding: 0,
-          listStyle: 'none',
-          margin: 0,
-        }}
-      >
+    <section className="px-4 py-6">
+      <h2 className="text-xl text-white text-center mb-4">👥 Todos os Perfis</h2>
+
+      <ul className="flex overflow-x-auto gap-4 profile-scrollbar">
         {users.map((user, idx) => (
           <li
             key={idx}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 8,
-            }}
+            className="flex flex-col items-center flex-shrink-0"
           >
-            <div style={{ position: 'relative', width: 72, height: 72 }}>
+            <div className="relative w-20 h-20 rounded-full overflow-hidden border border-gray-700 shadow-md">
               <Image
                 src={user.image}
                 alt={`${user.name} avatar`}
                 fill
-                style={{ borderRadius: '50%', objectFit: 'cover' }}
-                sizes="72px"
+                className="object-cover"
+                sizes="80px"
               />
             </div>
-            <p style={{ color: '#fff', fontSize: 14, fontWeight: 400 }}>{user.name}</p>
+            <p className="text-white text-sm mt-2 truncate max-w-[80px] text-center">{user.name}</p>
           </li>
         ))}
       </ul>
+
+      <style jsx>{`
+        .profile-scrollbar::-webkit-scrollbar {
+          height: 8px;
+        }
+
+        .profile-scrollbar::-webkit-scrollbar-track {
+          background: #000;
+        }
+
+        .profile-scrollbar::-webkit-scrollbar-thumb {
+          background-color: #777;
+          border-radius: 8px;
+        }
+
+        .profile-scrollbar::-webkit-scrollbar-thumb:hover {
+          background-color: #aaa;
+        }
+
+        .profile-scrollbar {
+          scrollbar-width: thin;
+          scrollbar-color: #777 #000;
+        }
+      `}</style>
     </section>
   )
 }
