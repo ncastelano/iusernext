@@ -65,31 +65,6 @@ function renderSection(title: string, content: React.ReactNode) {
   )
 }
 
-function renderFlashCards(count: number) {
-  return (
-    <div style={{ display: 'flex', overflowX: 'auto', gap: 16 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ position: 'relative', width: 120, height: 180, borderRadius: 12, backgroundColor: 'green', flexShrink: 0 }}>
-          <span style={{ position: 'absolute', top: 4, right: 8, fontSize: 12, color: 'white' }}>2.3 km</span>
-          <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, textAlign: 'center', color: 'white' }}>Nome {i + 1}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function renderProfiles(count: number) {
-  return (
-    <div style={{ display: 'flex', overflowX: 'auto', gap: 16 }}>
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ width: 64, height: 64, borderRadius: '50%', backgroundColor: 'green', marginBottom: 8 }}></div>
-          <span>Nome {i + 1}</span>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 function renderItems(count: number) {
   return (

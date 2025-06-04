@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
@@ -66,21 +65,8 @@ export default function TodosVideosPage() {
     });
   }, [hoveredIndex, videos]);
 
-  const getRankingBorder = (index: number) => {
-    if (index === 0) return 'border-4 border-yellow-400';
-    if (index === 1) return 'border-4 border-gray-400';
-    if (index === 2) return 'border-4 border-amber-700';
-    return 'border border-gray-200 dark:border-gray-700';
-  };
+ 
 
-  const getRankingColor = (index: number) => {
-    if (index === 0) return 'bg-yellow-400 text-white';
-    if (index === 1) return 'bg-gray-400 text-white';
-    if (index === 2) return 'bg-amber-700 text-white';
-    return 'bg-gray-300 text-gray-800 dark:bg-gray-600 dark:text-white';
-  };
-
-  const getRankingLabel = (index: number) => `#${index + 1}`;
 
   if (loading) return <p className="p-4">Carregando vídeos...</p>;
 
