@@ -39,6 +39,7 @@ export default function Navbar() {
         <Link href="/home" style={linkStyle('/home')}>Home</Link>
         <Link href="/azul" style={linkStyle('/azul')}>Tela Azul</Link>
         <Link href="/amarelo" style={linkStyle('/amarelo')}>Tela Amarela</Link>
+         <Link href="/tudo" style={linkStyle('/tudo')}>Tudo</Link>
       </div>
       <button
         onClick={handleLogout}

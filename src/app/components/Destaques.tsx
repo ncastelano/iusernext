@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import Image from 'next/image'
 import Link from 'next/link'
+import VideoCard from '@/app/components/VideoCard'
 
 type Video = {
   id: string
@@ -28,14 +28,13 @@ export default function Destaques({
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
 
   useEffect(() => {
-    limitedVideos.forEach((_, idx) => {
-      const vidEl = videoRefs.current[idx]
-      if (!vidEl) return
+    videoRefs.current.forEach((videoEl, idx) => {
+      if (!videoEl) return
 
-      if (hoveredIndex === idx && vidEl.src) {
-        vidEl.currentTime = 0
-        vidEl.muted = true
-        vidEl.play().catch((err) => {
+      if (hoveredIndex === idx && videoEl.src) {
+        videoEl.currentTime = 0
+        videoEl.muted = true
+        videoEl.play().catch((err) => {
           if (
             !err.message.includes(
               'interrupted because video-only background media'
@@ -45,11 +44,11 @@ export default function Destaques({
           }
         })
       } else {
-        vidEl.pause()
-        vidEl.currentTime = 0
+        videoEl.pause()
+        videoEl.currentTime = 0
       }
     })
-  }, [hoveredIndex, limitedVideos])
+  }, [hoveredIndex])
 
   if (limitedVideos.length === 0) {
     return <p>Carregando vídeos...</p>
@@ -60,7 +59,10 @@ export default function Destaques({
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl text-blue-600 dark:text-blue-400">Destaques</h2>
         {showSeeMoreButton && (
-          <Link href="/todos-videos" className="text-sm text-blue-500 hover:underline">
+          <Link
+            href="/todos-videos"
+            className="text-sm text-blue-500 hover:underline"
+          >
             Ver todos
           </Link>
         )}
@@ -68,48 +70,15 @@ export default function Destaques({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {limitedVideos.map((video, idx) => (
-          <div
+          <VideoCard
             key={video.id}
-            className="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer"
-            onMouseEnter={() => setHoveredIndex(idx)}
-            onMouseLeave={() => setHoveredIndex((prev) => (prev === idx ? null : prev))}
-          >
-            <div className="w-full aspect-video bg-gray-300 dark:bg-gray-700 relative flex items-center justify-center">
-              {hoveredIndex === idx && video.videoUrl ? (
-                <video
-                  ref={(el) => {
-                    videoRefs.current[idx] = el
-                  }}
-                  src={video.videoUrl}
-                  muted
-                  className="w-full h-full object-cover"
-                  playsInline
-                />
-              ) : video.thumbnailUrl ? (
-                <Image
-                  src={video.thumbnailUrl}
-                  alt={`${video.artistSongName} thumbnail`}
-                  className="w-full h-full object-cover"
-                  width={400}
-                  height={225}
-                  unoptimized
-                />
-              ) : (
-                <div className="flex items-center justify-center w-full h-full text-gray-500 text-sm">
-                  Sem capa
-                </div>
-              )}
-            </div>
-
-            <div className="p-4">
-              <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
-                {video.artistSongName}
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400">
-                por {video.userName}
-              </p>
-            </div>
-          </div>
+            video={video}
+            index={idx}
+            isHovered={hoveredIndex === idx}
+            onHoverStart={() => setHoveredIndex(idx)}
+            onHoverEnd={() => setHoveredIndex(null)}
+            videoRef={(el) => (videoRefs.current[idx] = el)}
+          />
         ))}
       </div>
     </section>

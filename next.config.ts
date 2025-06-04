@@ -5,7 +5,8 @@ const isDev = process.env.NODE_ENV === 'development'
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['firebasestorage.googleapis.com'],  // adiciona seu domínio Firebase Storage aqui
+    domains: [ 'lh3.googleusercontent.com',        // Google (login avatar)
+      'firebasestorage.googleapis.com'],  // adiciona seu domínio Firebase Storage aqui
   },
   devIndicators: false, // desativa a barra de dev tools, se quiser
 }
