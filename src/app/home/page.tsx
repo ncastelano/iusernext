@@ -5,11 +5,16 @@ import { useEffect, useState } from 'react'
 export default function HomePage() {
   const [width, setWidth] = useState(0)
   const [height, setHeight] = useState(0)
+  const [bgColor, setBgColor] = useState('#ff0000') // vermelho por padrão
 
   useEffect(() => {
     function updateSize() {
-      setWidth(window.innerWidth)
-      setHeight(window.innerHeight)
+      const newWidth = window.innerWidth
+      const newHeight = window.innerHeight
+
+      setWidth(newWidth)
+      setHeight(newHeight)
+      setBgColor(newWidth > 980 ? '#FFD700' : '#FF0000') // amarelo ou vermelho
     }
 
     updateSize()
@@ -23,15 +28,16 @@ export default function HomePage() {
       style={{
         padding: '32px 16px',
         maxWidth: '100%',
-        backgroundColor: '#121212',
+        backgroundColor: bgColor,
         minHeight: '100vh',
         fontFamily: 'Arial, sans-serif',
-        color: '#fff',
+        color: '#000',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
         textAlign: 'center',
+        transition: 'background-color 0.3s ease',
       }}
     >
       <h1 style={{ marginBottom: 24 }}>📏 Dimensões da Tela</h1>

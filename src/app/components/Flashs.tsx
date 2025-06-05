@@ -72,7 +72,7 @@ export default function Flashs() {
             key={video.id}
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex((prev) => (prev === idx ? null : prev))}
-            className="relative bg-black rounded-lg overflow-hidden shadow-md aspect-[9/16] w-40 shrink-0 border border-gray-700 hover:shadow-xl transition-shadow"
+            className="video-card relative bg-black rounded-lg overflow-hidden shadow-md shrink-0 border border-gray-700 hover:shadow-xl transition-shadow"
           >
             <video
               ref={(el) => {
@@ -93,7 +93,7 @@ export default function Flashs() {
         ))}
       </div>
 
-      {/* CSS da scrollbar aqui mesmo no componente */}
+      {/* CSS responsivo embutido */}
       <style jsx>{`
         .video-scrollbar::-webkit-scrollbar {
           height: 8px;
@@ -115,6 +115,18 @@ export default function Flashs() {
         .video-scrollbar {
           scrollbar-width: thin;
           scrollbar-color: #777 #000;
+        }
+
+        .video-card {
+          width: 160px; /* padrão */
+          aspect-ratio: 9 / 16;
+        }
+
+        @media (max-width: 982px) {
+          .video-card {
+            width: 320px; /* dobro do tamanho */
+            aspect-ratio: 9 / 16;
+          }
         }
       `}</style>
     </section>
