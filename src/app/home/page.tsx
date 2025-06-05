@@ -32,7 +32,6 @@ export default function HomePage() {
 
     updateSize()
     window.addEventListener('resize', updateSize)
-
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
@@ -83,7 +82,6 @@ export default function HomePage() {
     <main
       style={{
         padding: '32px 16px',
-        maxWidth: '100%',
         backgroundColor: bgColor,
         minHeight: '100vh',
         fontFamily: 'Arial, sans-serif',
@@ -94,6 +92,7 @@ export default function HomePage() {
         justifyContent: 'center',
         textAlign: 'center',
         transition: 'background-color 0.3s ease',
+        overflowX: 'hidden', // impede scroll horizontal geral
       }}
     >
       <h1 style={{ marginBottom: 24 }}>📏 Dimensões da Tela</h1>
@@ -104,13 +103,13 @@ export default function HomePage() {
         <strong>Altura:</strong> {height}px
       </p>
 
-      <section className="px-4 py-6">
+      <section className="px-4 py-6 w-full max-w-screen">
         <h2 className="text-xl text-white text-center mb-4">🎬 Todos os Vídeos</h2>
 
         {loading ? (
           <p className="p-4 text-white">Carregando vídeos...</p>
         ) : (
-          <div className="flex overflow-x-auto gap-4 video-scrollbar">
+          <div className="flex overflow-x-auto gap-4 video-scrollbar w-full max-w-full min-w-0 px-2">
             {videos.map((video, idx) => (
               <div
                 key={video.id}
@@ -129,7 +128,6 @@ export default function HomePage() {
                   preload="metadata"
                   loop
                 />
-
                 <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1">
                   <p className="text-white text-xs text-center truncate">{video.artistSongName}</p>
                 </div>
@@ -138,49 +136,48 @@ export default function HomePage() {
           </div>
         )}
 
-   <style jsx>{`
-  .video-scrollbar::-webkit-scrollbar {
-    height: 8px;
-  }
+        <style jsx>{`
+          .video-scrollbar::-webkit-scrollbar {
+            height: 8px;
+          }
 
-  .video-scrollbar::-webkit-scrollbar-track {
-    background: #000;
-  }
+          .video-scrollbar::-webkit-scrollbar-track {
+            background: #000;
+          }
 
-  .video-scrollbar::-webkit-scrollbar-thumb {
-    background-color: #777;
-    border-radius: 8px;
-  }
+          .video-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #777;
+            border-radius: 8px;
+          }
 
-  .video-scrollbar::-webkit-scrollbar-thumb:hover {
-    background-color: #aaa;
-  }
+          .video-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: #aaa;
+          }
 
-  .video-scrollbar {
-    scrollbar-width: thin;
-    scrollbar-color: #777 #000;
-  }
+          .video-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: #777 #000;
+          }
 
-  .video-card {
-    width: 160px;
-    aspect-ratio: 9 / 16;
-  }
+          .video-card {
+            width: 160px;
+            aspect-ratio: 9 / 16;
+          }
 
-  @media (max-width: 982px) {
-    .video-card {
-      width: 200px;
-      aspect-ratio: 9 / 16;
-    }
-  }
+          @media (max-width: 982px) {
+            .video-card {
+              width: 200px;
+              aspect-ratio: 9 / 16;
+            }
+          }
 
-  @media (max-width: 500px) {
-    .video-card {
-      width: 100px;
-      aspect-ratio: 9 / 16;
-    }
-  }
-`}</style>
-
+          @media (max-width: 500px) {
+            .video-card {
+              width: 100px;
+              aspect-ratio: 9 / 16;
+            }
+          }
+        `}</style>
       </section>
     </main>
   )
