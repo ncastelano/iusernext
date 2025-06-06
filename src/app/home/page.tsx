@@ -3,37 +3,69 @@
 import { useEffect, useRef, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
+import { GoogleMap, InfoWindow, useJsApiLoader, OverlayView } from '@react-google-maps/api'
 
 type Video = {
   id: string
   videoUrl?: string
+  thumbnailUrl?: string
   artistSongName: string
   userName: string
+  latitude?: number
+  longitude?: number
+}
+
+const containerStyle = {
+  width: '100%',
+  height: '80vh',
+}
+
+const centerDefault = {
+  lat: 0,
+  lng: 0,
 }
 
 export default function HomePage() {
-  const [width, setWidth] = useState(0)
-  const [height, setHeight] = useState(0)
-  const [bgColor, setBgColor] = useState('#ff0000')
   const [videos, setVideos] = useState<Video[]>([])
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
-  const videoRefs = useRef<(HTMLVideoElement | null)[]>([])
   const [loading, setLoading] = useState(true)
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
+  const [userLocated, setUserLocated] = useState(false)
 
-  useEffect(() => {
-    function updateSize() {
-      const newWidth = window.innerWidth
-      const newHeight = window.innerHeight
+  const mapRef = useRef<google.maps.Map | null>(null)
 
-      setWidth(newWidth)
-      setHeight(newHeight)
-      setBgColor(newWidth > 980 ? '#FFD700' : '#FF0000')
+  const onLoad = (map: google.maps.Map) => {
+    mapRef.current = map
+  }
+
+  const goToLocationWithZoom = (lat: number, lng: number, zoom = 20) => {
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat, lng })
+      mapRef.current.setZoom(zoom)
     }
+  }
 
-    updateSize()
-    window.addEventListener('resize', updateSize)
-    return () => window.removeEventListener('resize', updateSize)
-  }, [])
+  const detectAndZoomToUser = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords
+          goToLocationWithZoom(latitude, longitude)
+          setUserLocated(true)
+        },
+        (error) => {
+          console.error('Erro ao obter localização:', error)
+        }
+      )
+    }
+  }
+
+  const handleMyLocation = () => {
+    detectAndZoomToUser()
+  }
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+  })
 
   useEffect(() => {
     async function fetchVideos() {
@@ -55,128 +87,106 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    videos.forEach((_, idx) => {
-      const vidEl = videoRefs.current[idx]
-      if (!vidEl) return
+    if (isLoaded && !userLocated) {
+      detectAndZoomToUser()
+    }
+  }, [isLoaded, userLocated])
 
-      if (hoveredIndex === idx && vidEl.src) {
-        vidEl.currentTime = 0
-        vidEl.muted = true
-        vidEl.play().catch((err) => {
-          if (
-            !err.message.includes('interrupted because video-only background media')
-          ) {
-            console.error('Erro ao reproduzir vídeo:', err)
-          }
-        })
-      } else {
-        vidEl?.pause()
-        if (vidEl) vidEl.currentTime = 0
-      }
-    })
-  }, [hoveredIndex, videos])
+  if (!isLoaded) return <p>Carregando mapa...</p>
+
+  const videosWithLocation = videos.filter(
+    (video) => typeof video.latitude === 'number' && typeof video.longitude === 'number'
+  )
 
   return (
-    <main
+    <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
+      <button
+        onClick={handleMyLocation}
+        style={{
+          position: 'absolute',
+          top: 100,
+          right: 20,
+          zIndex: 1000,
+          padding: '10px 16px',
+          backgroundColor: '#fff',
+          border: '2px solid #00aa00',
+          borderRadius: 8,
+          cursor: 'pointer',
+          fontWeight: 'bold',
+          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
+        }}
+      >
+        📍 Minha Localização
+      </button>
+
+      {loading ? (
+        <p style={{ textAlign: 'center' }}>Carregando vídeos...</p>
+      ) : (
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+         
+          zoom={2}
+          onLoad={onLoad}
+        >
+          {videosWithLocation.map((video) => (
+        <OverlayView
+  key={video.id}
+  position={{ lat: video.latitude!, lng: video.longitude! }}
+  mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+>
+  <div>
+    <div
+      onClick={() => setSelectedVideoId(video.id)}
       style={{
-        padding: 0,
-        backgroundColor: bgColor,
-        minHeight: '100vh',
-        fontFamily: 'Arial, sans-serif',
-        color: '#000',
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        textAlign: 'center',
-        transition: 'background-color 0.3s ease',
-        overflowX: 'hidden',
+        width: 50,
+        height: 50,
+        borderRadius: '50%',
+        overflow: 'hidden',
+        border: '3px solid #00ff00',
+        boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+        cursor: 'pointer',
+        backgroundColor: '#fff',
       }}
     >
-      <h1 style={{ marginBottom: 24 }}>📏 Dimensões da Tela</h1>
-      <p style={{ fontSize: 20, marginBottom: 8 }}>
-        <strong>Largura:</strong> {width}px
-      </p>
-      <p style={{ fontSize: 20 }}>
-        <strong>Altura:</strong> {height}px
-      </p>
+      <img
+        src={video.thumbnailUrl || '/fallback.jpg'}
+        alt="thumbnail"
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+      />
+    </div>
 
-      <section className="px-2 py-6 w-full max-w-screen">
-        <h2 className="text-xl text-white text-center mb-4">🎬 Todos os Vídeos</h2>
+    {selectedVideoId === video.id && (
+      <InfoWindow
+        position={{ lat: video.latitude!, lng: video.longitude! }}
+        onCloseClick={() => setSelectedVideoId(null)}
+      >
+        <div style={{ width: 200 }}>
+          <strong>{video.artistSongName}</strong>
+          <br />
+          <small>{video.userName}</small>
+          {video.videoUrl && (
+            <video
+              src={video.videoUrl}
+              width="100%"
+              controls
+              style={{ marginTop: 8, borderRadius: 4 }}
+              muted
+              playsInline
+            />
+          )}
+        </div>
+      </InfoWindow>
+    )}
+  </div>
+</OverlayView>
 
-        {loading ? (
-          <p className="p-4 text-white">Carregando vídeos...</p>
-        ) : (
-          <div className="flex overflow-x-auto gap-4 video-scrollbar w-full max-w-full min-w-0 px-2">
-            {videos.map((video, idx) => (
-              <div
-                key={video.id}
-                onMouseEnter={() => setHoveredIndex(idx)}
-                onMouseLeave={() => setHoveredIndex((prev) => (prev === idx ? null : prev))}
-                className="video-card relative bg-black rounded-lg overflow-hidden shadow-md shrink-0 border border-gray-700 hover:shadow-xl transition-shadow"
-              >
-                <video
-                  ref={(el) => {
-                    videoRefs.current[idx] = el
-                  }}
-                  src={video.videoUrl}
-                  className="w-full h-full object-cover"
-                  playsInline
-                  muted
-                  preload="metadata"
-                  loop
-                />
-                <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-2 py-1">
-                  <p className="text-white text-xs text-center truncate">{video.artistSongName}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <style jsx>{`
-          .video-scrollbar::-webkit-scrollbar {
-            height: 8px;
-          }
-
-          .video-scrollbar::-webkit-scrollbar-track {
-            background: #000;
-          }
-
-          .video-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #777;
-            border-radius: 8px;
-          }
-
-          .video-scrollbar::-webkit-scrollbar-thumb:hover {
-            background-color: #aaa;
-          }
-
-          .video-scrollbar {
-            scrollbar-width: thin;
-            scrollbar-color: #777 #000;
-          }
-
-          .video-card {
-            width: 200px;
-            aspect-ratio: 9 / 16;
-          }
-
-          @media (max-width: 982px) {
-            .video-card {
-              width: 200px;
-              aspect-ratio: 9 / 16;
-            }
-          }
-
-          @media (max-width: 500px) {
-            .video-card {
-              width: 110px;
-              aspect-ratio: 9 / 16;
-            }
-          }
-        `}</style>
-      </section>
+          ))}
+        </GoogleMap>
+      )}
     </main>
   )
 }
