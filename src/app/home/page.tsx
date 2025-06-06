@@ -64,9 +64,7 @@ export default function HomePage() {
         vidEl.muted = true
         vidEl.play().catch((err) => {
           if (
-            !err.message.includes(
-              'interrupted because video-only background media'
-            )
+            !err.message.includes('interrupted because video-only background media')
           ) {
             console.error('Erro ao reproduzir vídeo:', err)
           }
@@ -81,7 +79,7 @@ export default function HomePage() {
   return (
     <main
       style={{
-        padding: '32px 16px',
+        padding: 0,
         backgroundColor: bgColor,
         minHeight: '100vh',
         fontFamily: 'Arial, sans-serif',
@@ -92,7 +90,7 @@ export default function HomePage() {
         justifyContent: 'center',
         textAlign: 'center',
         transition: 'background-color 0.3s ease',
-        overflowX: 'hidden', // impede scroll horizontal geral
+        overflowX: 'hidden',
       }}
     >
       <h1 style={{ marginBottom: 24 }}>📏 Dimensões da Tela</h1>
@@ -103,7 +101,7 @@ export default function HomePage() {
         <strong>Altura:</strong> {height}px
       </p>
 
-      <section className="px-4 py-6 w-full max-w-screen">
+      <section className="px-2 py-6 w-full max-w-screen">
         <h2 className="text-xl text-white text-center mb-4">🎬 Todos os Vídeos</h2>
 
         {loading ? (
@@ -160,7 +158,7 @@ export default function HomePage() {
           }
 
           .video-card {
-            width: 160px;
+            width: 200px;
             aspect-ratio: 9 / 16;
           }
 
