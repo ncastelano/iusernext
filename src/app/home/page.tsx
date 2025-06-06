@@ -173,7 +173,7 @@ export default function HomePage() {
 
           @media (max-width: 500px) {
             .video-card {
-              width: 100px;
+              width: 110px;
               aspect-ratio: 9 / 16;
             }
           }
