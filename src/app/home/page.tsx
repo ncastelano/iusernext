@@ -229,7 +229,7 @@ export default function HomePage() {
                   position={userLocation}
                   onCloseClick={() => setShowUserInfo(false)}
                 >
-                  <div><strong>Eu estou aqui</strong></div>
+                  <div><strong>Estou aqui!</strong></div>
                 </InfoWindow>
               )}
             </>
