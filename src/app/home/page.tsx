@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import { GoogleMap, InfoWindow, useJsApiLoader, OverlayView } from '@react-google-maps/api'
+import Image from 'next/image'
 
 type Video = {
   id: string
@@ -159,28 +160,29 @@ const { isLoaded } = useJsApiLoader({
             >
               <div>
                 <div
-                  onClick={() => setSelectedVideoId(video.id)}
-                  style={{
-                    width: 50,
-                    height: 50,
-                    borderRadius: '50%',
-                    overflow: 'hidden',
-                    border: '3px solid #00ff00',
-                    boxShadow: '0 0 5px rgba(0,0,0,0.3)',
-                    cursor: 'pointer',
-                    backgroundColor: '#fff',
-                  }}
-                >
-                  <img
-                    src={video.thumbnailUrl || '/fallback.jpg'}
-                    alt="thumbnail"
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      objectFit: 'cover',
-                    }}
-                  />
-                </div>
+  style={{
+    position: 'relative',
+    width: 50,
+    height: 50,
+    borderRadius: '50%',
+    overflow: 'hidden',
+    border: '3px solid #00ff00',
+    boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+    cursor: 'pointer',
+    backgroundColor: '#fff',
+  }}
+>
+  <Image
+    src={video.thumbnailUrl || '/fallback.jpg'}
+    alt="thumbnail"
+    fill
+    sizes="50px"
+    style={{ objectFit: 'cover' }}
+  />
+</div>
+
+
+            
 
                 {selectedVideoId === video.id && (
                   <InfoWindow
