@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
-import { GoogleMap, InfoWindow, useJsApiLoader, OverlayView } from '@react-google-maps/api'
+import {
+  GoogleMap,
+  InfoWindow,
+  OverlayView,
+  useJsApiLoader,
+} from '@react-google-maps/api'
 import Image from 'next/image'
 
 type Video = {
@@ -28,22 +33,14 @@ export default function HomePage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [showUserInfo, setShowUserInfo] = useState(false)
   const [trackingActive, setTrackingActive] = useState(false)
-  const [apiKey, setApiKey] = useState<string | null>(null)
-
   const mapRef = useRef<google.maps.Map | null>(null)
   const watchIdRef = useRef<number | null>(null)
 
-  useEffect(() => {
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!key) {
-      console.error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY não está definida.')
-    } else {
-      setApiKey(key)
-    }
-  }, [])
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: apiKey || '',
+    googleMapsApiKey: apiKey ?? '', // sempre string
+    libraries: ['places'],
   })
 
   const onLoad = (map: google.maps.Map) => {
@@ -116,7 +113,7 @@ export default function HomePage() {
     }
   }, [])
 
-  if (!apiKey) return <p>Carregando chave da API...</p>
+  if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
 
   const videosWithLocation = videos.filter(
@@ -155,7 +152,6 @@ export default function HomePage() {
             heading: 60,
           }}
         >
-          {/* Vídeos com localização */}
           {videosWithLocation.map((video) => (
             <OverlayView
               key={video.id}
@@ -212,7 +208,6 @@ export default function HomePage() {
             </OverlayView>
           ))}
 
-          {/* Posição do usuário */}
           {userLocation && (
             <>
               <OverlayView
