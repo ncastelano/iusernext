@@ -79,7 +79,7 @@ export default function HomePage() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
 if (!apiKey) {
-  throw new Error('A variável NEXT_PUBLIC_GOOGLE_MAPS_API_KEY não está definida.')
+  throw new Error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY não está definida.')
 }
 
 const { isLoaded } = useJsApiLoader({
