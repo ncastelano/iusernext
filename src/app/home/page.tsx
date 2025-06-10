@@ -21,10 +21,184 @@ type Video = {
   longitude?: number
 }
 
+const CustomInfoWindow = ({
+  video,
+  onClose,
+}: {
+  video: Video
+  onClose: () => void
+}) => {
+  return (
+    <div
+      style={{
+        position: 'absolute',
+        transform: 'translate(-50%, -100%)',
+        backgroundColor: '#1a1a1a',
+        border: '1px solid #333',
+        borderRadius: '10px',
+        padding: '8px',
+        width: '220px',
+        maxWidth: '90vw',
+        zIndex: 100,
+        display: 'flex',
+        gap: '12px',
+        color: '#fff',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+      }}
+    >
+      <div style={{ width: '100px', height: '100px', flexShrink: 0, borderRadius: '8px', overflow: 'hidden' }}>
+        {video.videoUrl && (
+          <video
+            src={video.videoUrl}
+            width="100%"
+            height="100%"
+            controls
+            style={{ objectFit: 'cover' }}
+            muted
+            playsInline
+          />
+        )}
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <h4
+          style={{
+            margin: '0 0 4px 0',
+            fontSize: '14px',
+            fontWeight: 600,
+            lineHeight: '1.2',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          {video.artistSongName}
+        </h4>
+        <p
+          style={{
+            margin: 0,
+            fontSize: '12px',
+            color: '#aaa',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}
+        >
+          @{video.userName}
+        </p>
+      </div>
+
+      <button
+        onClick={onClose}
+        style={{
+          position: 'absolute',
+          top: '4px',
+          right: '4px',
+          background: 'transparent',
+          border: 'none',
+          color: '#ccc',
+          fontSize: '18px',
+          cursor: 'pointer',
+          lineHeight: 1,
+        }}
+        aria-label="Fechar"
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+
 const containerStyle = {
   width: '100%',
-  height: '80vh',
+  height: '100vh',
 }
+
+const darkThemeStyleArray = [
+  {
+    featureType: "all",
+    elementType: "labels.text.fill",
+    stylers: [{ color: "#ffffff" }]
+  },
+  {
+    featureType: "all",
+    elementType: "labels.text.stroke",
+    stylers: [
+      { color: "#000000" },
+      { lightness: 13 }
+    ]
+  },
+  {
+    featureType: "administrative",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#000000" }]
+  },
+  {
+    featureType: "administrative",
+    elementType: "geometry.stroke",
+    stylers: [
+      { color: "#144b53" },
+      { lightness: 14 },
+      { weight: 1.4 }
+    ]
+  },
+  {
+    featureType: "landscape",
+    elementType: "all",
+    stylers: [{ color: "#08304b" }]
+  },
+  {
+    featureType: "poi",
+    elementType: "geometry",
+    stylers: [
+      { color: "#0c4152" },
+      { lightness: 5 }
+    ]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#000000" }]
+  },
+  {
+    featureType: "road.highway",
+    elementType: "geometry.stroke",
+    stylers: [
+      { color: "#0b434f" },
+      { lightness: 25 }
+    ]
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry.fill",
+    stylers: [{ color: "#000000" }]
+  },
+  {
+    featureType: "road.arterial",
+    elementType: "geometry.stroke",
+    stylers: [
+      { color: "#0b3d51" },
+      { lightness: 16 }
+    ]
+  },
+  {
+    featureType: "road.local",
+    elementType: "geometry",
+    stylers: [{ color: "#000000" }]
+  },
+  {
+    featureType: "transit",
+    elementType: "all",
+    stylers: [{ color: "#146474" }]
+  },
+  {
+    featureType: "water",
+    elementType: "all",
+    stylers: [{ color: "#021019" }]
+  }
+]
+
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -53,6 +227,8 @@ export default function HomePage() {
       mapRef.current.setZoom(zoom)
     }
   }
+
+  
 
   const startTracking = () => {
     if (navigator.geolocation) {
@@ -122,36 +298,49 @@ export default function HomePage() {
 
   return (
     <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
-      <button
-        onClick={toggleTracking}
-        style={{
-          position: 'absolute',
-          top: 100,
-          right: 20,
-          zIndex: 1000,
-          padding: '10px 16px',
-          backgroundColor: trackingActive ? '#e0ffe0' : '#fff',
-          border: `2px solid ${trackingActive ? '#00aa00' : '#aaa'}`,
-          borderRadius: 8,
-          cursor: 'pointer',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 6px rgba(0,0,0,0.2)',
-        }}
-      >
-        📍 Minha Localização: {trackingActive ? 'Ativa' : 'Inativa'}
-      </button>
+    <button
+  onClick={toggleTracking}
+  style={{
+    position: 'fixed', // use 'fixed' para manter visível mesmo em full screen
+    bottom: 20,        // canto inferior
+    left: 20,          // canto esquerdo
+    zIndex: 1000,
+    padding: '10px 16px',
+    backgroundColor: trackingActive ? '#222' : '#1a1a1a',
+    color: trackingActive ? '#00ff7f' : '#ccc',
+    border: `1px solid ${trackingActive ? '#00ff7f' : '#444'}`,
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 500,
+    fontSize: '14px',
+    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+    transition: 'all 0.2s ease-in-out',
+  }}
+>
+  📍 Minha Localização: {trackingActive ? 'Ativa' : 'Inativa'}
+</button>
+
+
 
       {loading ? (
         <p style={{ textAlign: 'center' }}>Carregando vídeos...</p>
       ) : (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          onLoad={onLoad}
-          options={{
-            tilt: 60,
-            heading: 60,
-          }}
-        >
+       <GoogleMap
+  mapContainerStyle={containerStyle}
+  mapTypeId="hybrid" // Aqui é o modo híbrido já pronto
+  options={{
+    tilt: 45,
+    heading: 45,
+    styles: darkThemeStyleArray, // Aqui você aplica um tema escuro customizado
+    backgroundColor: '#000000',
+    mapTypeControl: false, 
+    keyboardShortcuts: false,
+    fullscreenControl: true,
+    disableDefaultUI: true,
+  }}
+  onLoad={onLoad}
+>
+
           {videosWithLocation.map((video) => (
             <OverlayView
               key={video.id}
@@ -182,28 +371,17 @@ export default function HomePage() {
                   />
                 </div>
 
-                {selectedVideoId === video.id && (
-                  <InfoWindow
-                    position={{ lat: video.latitude!, lng: video.longitude! }}
-                    onCloseClick={() => setSelectedVideoId(null)}
-                  >
-                    <div style={{ width: 200 }}>
-                      <strong>{video.artistSongName}</strong>
-                      <br />
-                      <small>{video.userName}</small>
-                      {video.videoUrl && (
-                        <video
-                          src={video.videoUrl}
-                          width="100%"
-                          controls
-                          style={{ marginTop: 8, borderRadius: 4 }}
-                          muted
-                          playsInline
-                        />
-                      )}
-                    </div>
-                  </InfoWindow>
-                )}
+             {selectedVideoId === video.id && (
+  <OverlayView
+    position={{ lat: video.latitude!, lng: video.longitude! }}
+    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+  >
+    <CustomInfoWindow 
+      video={video} 
+      onClose={() => setSelectedVideoId(null)} 
+    />
+  </OverlayView>
+)}
               </div>
             </OverlayView>
           ))}
