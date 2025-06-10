@@ -77,7 +77,8 @@ export default function HomePage() {
   }
 
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+   googleMapsApiKey: 'AIzaSyDnhP6Wg40KC-hOCj-Fe5ogByUJJhWzeM4',
+
   })
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import ConditionalUI from './components/ConditionalUI'
 
-export const metadata: Metadata = {
+export const viewport = {
   title: 'iUser',
   description: 'a melhor plataforma',
   manifest: '/manifest.json',
