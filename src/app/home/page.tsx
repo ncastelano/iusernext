@@ -140,8 +140,8 @@ export default function HomePage() {
           mapContainerStyle={containerStyle}
           onLoad={onLoad}
           options={{
-            tilt: 90,
-            heading: 90,
+            tilt: 60,
+            heading: 60,
           }}
         >
           {/* Vídeos com localização */}
