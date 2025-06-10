@@ -28,9 +28,23 @@ export default function HomePage() {
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [showUserInfo, setShowUserInfo] = useState(false)
   const [trackingActive, setTrackingActive] = useState(false)
+  const [apiKey, setApiKey] = useState<string | null>(null)
 
   const mapRef = useRef<google.maps.Map | null>(null)
   const watchIdRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!key) {
+      console.error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY não está definida.')
+    } else {
+      setApiKey(key)
+    }
+  }, [])
+
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: apiKey || '',
+  })
 
   const onLoad = (map: google.maps.Map) => {
     mapRef.current = map
@@ -77,16 +91,6 @@ export default function HomePage() {
     }
   }
 
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-
-if (!apiKey) {
-  throw new Error('NEXT_PUBLIC_GOOGLE_MAPS_API_KEY não está definida.')
-}
-
-const { isLoaded } = useJsApiLoader({
-  googleMapsApiKey: apiKey,
-})
-
   useEffect(() => {
     async function fetchVideos() {
       try {
@@ -107,12 +111,12 @@ const { isLoaded } = useJsApiLoader({
   }, [])
 
   useEffect(() => {
-    // Cleanup watcher on unmount
     return () => {
       stopTracking()
     }
   }, [])
 
+  if (!apiKey) return <p>Carregando chave da API...</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
 
   const videosWithLocation = videos.filter(
@@ -160,29 +164,27 @@ const { isLoaded } = useJsApiLoader({
             >
               <div>
                 <div
-  style={{
-    position: 'relative',
-    width: 50,
-    height: 50,
-    borderRadius: '50%',
-    overflow: 'hidden',
-    border: '3px solid #00ff00',
-    boxShadow: '0 0 5px rgba(0,0,0,0.3)',
-    cursor: 'pointer',
-    backgroundColor: '#fff',
-  }}
->
-  <Image
-    src={video.thumbnailUrl || '/fallback.jpg'}
-    alt="thumbnail"
-    fill
-    sizes="50px"
-    style={{ objectFit: 'cover' }}
-  />
-</div>
-
-
-            
+                  onClick={() => setSelectedVideoId(video.id)}
+                  style={{
+                    position: 'relative',
+                    width: 50,
+                    height: 50,
+                    borderRadius: '50%',
+                    overflow: 'hidden',
+                    border: '3px solid #00ff00',
+                    boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <Image
+                    src={video.thumbnailUrl || '/fallback.jpg'}
+                    alt="thumbnail"
+                    fill
+                    sizes="50px"
+                    style={{ objectFit: 'cover' }}
+                  />
+                </div>
 
                 {selectedVideoId === video.id && (
                   <InfoWindow
