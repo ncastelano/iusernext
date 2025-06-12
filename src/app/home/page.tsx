@@ -1,4 +1,3 @@
-// Ajustado para usar filtro único e botão estilizado
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,14 +10,12 @@ import {
 } from '@react-google-maps/api'
 import Image from 'next/image'
 import { CustomInfoWindowVideo } from 'src/app/components/CustomInfoWindow'
-
 import { darkThemeStyleArray } from '@/lib/darkThemeStyleArray'
 import { Video } from 'types/video'
 import { User } from 'types/user'
 import { FilterMap } from 'src/app/components/FilterMap'
 import { VideoMarker } from '../components/VideoMaker'
 import { CustomInfoWindowUser } from 'src/app/components/CustomInfoWindowUser'
-
 
 const containerStyle = {
   width: '100%',
@@ -45,7 +42,7 @@ export default function HomePage() {
     mapRef.current = map
   }
 
-  const goToLocationWithZoom = (lat: number, lng: number, zoom = 20) => {
+  const goToLocationWithZoom = ({ lat, lng }: { lat: number; lng: number }, zoom = 20) => {
     if (mapRef.current) {
       mapRef.current.panTo({ lat, lng })
       mapRef.current.setZoom(zoom)
@@ -58,8 +55,7 @@ export default function HomePage() {
         (position) => {
           const { latitude, longitude } = position.coords
           const location = { lat: latitude, lng: longitude }
-          
-          goToLocationWithZoom(latitude, longitude)
+          goToLocationWithZoom(location)
         },
         (error) => {
           console.error('Erro ao obter localização atual:', error)
@@ -192,41 +188,40 @@ export default function HomePage() {
           ))}
 
           {filteredUsers.map((user) => (
-  <OverlayView
-    key={user.id}
-    position={{ lat: user.latitude, lng: user.longitude }}
-    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-  >
-    <div>
-      <div
-        onClick={() => setSelectedUserId(user.id)}
-        title={user.name}
-        style={{
-          width: 48,
-          height: 48,
-          borderRadius: '12px',
-          overflow: 'hidden',
-          border: '3px solid #2ecc71',
-          boxShadow: '0 0 5px rgba(0,0,0,0.3)',
-          cursor: 'pointer',
-          backgroundColor: '#fff',
-        }}
-      >
-        <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
-      </div>
+            <OverlayView
+              key={user.id}
+              position={{ lat: user.latitude, lng: user.longitude }}
+              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            >
+              <div>
+                <div
+                  onClick={() => setSelectedUserId(user.id)}
+                  title={user.name}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    border: '3px solid #2ecc71',
+                    boxShadow: '0 0 5px rgba(0,0,0,0.3)',
+                    cursor: 'pointer',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
+                </div>
 
-      {selectedUserId === user.id && (
-        <OverlayView
-          position={{ lat: user.latitude, lng: user.longitude }}
-          mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-        >
-          <CustomInfoWindowUser user={user} onClose={() => setSelectedUserId(null)} />
-        </OverlayView>
-      )}
-    </div>
-  </OverlayView>
-))}
-
+                {selectedUserId === user.id && (
+                  <OverlayView
+                    position={{ lat: user.latitude, lng: user.longitude }}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                  >
+                    <CustomInfoWindowUser user={user} onClose={() => setSelectedUserId(null)} />
+                  </OverlayView>
+                )}
+              </div>
+            </OverlayView>
+          ))}
         </GoogleMap>
       )}
     </main>
