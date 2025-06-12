@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
@@ -206,9 +206,8 @@ export default function HomePage() {
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const [showUserInfo, setShowUserInfo] = useState(false)
-  const [trackingActive, setTrackingActive] = useState(false)
   const mapRef = useRef<google.maps.Map | null>(null)
-  const watchIdRef = useRef<number | null>(null)
+
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
 
@@ -230,32 +229,7 @@ export default function HomePage() {
 
   
 
- 
-
-
-  useEffect(() => {
-    async function fetchVideos() {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'videos'))
-        const data: Video[] = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Video[]
-        setVideos(data)
-        goToMyLocation()
-        
-      } catch (error) {
-        console.error('Erro ao buscar vídeos:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchVideos()
-  }, [])
-
-  
-const goToMyLocation = () => {
+ const goToMyLocation = useCallback(() => {
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -270,7 +244,32 @@ const goToMyLocation = () => {
       { enableHighAccuracy: true, timeout: 10000 }
     )
   }
-}
+}, [])
+
+
+  useEffect(() => {
+  async function fetchVideos() {
+    try {
+      const querySnapshot = await getDocs(collection(db, 'videos'))
+      const data: Video[] = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      })) as Video[]
+      setVideos(data)
+      goToMyLocation()
+    } catch (error) {
+      console.error('Erro ao buscar vídeos:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  fetchVideos()
+}, [goToMyLocation])
+
+
+  
+
 
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>

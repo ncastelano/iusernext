@@ -1,3 +1,5 @@
+// components/TrackingContext.tsx
+
 'use client'
 
 import React, { createContext, useContext, useRef, useState } from 'react'
@@ -43,12 +45,25 @@ export const TrackingProvider = ({ children }: { children: React.ReactNode }) =>
     }
   }
 
+  // ✅ Correção: função única, sem redefinir
   const toggleTracking = () => {
-    trackingActive ? stopTracking() : startTracking()
+    if (trackingActive) {
+      stopTracking()
+    } else {
+      startTracking()
+    }
   }
 
   return (
-    <TrackingContext.Provider value={{ trackingActive, userLocation, startTracking, stopTracking, toggleTracking }}>
+    <TrackingContext.Provider
+      value={{
+        trackingActive,
+        userLocation,
+        startTracking,
+        stopTracking,
+        toggleTracking,
+      }}
+    >
       {children}
     </TrackingContext.Provider>
   )
