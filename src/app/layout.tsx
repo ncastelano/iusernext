@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import ConditionalUI from './components/ConditionalUI'
+import { TrackingProvider } from './context/TrackingContext' // ⬅️ Caminho correto
 
 // ✅ Metadados corretos
 export const metadata: Metadata = {
@@ -22,8 +23,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body>
-        <ConditionalUI />
-        {children}
+        <TrackingProvider>
+          <ConditionalUI />
+          {children}
+        </TrackingProvider>
       </body>
     </html>
   )

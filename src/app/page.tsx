@@ -8,7 +8,7 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/azul');
+    router.replace('/home');
   }, [router]);
 
   return null; // ou um spinner se quiser

@@ -230,39 +230,8 @@ export default function HomePage() {
 
   
 
-  const startTracking = () => {
-    if (navigator.geolocation) {
-      watchIdRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          const location = { lat: latitude, lng: longitude }
-          setUserLocation(location)
-          goToLocationWithZoom(latitude, longitude)
-        },
-        (error) => {
-          console.error('Erro ao rastrear localização:', error)
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      )
-    }
-  }
+ 
 
-  const stopTracking = () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current)
-      watchIdRef.current = null
-    }
-  }
-
-  const toggleTracking = () => {
-    if (trackingActive) {
-      stopTracking()
-      setTrackingActive(false)
-    } else {
-      startTracking()
-      setTrackingActive(true)
-    }
-  }
 
   useEffect(() => {
     async function fetchVideos() {
@@ -273,6 +242,8 @@ export default function HomePage() {
           ...doc.data(),
         })) as Video[]
         setVideos(data)
+        goToMyLocation()
+        
       } catch (error) {
         console.error('Erro ao buscar vídeos:', error)
       } finally {
@@ -283,11 +254,24 @@ export default function HomePage() {
     fetchVideos()
   }, [])
 
-  useEffect(() => {
-    return () => {
-      stopTracking()
-    }
-  }, [])
+  
+const goToMyLocation = () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords
+        const location = { lat: latitude, lng: longitude }
+        setUserLocation(location)
+        goToLocationWithZoom(latitude, longitude)
+      },
+      (error) => {
+        console.error('Erro ao obter localização atual:', error)
+      },
+      { enableHighAccuracy: true, timeout: 10000 }
+    )
+  }
+}
+
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
@@ -298,17 +282,17 @@ export default function HomePage() {
 
   return (
     <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
-    <button
-  onClick={toggleTracking}
+   
+  <button onClick={goToMyLocation}
   style={{
-    position: 'fixed', // use 'fixed' para manter visível mesmo em full screen
-    bottom: 20,        // canto inferior
-    left: 20,          // canto esquerdo
+    position: 'fixed',
+    bottom: 20,
+    left: 20,
     zIndex: 1000,
     padding: '10px 16px',
-    backgroundColor: trackingActive ? '#222' : '#1a1a1a',
-    color: trackingActive ? '#00ff7f' : '#ccc',
-    border: `1px solid ${trackingActive ? '#00ff7f' : '#444'}`,
+    backgroundColor: '#1a1a1a',
+    color: '#ccc',
+    border: '1px solid #444',
     borderRadius: '8px',
     cursor: 'pointer',
     fontWeight: 500,
@@ -317,8 +301,9 @@ export default function HomePage() {
     transition: 'all 0.2s ease-in-out',
   }}
 >
-  📍 Minha Localização: {trackingActive ? 'Ativa' : 'Inativa'}
+  📍 Ir para minha localização
 </button>
+
 
 
 
