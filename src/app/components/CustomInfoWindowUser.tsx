@@ -1,50 +1,34 @@
-import { Video } from 'types/video'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
+import { User } from 'types/user'
 
-export const CustomInfoWindowVideo = ({ video, onClose }: { video: Video; onClose: () => void }) => {
-  const [showVideo, setShowVideo] = useState(false)
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setShowVideo(true)
-    }, 1000) // 1 segundo
-
-    return () => clearTimeout(timeout)
-  }, [])
-
+export const CustomInfoWindowUser = ({
+  user,
+  onClose,
+}: {
+  user: User
+  onClose: () => void
+}) => {
   return (
     <div style={styles.container}>
-      <div style={styles.videoWrapper}>
-        {showVideo && video.videoUrl ? (
-          <video
-            src={video.videoUrl}
-            width="100%"
-            height="100%"
-            controls
-            autoPlay
-            muted
-            playsInline
-            style={{ objectFit: 'cover' }}
-          />
-        ) : (
-          <img
-            src={video.thumbnailUrl || '/fallback.jpg'}
-            alt="thumbnail"
-            width="100%"
-            height="100%"
-            style={{ objectFit: 'cover' }}
-          />
-        )}
+      <div style={styles.imageWrapper}>
+        <img
+          src={user.image}
+          alt={user.name}
+          width="100%"
+          height="100%"
+          style={{ objectFit: 'cover' }}
+        />
       </div>
       <div style={styles.textWrapper}>
-        <h4 style={styles.title}>{video.artistSongName}</h4>
-        <p style={styles.subtitle}>@{video.userName}</p>
+        <h4 style={styles.title}>{user.name}</h4>
+        <p style={styles.subtitle}>Email: {user.email}</p>
       </div>
-      <button onClick={onClose} style={styles.closeButton} aria-label="Fechar">×</button>
+      <button onClick={onClose} style={styles.closeButton} aria-label="Fechar">
+        ×
+      </button>
     </div>
   )
 }
-
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
@@ -62,7 +46,7 @@ const styles: Record<string, React.CSSProperties> = {
     color: '#fff',
     boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
   },
-  videoWrapper: {
+  imageWrapper: {
     width: '100px',
     height: '100px',
     flexShrink: 0,
@@ -104,4 +88,3 @@ const styles: Record<string, React.CSSProperties> = {
     lineHeight: 1,
   },
 }
-

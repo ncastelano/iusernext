@@ -1,6 +1,6 @@
 {
-  "name": "Meu Super App",
-  "short_name": "MeuApp",
+  "name": "iUser",
+  "short_name": "iUser",
   "start_url": "/home",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -8,12 +8,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "/icons/icon-192x192.png",
+      "src": "/icon/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png"
     },
     {
-      "src": "/icons/icon-512x512.png",
+      "src": "/icon/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png"
     }

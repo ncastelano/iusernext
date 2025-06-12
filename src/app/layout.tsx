@@ -9,8 +9,8 @@ export const metadata: Metadata = {
   description: 'a melhor plataforma',
   manifest: '/manifest.json',
   icons: {
-    icon: '/icons/icon-192x192.png',
-    apple: '/icons/icon-512x512.png',
+    icon: '/icon/icon-192x192.png',
+    apple: '/icon/icon-512x512.png',
   },
 }
 
