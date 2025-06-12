@@ -4,8 +4,16 @@ import { useEffect, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import Destaques from '@/app/components/Destaques'
-import { Video } from 'types/video'
+
 import Image from 'next/image'
+interface Video {
+  id: string
+  videoUrl: string
+  thumbnailUrl: string
+  artistSongName: string
+  userName: string
+}
+
 
 export default function TelaAzul() {
   const [videos, setVideos] = useState<Video[]>([])
