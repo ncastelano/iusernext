@@ -28,9 +28,9 @@ export default function Navbar() {
   const startTracking = () => {
     if (navigator.geolocation) {
       watchIdRef.current = navigator.geolocation.watchPosition(
-        (position) => {
-          // tracking logic
-        },
+       (position) => {
+  console.log('Posição rastreada:', position)
+},
         (error) => {
           console.error('Erro ao rastrear localização:', error)
         },
