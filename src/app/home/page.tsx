@@ -31,7 +31,6 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null)
   const mapRef = useRef<google.maps.Map | null>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
@@ -59,7 +58,7 @@ export default function HomePage() {
         (position) => {
           const { latitude, longitude } = position.coords
           const location = { lat: latitude, lng: longitude }
-          setUserLocation(location)
+          
           goToLocationWithZoom(latitude, longitude)
         },
         (error) => {

@@ -1,5 +1,6 @@
 import React from 'react'
 import { User } from 'types/user'
+import Image from 'next/image'
 
 export const CustomInfoWindowUser = ({
   user,
@@ -11,13 +12,13 @@ export const CustomInfoWindowUser = ({
   return (
     <div style={styles.container}>
       <div style={styles.imageWrapper}>
-        <img
-          src={user.image}
-          alt={user.name}
-          width="100%"
-          height="100%"
-          style={{ objectFit: 'cover' }}
-        />
+       <Image
+  src={user.image}
+  alt={user.name}
+  width={100}
+  height={100}
+  style={{ objectFit: 'cover' }}
+/>
       </div>
       <div style={styles.textWrapper}>
         <h4 style={styles.title}>{user.name}</h4>

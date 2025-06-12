@@ -1,5 +1,7 @@
 import { Video } from 'types/video'
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
+
 
 export const CustomInfoWindowVideo = ({ video, onClose }: { video: Video; onClose: () => void }) => {
   const [showVideo, setShowVideo] = useState(false)
@@ -27,13 +29,14 @@ export const CustomInfoWindowVideo = ({ video, onClose }: { video: Video; onClos
             style={{ objectFit: 'cover' }}
           />
         ) : (
-          <img
-            src={video.thumbnailUrl || '/fallback.jpg'}
-            alt="thumbnail"
-            width="100%"
-            height="100%"
-            style={{ objectFit: 'cover' }}
-          />
+        <Image
+  src={video.thumbnailUrl || '/fallback.jpg'}
+  alt="thumbnail"
+  width={100}
+  height={100}
+  style={{ objectFit: 'cover' }}
+/>
+
         )}
       </div>
       <div style={styles.textWrapper}>
