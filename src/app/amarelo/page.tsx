@@ -76,6 +76,11 @@ export default function TelaAmarela() {
       return;
     }
 
+    if (videoFile.size > 100 * 1024 * 1024) {
+      alert('O vídeo é muito grande. Tente um menor que 100MB.');
+      return;
+    }
+
     try {
       setUploadProgress(0);
 
@@ -95,17 +100,27 @@ export default function TelaAmarela() {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             setUploadProgress(progress);
           },
-          (error) => reject(error),
+          (error) => {
+            console.error('Erro no upload:', error);
+            alert('Erro ao enviar o vídeo. Verifique sua conexão.');
+            setUploadProgress(null);
+            reject(error);
+          },
           () => resolve()
         );
       });
 
       const videoDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-      const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
-      const thumbRef = ref(storage, `All Thumbnails/${videoID}.jpg`);
-      const thumbUpload = await uploadBytesResumable(thumbRef, thumbnailBlob);
-      const thumbDownloadURL = await getDownloadURL(thumbUpload.ref);
+      let thumbDownloadURL = '';
+      try {
+        const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
+        const thumbRef = ref(storage, `All Thumbnails/${videoID}.jpg`);
+        const thumbUpload = await uploadBytesResumable(thumbRef, thumbnailBlob);
+        thumbDownloadURL = await getDownloadURL(thumbUpload.ref);
+      } catch (thumbError) {
+        console.warn('Falha ao gerar thumbnail, continuando sem ela:', thumbError);
+      }
 
       const postData = {
         userID: user.uid,
@@ -127,23 +142,14 @@ export default function TelaAmarela() {
       setUploadProgress(null);
       router.push('/tudo');
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        console.error('Erro ao enviar vídeo:', error.message);
-        alert('Erro ao enviar vídeo: ' + error.message);
-      } else {
-        console.error('Erro desconhecido:', error);
-        alert('Erro ao enviar vídeo: Erro desconhecido');
-      }
+      console.error('Erro desconhecido:', error);
+      alert('Erro ao enviar vídeo.');
       setUploadProgress(null);
     }
   };
 
   if (loadingAuth) {
-    return (
-      <main style={{ padding: 32, backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh' }}>
-        <p>Carregando...</p>
-      </main>
-    );
+    return <main style={{ padding: 32, backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh' }}>Carregando...</main>;
   }
 
   if (!user) {
@@ -152,15 +158,7 @@ export default function TelaAmarela() {
         <h1>Você precisa estar logado para fazer upload.</h1>
         <button
           onClick={() => router.push('/login')}
-          style={{
-            marginTop: 16,
-            padding: 12,
-            backgroundColor: '#444',
-            borderRadius: 10,
-            fontWeight: 'bold',
-            cursor: 'pointer',
-            color: '#fff',
-          }}
+          style={{ marginTop: 16, padding: 12, backgroundColor: '#444', borderRadius: 10, fontWeight: 'bold', cursor: 'pointer', color: '#fff' }}
         >
           Ir para Login
         </button>
@@ -173,27 +171,28 @@ export default function TelaAmarela() {
       <h1 style={{ fontSize: 24, fontWeight: 'bold' }}>Upload de Vídeo</h1>
 
       {videoURL && (
-        <video width="100%" height="400" controls src={videoURL} style={{ marginTop: 16 }} />
+        <video controls playsInline muted width="100%" height="400" style={{ marginTop: 16 }}>
+          <source src={videoURL} type="video/mp4" />
+          Seu navegador não suporta vídeo.
+        </video>
       )}
 
       <input
         type="file"
-        accept="video/*"
+        accept="video/mp4,video/webm"
         onChange={(e) => {
           const file = e.target.files?.[0];
           if (file) {
-            setVideoFile(file);
-            setVideoURL(URL.createObjectURL(file));
+            const url = URL.createObjectURL(file);
+            const video = document.createElement('video');
+            video.src = url;
+            video.onloadedmetadata = () => {
+              setVideoFile(file);
+              setVideoURL(url);
+            };
           }
         }}
-        style={{
-          marginTop: 16,
-          display: 'block',
-          backgroundColor: '#222',
-          borderRadius: 5,
-          padding: 8,
-          width: '100%',
-        }}
+        style={{ marginTop: 16, display: 'block', backgroundColor: '#222', borderRadius: 5, padding: 8, width: '100%' }}
       />
 
       <input
@@ -201,16 +200,7 @@ export default function TelaAmarela() {
         placeholder="Artist - Song"
         value={artistSongName}
         onChange={(e) => setArtistSongName(e.target.value)}
-        style={{
-          display: 'block',
-          marginTop: 16,
-          width: '100%',
-          padding: 8,
-          borderRadius: 5,
-          border: 'none',
-          backgroundColor: '#222',
-          color: '#e0e0e0',
-        }}
+        style={{ display: 'block', marginTop: 16, width: '100%', padding: 8, borderRadius: 5, border: 'none', backgroundColor: '#222', color: '#e0e0e0' }}
       />
 
       <input
@@ -218,48 +208,21 @@ export default function TelaAmarela() {
         placeholder="Description - Tags"
         value={descriptionTags}
         onChange={(e) => setDescriptionTags(e.target.value)}
-        style={{
-          display: 'block',
-          marginTop: 8,
-          width: '100%',
-          padding: 8,
-          borderRadius: 5,
-          border: 'none',
-          backgroundColor: '#222',
-          color: '#e0e0e0',
-        }}
+        style={{ display: 'block', marginTop: 8, width: '100%', padding: 8, borderRadius: 5, border: 'none', backgroundColor: '#222', color: '#e0e0e0' }}
       />
 
       <button
         onClick={handleUpload}
         disabled={uploadProgress !== null}
-        style={{
-          marginTop: 16,
-          padding: 12,
-          backgroundColor: uploadProgress !== null ? '#555' : '#fff',
-          borderRadius: 10,
-          fontWeight: 'bold',
-          cursor: uploadProgress !== null ? 'not-allowed' : 'pointer',
-          color: uploadProgress !== null ? '#ccc' : '#000',
-        }}
+        style={{ marginTop: 16, padding: 12, backgroundColor: uploadProgress !== null ? '#555' : '#fff', borderRadius: 10, fontWeight: 'bold', cursor: uploadProgress !== null ? 'not-allowed' : 'pointer', color: uploadProgress !== null ? '#ccc' : '#000' }}
       >
         {uploadProgress !== null ? `Enviando... ${Math.round(uploadProgress)}%` : 'Upload Now'}
       </button>
 
       {uploadProgress !== null && (
         <div style={{ marginTop: 12 }}>
-          <div style={{
-            height: '8px',
-            backgroundColor: '#333',
-            borderRadius: '4px',
-            overflow: 'hidden',
-          }}>
-            <div style={{
-              width: `${uploadProgress}%`,
-              height: '100%',
-              backgroundColor: '#2ecc71',
-              transition: 'width 0.3s ease',
-            }} />
+          <div style={{ height: '8px', backgroundColor: '#333', borderRadius: '4px', overflow: 'hidden' }}>
+            <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: '#2ecc71', transition: 'width 0.3s ease' }} />
           </div>
           <p style={{ fontSize: 12, marginTop: 4 }}>{Math.round(uploadProgress)}%</p>
         </div>
