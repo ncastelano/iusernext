@@ -88,7 +88,6 @@ export default function TelaAmarela() {
       const videoRef = ref(storage, `All Videos/${videoID}`);
       const uploadTask = uploadBytesResumable(videoRef, videoFile);
 
-      // Monitoramento do progresso
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
           'state_changed',
@@ -96,12 +95,8 @@ export default function TelaAmarela() {
             const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
             setUploadProgress(progress);
           },
-          (error) => {
-            reject(error);
-          },
-          async () => {
-            resolve();
-          }
+          (error) => reject(error),
+          () => resolve()
         );
       });
 
@@ -131,9 +126,14 @@ export default function TelaAmarela() {
       alert('Vídeo enviado com sucesso!');
       setUploadProgress(null);
       router.push('/home');
-    } catch (error: any) {
-      console.error('Erro ao enviar vídeo:', error?.message || error);
-      alert('Erro ao enviar vídeo: ' + (error?.message || 'Erro desconhecido'));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error('Erro ao enviar vídeo:', error.message);
+        alert('Erro ao enviar vídeo: ' + error.message);
+      } else {
+        console.error('Erro desconhecido:', error);
+        alert('Erro ao enviar vídeo: Erro desconhecido');
+      }
       setUploadProgress(null);
     }
   };
@@ -245,6 +245,25 @@ export default function TelaAmarela() {
       >
         {uploadProgress !== null ? `Enviando... ${Math.round(uploadProgress)}%` : 'Upload Now'}
       </button>
+
+      {uploadProgress !== null && (
+        <div style={{ marginTop: 12 }}>
+          <div style={{
+            height: '8px',
+            backgroundColor: '#333',
+            borderRadius: '4px',
+            overflow: 'hidden',
+          }}>
+            <div style={{
+              width: `${uploadProgress}%`,
+              height: '100%',
+              backgroundColor: '#2ecc71',
+              transition: 'width 0.3s ease',
+            }} />
+          </div>
+          <p style={{ fontSize: 12, marginTop: 4 }}>{Math.round(uploadProgress)}%</p>
+        </div>
+      )}
     </main>
   );
 }
