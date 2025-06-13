@@ -125,7 +125,7 @@ export default function TelaAmarela() {
 
       alert('Vídeo enviado com sucesso!');
       setUploadProgress(null);
-      router.push('/home');
+      router.push('/tudo');
     } catch (error: unknown) {
       if (error instanceof Error) {
         console.error('Erro ao enviar vídeo:', error.message);
