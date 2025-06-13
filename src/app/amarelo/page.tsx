@@ -2,8 +2,17 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { collection, doc, setDoc, getDoc } from 'firebase/firestore';
+import {
+  ref,
+  uploadBytesResumable,
+  getDownloadURL,
+} from 'firebase/storage';
+import {
+  collection,
+  doc,
+  setDoc,
+  getDoc,
+} from 'firebase/firestore';
 import { auth, db, storage } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
@@ -12,7 +21,7 @@ export default function TelaAmarela() {
   const [videoURL, setVideoURL] = useState('');
   const [artistSongName, setArtistSongName] = useState('');
   const [descriptionTags, setDescriptionTags] = useState('');
-  const [showProgressBar, setShowProgressBar] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
@@ -32,9 +41,14 @@ export default function TelaAmarela() {
       const video = document.createElement('video');
       video.src = URL.createObjectURL(file);
       video.crossOrigin = 'anonymous';
-      video.currentTime = 1;
+      video.muted = true;
+      video.playsInline = true;
 
-      video.onloadeddata = () => {
+      video.onloadedmetadata = () => {
+        video.currentTime = 1;
+      };
+
+      video.onseeked = () => {
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
@@ -63,7 +77,7 @@ export default function TelaAmarela() {
     }
 
     try {
-      setShowProgressBar(true);
+      setUploadProgress(0);
 
       const newDocRef = doc(collection(db, 'videos'));
       const videoID = newDocRef.id;
@@ -71,18 +85,33 @@ export default function TelaAmarela() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userData = userDoc.data();
 
-      // Upload do vídeo
       const videoRef = ref(storage, `All Videos/${videoID}`);
-      const snapshot = await uploadBytes(videoRef, videoFile);
-      const downloadUrlOfUploadedVideo = await getDownloadURL(snapshot.ref);
+      const uploadTask = uploadBytesResumable(videoRef, videoFile);
 
-      // Gerar e fazer upload da thumbnail
+      // Monitoramento do progresso
+      await new Promise<void>((resolve, reject) => {
+        uploadTask.on(
+          'state_changed',
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setUploadProgress(progress);
+          },
+          (error) => {
+            reject(error);
+          },
+          async () => {
+            resolve();
+          }
+        );
+      });
+
+      const videoDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
       const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
       const thumbRef = ref(storage, `All Thumbnails/${videoID}.jpg`);
-      await uploadBytes(thumbRef, thumbnailBlob);
-      const downloadUrlOfUploadedThumbnail = await getDownloadURL(thumbRef);
+      const thumbUpload = await uploadBytesResumable(thumbRef, thumbnailBlob);
+      const thumbDownloadURL = await getDownloadURL(thumbUpload.ref);
 
-      // Dados do post
       const postData = {
         userID: user.uid,
         userName: userData?.name || 'Desconhecido',
@@ -90,28 +119,28 @@ export default function TelaAmarela() {
         postID: videoID,
         totalComments: 0,
         likesList: [],
-        artistSongName: artistSongName,
+        artistSongName,
         descriptionTags,
-        videoUrl: downloadUrlOfUploadedVideo,
-        thumbnailUrl: downloadUrlOfUploadedThumbnail,
+        videoUrl: videoDownloadURL,
+        thumbnailUrl: thumbDownloadURL,
         publishedDateTime: Date.now(),
       };
 
       await setDoc(newDocRef, postData);
 
       alert('Vídeo enviado com sucesso!');
-      setShowProgressBar(false);
+      setUploadProgress(null);
       router.push('/home');
-    } catch (error) {
-      console.error(error);
-      alert('Erro ao enviar vídeo.');
-      setShowProgressBar(false);
+    } catch (error: any) {
+      console.error('Erro ao enviar vídeo:', error?.message || error);
+      alert('Erro ao enviar vídeo: ' + (error?.message || 'Erro desconhecido'));
+      setUploadProgress(null);
     }
   };
 
   if (loadingAuth) {
     return (
-      <main style={{ padding: 32, color: '#e0e0e0', backgroundColor: '#121212', minHeight: '100vh' }}>
+      <main style={{ padding: 32, backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh' }}>
         <p>Carregando...</p>
       </main>
     );
@@ -119,7 +148,7 @@ export default function TelaAmarela() {
 
   if (!user) {
     return (
-      <main style={{ padding: 32, color: '#e0e0e0', backgroundColor: '#121212', minHeight: '100vh' }}>
+      <main style={{ padding: 32, backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh' }}>
         <h1>Você precisa estar logado para fazer upload.</h1>
         <button
           onClick={() => router.push('/login')}
@@ -144,7 +173,7 @@ export default function TelaAmarela() {
       <h1 style={{ fontSize: 24, fontWeight: 'bold' }}>Upload de Vídeo</h1>
 
       {videoURL && (
-        <video width="100%" height="400" controls src={videoURL} />
+        <video width="100%" height="400" controls src={videoURL} style={{ marginTop: 16 }} />
       )}
 
       <input
@@ -160,7 +189,6 @@ export default function TelaAmarela() {
         style={{
           marginTop: 16,
           display: 'block',
-          color: '#e0e0e0',
           backgroundColor: '#222',
           borderRadius: 5,
           padding: 8,
@@ -204,18 +232,18 @@ export default function TelaAmarela() {
 
       <button
         onClick={handleUpload}
-        disabled={showProgressBar}
+        disabled={uploadProgress !== null}
         style={{
           marginTop: 16,
           padding: 12,
-          backgroundColor: showProgressBar ? '#555' : '#fff',
+          backgroundColor: uploadProgress !== null ? '#555' : '#fff',
           borderRadius: 10,
           fontWeight: 'bold',
-          cursor: showProgressBar ? 'not-allowed' : 'pointer',
-          color: showProgressBar ? '#ccc' : '#000',
+          cursor: uploadProgress !== null ? 'not-allowed' : 'pointer',
+          color: uploadProgress !== null ? '#ccc' : '#000',
         }}
       >
-        {showProgressBar ? 'Enviando...' : 'Upload Now'}
+        {uploadProgress !== null ? `Enviando... ${Math.round(uploadProgress)}%` : 'Upload Now'}
       </button>
     </main>
   );
