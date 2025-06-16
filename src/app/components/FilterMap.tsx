@@ -32,7 +32,6 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
 
   const [initialOrder, setInitialOrder] = useState<typeof initialOptions>(initialOptions)
 
-  // Carrega cliques e ordena apenas uma vez no carregamento
   useEffect(() => {
     const saved = localStorage.getItem(CLICK_STORAGE_KEY)
     if (saved) {
@@ -50,7 +49,6 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
     }
   }, [])
 
-  // Salva cliques no localStorage sempre que mudar
   useEffect(() => {
     localStorage.setItem(CLICK_STORAGE_KEY, JSON.stringify(clickCounts))
   }, [clickCounts])
@@ -85,6 +83,7 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
         alignItems: 'center',
         gap: '12px',
         boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+        maxWidth: '95vw',
       }}
     >
       {/* Campo de busca */}
@@ -123,8 +122,22 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
         />
       </div>
 
-      {/* Botões ordenados pela ordem salva no carregamento */}
-      <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', justifyContent: 'center' }}>
+      {/* Botões com scroll horizontal */}
+      <div
+        style={{
+          display: 'flex',
+          gap: '10px',
+          flexWrap: 'nowrap',
+          overflowX: 'auto',
+          whiteSpace: 'nowrap',
+          justifyContent: 'flex-start',
+          maxWidth: '60vw',
+          scrollbarWidth: 'none' /* Firefox */,
+          msOverflowStyle: 'none' /* IE/Edge */,
+        }}
+        // Esconde a scrollbar no Chrome/Safari
+        className="no-scrollbar"
+      >
         {initialOrder.map((option) => {
           const isSelected = selected === option.key
           const bgColor = isSelected ? option.color : '#000'
@@ -152,6 +165,17 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
           )
         })}
       </div>
+
+      {/* CSS para esconder scrollbar inline */}
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar {
+          display: none;
+        }
+        .no-scrollbar {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }
