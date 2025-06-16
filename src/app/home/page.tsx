@@ -29,10 +29,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const mapRef = useRef<google.maps.Map | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
   const [searchTerm, setSearchTerm] = useState('')
+  const mapRef = useRef<google.maps.Map | null>(null)
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const { isLoaded } = useJsApiLoader({
@@ -64,6 +65,20 @@ export default function HomePage() {
         },
         { enableHighAccuracy: true, timeout: 10000 }
       )
+    }
+  }, [])
+
+  // Detectar evento de instalação PWA
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault()
+      setDeferredPrompt(e)
+    }
+
+    window.addEventListener('beforeinstallprompt', handler)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
     }
   }, [])
 
@@ -116,23 +131,22 @@ export default function HomePage() {
 
   const normalizedSearch = searchTerm.trim().toLowerCase()
 
-const filteredVideos = videosWithLocation.filter((video) => {
-  const matchesFilter =
-    (selectedFilter === 'flash' && video.isFlash) ||
-    (selectedFilter === 'store' && video.isStore) ||
-    (selectedFilter === 'place' && video.isPlace) ||
-    (selectedFilter === 'product' && video.isProduct)
+  const filteredVideos = videosWithLocation.filter((video) => {
+    const matchesFilter =
+      (selectedFilter === 'flash' && video.isFlash) ||
+      (selectedFilter === 'store' && video.isStore) ||
+      (selectedFilter === 'place' && video.isPlace) ||
+      (selectedFilter === 'product' && video.isProduct)
 
-  const matchesSearch = video.artistSongName?.toLowerCase().includes(normalizedSearch)
+    const matchesSearch = video.artistSongName?.toLowerCase().includes(normalizedSearch)
 
-  return matchesFilter && matchesSearch
-})
+    return matchesFilter && matchesSearch
+  })
 
-const filteredUsers =
-  selectedFilter === 'users'
-    ? users.filter((user) => user.name.toLowerCase().includes(normalizedSearch))
-    : []
-
+  const filteredUsers =
+    selectedFilter === 'users'
+      ? users.filter((user) => user.name.toLowerCase().includes(normalizedSearch))
+      : []
 
   return (
     <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
@@ -152,6 +166,7 @@ const filteredUsers =
         searchTerm={searchTerm}
       />
 
+      {/* Botão: Ir para minha localização */}
       <button
         onClick={goToMyLocation}
         style={{
@@ -174,6 +189,38 @@ const filteredUsers =
         📍 Ir para minha localização
       </button>
 
+      {/* Botão: Instalar iUser */}
+      {deferredPrompt && (
+        <button
+          onClick={async () => {
+            deferredPrompt.prompt()
+            const { outcome } = await deferredPrompt.userChoice
+            if (outcome === 'accepted') {
+              console.log('Usuário aceitou instalar o PWA')
+            } else {
+              console.log('Usuário recusou instalar o PWA')
+            }
+            setDeferredPrompt(null)
+          }}
+          style={{
+            position: 'fixed',
+            bottom: 80,
+            right: 20,
+            zIndex: 1000,
+            backgroundColor: '#1a1a1a',
+            color: '#fff',
+            padding: '12px 16px',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
+          }}
+        >
+          📲 Instalar iUser
+        </button>
+      )}
+
+      {/* Mapa e Marcadores */}
       {loading ? (
         <p style={{ textAlign: 'center' }}>Carregando vídeos...</p>
       ) : (

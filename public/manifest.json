@@ -1,7 +1,9 @@
 {
   "name": "iUser",
   "short_name": "iUser",
-  "start_url": "/home",
+  "description": "Rede social interativa no mapa em tempo real com múltiplas funções integradas.",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#0f172a",
