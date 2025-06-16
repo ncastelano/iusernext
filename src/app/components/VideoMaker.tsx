@@ -4,7 +4,7 @@ import Image from 'next/image'
 export const VideoMarker = ({ video, onClick }: { video: Video; onClick: () => void }) => {
   let borderColor = '#00ff00'
   if (video.isFlash) borderColor = 'white'
-  else if (video.isStore) borderColor = 'red'
+  else if (video.isStore) borderColor = 'orange'
   else if (video.isPlace) borderColor = '#add8e6'
   else if (video.isProduct) borderColor = 'yellow'
 

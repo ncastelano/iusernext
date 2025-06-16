@@ -32,6 +32,7 @@ export default function HomePage() {
   const mapRef = useRef<google.maps.Map | null>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
+  const [searchTerm, setSearchTerm] = useState('')
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
   const { isLoaded } = useJsApiLoader({
@@ -43,10 +44,10 @@ export default function HomePage() {
     mapRef.current = map
   }
 
-  const goToLocationWithZoom = ({ lat, lng }: { lat: number; lng: number }, zoom = 20) => {
+  const goToLocationWithZoom = ({ lat, lng }: { lat: number; lng: number }) => {
     if (mapRef.current) {
       mapRef.current.panTo({ lat, lng })
-      mapRef.current.setZoom(zoom)
+      mapRef.current.setZoom(17)
     }
   }
 
@@ -113,28 +114,43 @@ export default function HomePage() {
     (video) => typeof video.latitude === 'number' && typeof video.longitude === 'number'
   )
 
-  const filteredVideos = videosWithLocation.filter((video) => {
-    return (
-      (selectedFilter === 'flash' && video.isFlash) ||
-      (selectedFilter === 'store' && video.isStore) ||
-      (selectedFilter === 'place' && video.isPlace) ||
-      (selectedFilter === 'product' && video.isProduct)
-    )
-  })
+  const normalizedSearch = searchTerm.trim().toLowerCase()
 
-  const filteredUsers = selectedFilter === 'users' ? users : []
+const filteredVideos = videosWithLocation.filter((video) => {
+  const matchesFilter =
+    (selectedFilter === 'flash' && video.isFlash) ||
+    (selectedFilter === 'store' && video.isStore) ||
+    (selectedFilter === 'place' && video.isPlace) ||
+    (selectedFilter === 'product' && video.isProduct)
+
+  const matchesSearch = video.artistSongName?.toLowerCase().includes(normalizedSearch)
+
+  return matchesFilter && matchesSearch
+})
+
+const filteredUsers =
+  selectedFilter === 'users'
+    ? users.filter((user) => user.name.toLowerCase().includes(normalizedSearch))
+    : []
+
 
   return (
     <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
-      <FilterMap selected={selectedFilter} onChange={setSelectedFilter} />
-       <FilteredList
-  filter={selectedFilter}
-  videos={videosWithLocation}
-  users={users}
-  onSelectVideo={setSelectedVideoId}
-  onSelectUser={setSelectedUserId}
-/>
-      
+      <FilterMap
+        selected={selectedFilter}
+        onChange={setSelectedFilter}
+        onSearchChange={(term) => setSearchTerm(term.toLowerCase())}
+      />
+
+      <FilteredList
+        filter={selectedFilter}
+        users={users}
+        videos={videosWithLocation}
+        onSelectUser={setSelectedUserId}
+        onSelectVideo={setSelectedVideoId}
+        goToLocation={goToLocationWithZoom}
+        searchTerm={searchTerm}
+      />
 
       <button
         onClick={goToMyLocation}
@@ -171,8 +187,9 @@ export default function HomePage() {
             backgroundColor: '#000000',
             mapTypeControl: false,
             keyboardShortcuts: false,
-            fullscreenControl: true,
+            fullscreenControl: false,
             disableDefaultUI: true,
+            clickableIcons: false,
           }}
           onLoad={onLoad}
         >
@@ -209,7 +226,7 @@ export default function HomePage() {
                   style={{
                     width: 48,
                     height: 48,
-                    borderRadius: '12px',
+                    borderRadius: '50%',
                     overflow: 'hidden',
                     border: '3px solid #2ecc71',
                     boxShadow: '0 0 5px rgba(0,0,0,0.3)',
@@ -231,9 +248,7 @@ export default function HomePage() {
               </div>
             </OverlayView>
           ))}
-         
         </GoogleMap>
-        
       )}
     </main>
   )
