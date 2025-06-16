@@ -16,6 +16,7 @@ import { User } from 'types/user'
 import { FilterMap } from 'src/app/components/FilterMap'
 import { VideoMarker } from '../components/VideoMaker'
 import { CustomInfoWindowUser } from 'src/app/components/CustomInfoWindowUser'
+import { FilteredList } from 'src/app/components/FilteredList'
 
 const containerStyle = {
   width: '100%',
@@ -126,6 +127,14 @@ export default function HomePage() {
   return (
     <main style={{ padding: 0, fontFamily: 'Arial, sans-serif', position: 'relative' }}>
       <FilterMap selected={selectedFilter} onChange={setSelectedFilter} />
+       <FilteredList
+  filter={selectedFilter}
+  videos={videosWithLocation}
+  users={users}
+  onSelectVideo={setSelectedVideoId}
+  onSelectUser={setSelectedUserId}
+/>
+      
 
       <button
         onClick={goToMyLocation}
@@ -222,7 +231,9 @@ export default function HomePage() {
               </div>
             </OverlayView>
           ))}
+         
         </GoogleMap>
+        
       )}
     </main>
   )
