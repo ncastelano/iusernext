@@ -29,7 +29,7 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
   const [searchTerm, setSearchTerm] = useState('')
@@ -70,17 +70,17 @@ export default function HomePage() {
 
   // Detectar evento de instalação PWA
   useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault()
-      setDeferredPrompt(e)
-    }
+  const handler = (e: Event) => {
+    e.preventDefault()
+    setDeferredPrompt(e as BeforeInstallPromptEvent)
+  }
 
-    window.addEventListener('beforeinstallprompt', handler)
+  window.addEventListener('beforeinstallprompt', handler)
 
-    return () => {
-      window.removeEventListener('beforeinstallprompt', handler)
-    }
-  }, [])
+  return () => {
+    window.removeEventListener('beforeinstallprompt', handler)
+  }
+}, [])
 
   useEffect(() => {
     async function fetchData() {
