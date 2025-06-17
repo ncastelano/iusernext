@@ -66,13 +66,13 @@ export default function Flashs() {
     <section className="px-4 py-6">
       <h2 className="text-xl text-white text-center mb-4">🎬 Todos os Vídeos</h2>
 
-      <div className="flex overflow-x-auto gap-4 video-scrollbar">
+      <div className="flex overflow-x-auto gap-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-black">
         {videos.map((video, idx) => (
           <div
             key={video.id}
             onMouseEnter={() => setHoveredIndex(idx)}
             onMouseLeave={() => setHoveredIndex((prev) => (prev === idx ? null : prev))}
-            className="video-card relative bg-black rounded-lg overflow-hidden shadow-md shrink-0 border border-gray-700 hover:shadow-xl transition-shadow"
+            className="relative bg-black rounded-lg overflow-hidden shadow-md shrink-0 border border-gray-700 hover:shadow-xl transition-shadow w-[160px] aspect-[9/16] sm:w-[320px]"
           >
             <video
               ref={(el) => {
@@ -92,43 +92,6 @@ export default function Flashs() {
           </div>
         ))}
       </div>
-
-      {/* CSS responsivo embutido */}
-      <style jsx>{`
-        .video-scrollbar::-webkit-scrollbar {
-          height: 8px;
-        }
-
-        .video-scrollbar::-webkit-scrollbar-track {
-          background: #000;
-        }
-
-        .video-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #777;
-          border-radius: 8px;
-        }
-
-        .video-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #aaa;
-        }
-
-        .video-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: #777 #000;
-        }
-
-        .video-card {
-          width: 160px; /* padrão */
-          aspect-ratio: 9 / 16;
-        }
-
-        @media (max-width: 982px) {
-          .video-card {
-            width: 320px; /* dobro do tamanho */
-            aspect-ratio: 9 / 16;
-          }
-        }
-      `}</style>
     </section>
   )
 }
