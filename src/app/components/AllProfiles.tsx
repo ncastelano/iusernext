@@ -40,7 +40,7 @@ export default function AllProfiles() {
     <section className="px-4 py-6">
       <h2 className="text-xl text-white text-center mb-4">👥 Todos os Perfis</h2>
 
-      <ul className="flex overflow-x-auto gap-4 profile-scrollbar">
+      <ul className="flex overflow-x-auto gap-4 scrollbar-thin scrollbar-thumb-gray-500 scrollbar-track-black">
         {users.map((user, idx) => (
           <li
             key={idx}
@@ -59,30 +59,6 @@ export default function AllProfiles() {
           </li>
         ))}
       </ul>
-
-      <style jsx>{`
-        .profile-scrollbar::-webkit-scrollbar {
-          height: 8px;
-        }
-
-        .profile-scrollbar::-webkit-scrollbar-track {
-          background: #000;
-        }
-
-        .profile-scrollbar::-webkit-scrollbar-thumb {
-          background-color: #777;
-          border-radius: 8px;
-        }
-
-        .profile-scrollbar::-webkit-scrollbar-thumb:hover {
-          background-color: #aaa;
-        }
-
-        .profile-scrollbar {
-          scrollbar-width: thin;
-          scrollbar-color: #777 #000;
-        }
-      `}</style>
     </section>
   )
 }
