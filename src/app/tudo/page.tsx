@@ -2,8 +2,7 @@
 
 import { useState } from 'react'
 import AllProfiles from '@/app/components/AllProfiles'
-import Flashs from '@/app/components/Flashs'
-import NavbarHome from '@/app/components/NavbarHome'
+import Flashs from '@/app/components/Flashs' 
 
 export default function AllPage() {
   const [search, setSearch] = useState('')
@@ -42,7 +41,6 @@ export default function AllPage() {
         </div>
       </div>
 
-      <NavbarHome/>
       <Flashs />
       <AllProfiles />
     
