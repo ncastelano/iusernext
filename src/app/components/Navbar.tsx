@@ -1,16 +1,15 @@
 'use client'
 
 import { usePathname, useRouter } from 'next/navigation'
-import { signOut, getAuth } from 'firebase/auth'
+import { signOut } from 'firebase/auth'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const watchIdRef = useRef<number | null>(null)
 
   const [trackingActive, setTrackingActive] = useState(false)
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null)
@@ -26,7 +25,7 @@ export default function Navbar() {
 
   const startTracking = () => {
     if (navigator.geolocation) {
-      watchIdRef.current = navigator.geolocation.watchPosition(
+      navigator.geolocation.watchPosition(
         (position) => {
           console.log('Posição rastreada:', position)
         },
@@ -38,20 +37,9 @@ export default function Navbar() {
     }
   }
 
-  const stopTracking = () => {
-    if (watchIdRef.current !== null) {
-      navigator.geolocation.clearWatch(watchIdRef.current)
-      watchIdRef.current = null
-    }
-  }
-
-  
-
   useEffect(() => {
     const fetchUserData = async () => {
-      const authInstance = getAuth()
-      const user = authInstance.currentUser
-
+      const user = auth.currentUser
       if (!user) return
 
       const userRef = doc(db, 'users', user.uid)
@@ -121,7 +109,6 @@ export default function Navbar() {
       <button
         onClick={handleLogout}
         style={{
-          
           backgroundColor: '#1a1a1a',
           color: '#ccc',
           border: '1px solid #444',
@@ -138,44 +125,39 @@ export default function Navbar() {
       </button>
 
       {userPhotoUrl && (
-  <div
-    style={{
-      width: 54, // aumenta o tamanho total
-      height: 54,
-      borderRadius: '50%',
-      backgroundColor: '#00ff00', // a cor da borda
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      flexShrink: 0,
-    }}
-  >
-    <div
-      style={{
-        width: 48, // espaço interno que cria a "distância" da borda
-        height: 48,
-        borderRadius: '50%',
-        backgroundColor: '#121212', // mesma cor do navbar ou fundo
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-      }}
-    >
-      <Image
-        src={userPhotoUrl}
-        alt="Eu"
-        width={40}
-        height={40}
-        style={{
-          objectFit: 'cover',
-          borderRadius: '50%',
-        }}
-      />
-    </div>
-  </div>
-)}
-
-
+        <div
+          style={{
+            width: 54,
+            height: 54,
+            borderRadius: '50%',
+            backgroundColor: '#00ff00',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexShrink: 0,
+          }}
+        >
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: '50%',
+              backgroundColor: '#121212',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            <Image
+              src={userPhotoUrl}
+              alt="Eu"
+              width={40}
+              height={40}
+              style={{ objectFit: 'cover', borderRadius: '50%' }}
+            />
+          </div>
+        </div>
+      )}
     </nav>
   )
 }
