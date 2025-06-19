@@ -77,24 +77,27 @@ const ffmpeg = createFFmpeg({ log: true });
 
   // Função que comprime o vídeo usando ffmpeg.wasm
   async function compressVideo(file: File): Promise<Blob> {
-    if (!ffmpeg.isLoaded()) {
-      setCompressing(true);
-      await ffmpeg.load();
-      setCompressing(false);
-    }
-    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-    await ffmpeg.run(
-      '-i', 'input.mp4',
-      '-vf', 'scale=640:-2',
-      '-preset', 'veryfast',
-      '-crf', '28',
-      '-c:a', 'aac',
-      '-b:a', '96k',
-      'output.mp4'
-    );
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-    return new Blob([data.buffer], { type: 'video/mp4' });
+  if (!ffmpeg.isLoaded()) {
+    setCompressing(true);
+    await ffmpeg.load();
+    setCompressing(false);
   }
+
+  ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+  await ffmpeg.run(
+    '-i', 'input.mp4',
+    '-vf', 'scale=640:-2',
+    '-preset', 'veryfast',
+    '-crf', '28',
+    '-c:a', 'aac',
+    '-b:a', '96k',
+    'output.mp4'
+  );
+
+  const data = ffmpeg.FS('readFile', 'output.mp4');
+  return new Blob([data], { type: 'video/mp4' }); // <-- corrigido aqui
+}
+
 
   const handleUpload = async () => {
     if (!videoFile || !artistSongName || !descriptionTags) {
