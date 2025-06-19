@@ -10,8 +10,6 @@ import Image from 'next/image'
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-
-  const [trackingActive, setTrackingActive] = useState(false)
   const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null)
 
   const handleLogout = async () => {
