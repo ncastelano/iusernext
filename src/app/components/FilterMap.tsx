@@ -140,8 +140,9 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
       >
         {initialOrder.map((option) => {
           const isSelected = selected === option.key
-          const bgColor = isSelected ? option.color : '#000'
-          const color = isSelected ? option.textColor : '#fff'
+          const bgColor = isSelected ? option.color : '#1a1a1a'
+          const color = isSelected ? option.textColor : '#ccc'
+          const borderColor = isSelected ? option.color : '#444'
 
           return (
             <button
@@ -150,7 +151,7 @@ export function FilterMap({ selected, onChange, onSearchChange }: FilterMapProps
               style={{
                 padding: '8px 14px',
                 borderRadius: '12px',
-                border: `1px solid ${isSelected ? option.color : 'rgb(252, 252, 252)'}`,
+                border: `1px solid ${borderColor}`,
                 backgroundColor: bgColor,
                 color,
                 fontWeight: 500,

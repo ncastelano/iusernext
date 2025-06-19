@@ -16,17 +16,23 @@ import {
 import { auth, db, storage } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 
+import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+
+
 export default function TelaAmarela() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoURL, setVideoURL] = useState('');
   const [artistSongName, setArtistSongName] = useState('');
   const [descriptionTags, setDescriptionTags] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-
   const [user, setUser] = useState<User | null>(null);
   const [loadingAuth, setLoadingAuth] = useState(true);
+  const [compressing, setCompressing] = useState(false);
 
   const router = useRouter();
+
+  // Inicializa o ffmpeg
+  const ffmpeg = createFFmpeg({ log: true });
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -36,6 +42,7 @@ export default function TelaAmarela() {
     return () => unsubscribe();
   }, []);
 
+  // Gera thumbnail do vídeo (igual antes)
   const generateThumbnailFromVideo = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
@@ -65,6 +72,27 @@ export default function TelaAmarela() {
     });
   };
 
+  // Função que comprime o vídeo usando ffmpeg.wasm
+  async function compressVideo(file: File): Promise<Blob> {
+    if (!ffmpeg.isLoaded()) {
+      setCompressing(true);
+      await ffmpeg.load();
+      setCompressing(false);
+    }
+    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+    await ffmpeg.run(
+      '-i', 'input.mp4',
+      '-vf', 'scale=640:-2',
+      '-preset', 'veryfast',
+      '-crf', '28',
+      '-c:a', 'aac',
+      '-b:a', '96k',
+      'output.mp4'
+    );
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+    return new Blob([data.buffer], { type: 'video/mp4' });
+  }
+
   const handleUpload = async () => {
     if (!videoFile || !artistSongName || !descriptionTags) {
       alert('Preencha todos os campos.');
@@ -76,13 +104,13 @@ export default function TelaAmarela() {
       return;
     }
 
-    if (videoFile.size > 100 * 1024 * 1024) {
-      alert('O vídeo é muito grande. Tente um menor que 100MB.');
-      return;
-    }
-
     try {
       setUploadProgress(0);
+
+      // Comprime vídeo antes do upload
+      setCompressing(true);
+      const compressedVideoBlob = await compressVideo(videoFile);
+      setCompressing(false);
 
       const newDocRef = doc(collection(db, 'videos'));
       const videoID = newDocRef.id;
@@ -90,8 +118,9 @@ export default function TelaAmarela() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userData = userDoc.data();
 
-      const videoRef = ref(storage, `All Videos/${videoID}`);
-      const uploadTask = uploadBytesResumable(videoRef, videoFile);
+      // Upload do vídeo comprimido
+      const videoRef = ref(storage, `All Videos/${videoID}.mp4`);
+      const uploadTask = uploadBytesResumable(videoRef, compressedVideoBlob);
 
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
@@ -112,6 +141,7 @@ export default function TelaAmarela() {
 
       const videoDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
+      // Gera e faz upload da thumbnail (igual antes)
       let thumbDownloadURL = '';
       try {
         const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
@@ -145,6 +175,7 @@ export default function TelaAmarela() {
       console.error('Erro desconhecido:', error);
       alert('Erro ao enviar vídeo.');
       setUploadProgress(null);
+      setCompressing(false);
     }
   };
 
@@ -213,18 +244,39 @@ export default function TelaAmarela() {
 
       <button
         onClick={handleUpload}
-        disabled={uploadProgress !== null}
-        style={{ marginTop: 16, padding: 12, backgroundColor: uploadProgress !== null ? '#555' : '#fff', borderRadius: 10, fontWeight: 'bold', cursor: uploadProgress !== null ? 'not-allowed' : 'pointer', color: uploadProgress !== null ? '#ccc' : '#000' }}
+        disabled={uploadProgress !== null || compressing}
+        style={{
+          marginTop: 16,
+          padding: 12,
+          backgroundColor: uploadProgress !== null || compressing ? '#555' : '#fff',
+          borderRadius: 10,
+          fontWeight: 'bold',
+          cursor: uploadProgress !== null || compressing ? 'not-allowed' : 'pointer',
+          color: uploadProgress !== null || compressing ? '#ccc' : '#000',
+        }}
       >
-        {uploadProgress !== null ? `Enviando... ${Math.round(uploadProgress)}%` : 'Upload Now'}
+        {compressing
+          ? 'Comprimindo vídeo...'
+          : uploadProgress !== null
+          ? `Enviando... ${Math.round(uploadProgress)}%`
+          : 'Upload Now'}
       </button>
 
-      {uploadProgress !== null && (
+      {(uploadProgress !== null || compressing) && (
         <div style={{ marginTop: 12 }}>
           <div style={{ height: '8px', backgroundColor: '#333', borderRadius: '4px', overflow: 'hidden' }}>
-            <div style={{ width: `${uploadProgress}%`, height: '100%', backgroundColor: '#2ecc71', transition: 'width 0.3s ease' }} />
+            <div
+              style={{
+                width: compressing ? '100%' : `${uploadProgress}%`,
+                height: '100%',
+                backgroundColor: '#2ecc71',
+                transition: 'width 0.3s ease',
+              }}
+            />
           </div>
-          <p style={{ fontSize: 12, marginTop: 4 }}>{Math.round(uploadProgress)}%</p>
+          <p style={{ fontSize: 12, marginTop: 4 }}>
+            {compressing ? 'Processando...' : `${Math.round(uploadProgress ?? 0)}%`}
+          </p>
         </div>
       )}
     </main>

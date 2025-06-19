@@ -1,3 +1,7 @@
+//mapa/page.tsx
+
+
+
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -23,7 +27,7 @@ const containerStyle = {
   height: '100vh',
 }
 
-export default function HomePage() {
+export default function Mapa() {
   const [videos, setVideos] = useState<Video[]>([])
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
@@ -171,7 +175,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         onClick={goToMyLocation}
         style={{
           position: 'fixed',
-          bottom: 90,
+          bottom: 20,
           left: 20,
           zIndex: 1000,
           padding: '10px 16px',

@@ -58,7 +58,7 @@ export function FilteredList({
         justifyContent: 'center',
         gap: '16px',
         overflowX: 'auto',
-        padding: '12px 16px',
+        padding: '1px 1px',
         backgroundColor: 'transparent',
         borderRadius: '12px',
         maxWidth: '100vw',

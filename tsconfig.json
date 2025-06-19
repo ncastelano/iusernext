@@ -9,7 +9,7 @@
     "noEmit": true,
     "esModuleInterop": true,
     "module": "esnext",
-    "moduleResolution": "node",          // alterar para "node" (mais comum e compatível)
+    "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
@@ -19,12 +19,17 @@
         "name": "next"
       }
     ],
-    "baseUrl": ".",                      // adicione baseUrl para garantir o funcionamento do paths
+    "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
       "@lib/*": ["src/lib/*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
   "exclude": ["node_modules"]
 }
