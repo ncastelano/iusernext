@@ -21,19 +21,7 @@ export default function Navbar() {
     }
   }
 
-  const startTracking = () => {
-    if (navigator.geolocation) {
-      navigator.geolocation.watchPosition(
-        (position) => {
-          console.log('Posição rastreada:', position)
-        },
-        (error) => {
-          console.error('Erro ao rastrear localização:', error)
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      )
-    }
-  }
+ 
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -45,10 +33,7 @@ export default function Navbar() {
 
       if (snapshot.exists()) {
         const data = snapshot.data()
-        if (data.visible !== undefined) {
-          setTrackingActive(data.visible)
-          if (data.visible) startTracking()
-        }
+        
         if (data.image) {
           setUserPhotoUrl(data.image)
         }

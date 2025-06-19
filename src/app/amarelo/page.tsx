@@ -15,8 +15,9 @@ import {
 } from 'firebase/firestore';
 import { auth, db, storage } from '@/lib/firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
-
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
+
+
 
 
 export default function TelaAmarela() {
@@ -32,7 +33,9 @@ export default function TelaAmarela() {
   const router = useRouter();
 
   // Inicializa o ffmpeg
-  const ffmpeg = createFFmpeg({ log: true });
+const ffmpeg = createFFmpeg({ log: true });
+
+
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {

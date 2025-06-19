@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg/ffmpeg": "^0.10.1",
     "@react-google-maps/api": "^2.20.6",
     "ffmpeg-static": "^5.2.0",
     "firebase": "^11.8.1",
