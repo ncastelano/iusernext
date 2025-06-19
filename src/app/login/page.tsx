@@ -26,16 +26,22 @@ export default function LoginPage() {
     }
   };
 
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      router.push('/home');
-    } catch (error: any) {
-      console.error('Erro ao fazer login com Google:', error);
-      alert('Erro ao entrar com Google');
+const handleGoogleLogin = async () => {
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithPopup(auth, provider);
+    router.push('/home');
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Erro ao fazer login com Google:', error.message);
+      alert(`Erro ao entrar com Google: ${error.message}`);
+    } else {
+      console.error('Erro desconhecido ao fazer login com Google:', error);
+      alert('Erro desconhecido ao entrar com Google');
     }
-  };
+  }
+};
+
 
   return (
     <main

@@ -45,15 +45,7 @@ export default function Navbar() {
     }
   }
 
-  const toggleTracking = () => {
-    if (trackingActive) {
-      stopTracking()
-      setTrackingActive(false)
-    } else {
-      startTracking()
-      setTrackingActive(true)
-    }
-  }
+  
 
   useEffect(() => {
     const fetchUserData = async () => {
