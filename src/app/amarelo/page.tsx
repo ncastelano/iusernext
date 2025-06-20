@@ -13,12 +13,9 @@ import {
   setDoc,
   getDoc,
 } from 'firebase/firestore';
-import { auth, db, storage } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { db, storage } from '@/lib/firebase';
 import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
-
-
-
+import { useUser } from 'src/app/context/auth-context';
 
 export default function TelaAmarela() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -26,26 +23,13 @@ export default function TelaAmarela() {
   const [artistSongName, setArtistSongName] = useState('');
   const [descriptionTags, setDescriptionTags] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [user, setUser] = useState<User | null>(null);
-  const [loadingAuth, setLoadingAuth] = useState(true);
   const [compressing, setCompressing] = useState(false);
 
   const router = useRouter();
+  const { user, loading } = useUser();
 
-  // Inicializa o ffmpeg
-const ffmpeg = createFFmpeg({ log: true });
+  const ffmpeg = createFFmpeg({ log: true });
 
-
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoadingAuth(false);
-    });
-    return () => unsubscribe();
-  }, []);
-
-  // Gera thumbnail do vídeo (igual antes)
   const generateThumbnailFromVideo = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement('video');
@@ -75,29 +59,27 @@ const ffmpeg = createFFmpeg({ log: true });
     });
   };
 
-  // Função que comprime o vídeo usando ffmpeg.wasm
   async function compressVideo(file: File): Promise<Blob> {
-  if (!ffmpeg.isLoaded()) {
-    setCompressing(true);
-    await ffmpeg.load();
-    setCompressing(false);
+    if (!ffmpeg.isLoaded()) {
+      setCompressing(true);
+      await ffmpeg.load();
+      setCompressing(false);
+    }
+
+    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
+    await ffmpeg.run(
+      '-i', 'input.mp4',
+      '-vf', 'scale=640:-2',
+      '-preset', 'veryfast',
+      '-crf', '28',
+      '-c:a', 'aac',
+      '-b:a', '96k',
+      'output.mp4'
+    );
+
+    const data = ffmpeg.FS('readFile', 'output.mp4');
+    return new Blob([data], { type: 'video/mp4' });
   }
-
-  ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-  await ffmpeg.run(
-    '-i', 'input.mp4',
-    '-vf', 'scale=640:-2',
-    '-preset', 'veryfast',
-    '-crf', '28',
-    '-c:a', 'aac',
-    '-b:a', '96k',
-    'output.mp4'
-  );
-
-  const data = ffmpeg.FS('readFile', 'output.mp4');
-  return new Blob([data], { type: 'video/mp4' }); // <-- corrigido aqui
-}
-
 
   const handleUpload = async () => {
     if (!videoFile || !artistSongName || !descriptionTags) {
@@ -113,7 +95,6 @@ const ffmpeg = createFFmpeg({ log: true });
     try {
       setUploadProgress(0);
 
-      // Comprime vídeo antes do upload
       setCompressing(true);
       const compressedVideoBlob = await compressVideo(videoFile);
       setCompressing(false);
@@ -124,7 +105,6 @@ const ffmpeg = createFFmpeg({ log: true });
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const userData = userDoc.data();
 
-      // Upload do vídeo comprimido
       const videoRef = ref(storage, `All Videos/${videoID}.mp4`);
       const uploadTask = uploadBytesResumable(videoRef, compressedVideoBlob);
 
@@ -147,7 +127,6 @@ const ffmpeg = createFFmpeg({ log: true });
 
       const videoDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
-      // Gera e faz upload da thumbnail (igual antes)
       let thumbDownloadURL = '';
       try {
         const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
@@ -185,7 +164,7 @@ const ffmpeg = createFFmpeg({ log: true });
     }
   };
 
-  if (loadingAuth) {
+  if (loading) {
     return <main style={{ padding: 32, backgroundColor: '#121212', color: '#e0e0e0', minHeight: '100vh' }}>Carregando...</main>;
   }
 
@@ -288,3 +267,4 @@ const ffmpeg = createFFmpeg({ log: true });
     </main>
   );
 }
+

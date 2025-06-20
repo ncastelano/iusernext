@@ -61,7 +61,7 @@ export default function DevWidget() {
         cursor: 'pointer',
         zIndex: 11000,
       }}
-      onClick={() => router.push('/perfil')}
+      onClick={() => router.push('/login')}
     >
       <div
         style={{
