@@ -1,62 +1,60 @@
 'use client'
 
+import React, { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import { auth } from '@/lib/firebase'
+import { Home, MapPin, Search, LogOut } from 'lucide-react'
 
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const [userPhotoUrl, setUserPhotoUrl] = useState<string | null>(null)
 
-  const handleLogout = async () => {
-    try {
-      await signOut(auth)
-      router.push('/login')
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error)
-    }
-  }
+  const buttons = [
+    { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
+    { key: 'home', path: '/home', title: 'Mapa', Icon: MapPin },
+    { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
+    { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
+  ]
 
- 
+  const activeIndex = buttons.findIndex(btn => pathname === btn.path)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const user = auth.currentUser
-      if (!user) return
-
-      const userRef = doc(db, 'users', user.uid)
-      const snapshot = await getDoc(userRef)
-
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-        
-        if (data.image) {
-          setUserPhotoUrl(data.image)
-        }
-      }
+    if (activeIndex === -1) {
+      setUnderlineStyle({ left: 0, width: 0 })
+      return
     }
+    const container = containerRef.current
+    if (!container) return
 
-    fetchUserData()
-  }, [])
+    const activeButton = container.children[activeIndex] as HTMLElement
+    if (!activeButton) return
 
-  const isActive = (path: string) => pathname === path
+    setUnderlineStyle({
+      left: activeButton.offsetLeft,
+      width: activeButton.offsetWidth,
+    })
+  }, [activeIndex])
 
-  const navButtonStyle = (active: boolean) => ({
-    backgroundColor: active ? '#00ffff' : '#1a1a1a',
-    color: active ? '#000' : '#ccc',
-    border: active ? '1px solid #00ffff' : '1px solid #444',
-    fontWeight: 500,
-    padding: '10px 16px',
-    borderRadius: '8px',
-    fontSize: '14px',
+  const navButtonStyle = {
+    backgroundColor: 'transparent',
+    color: 'transparent',
+    border: 'none',
+    padding: '10px',
+    borderRadius: '12px',
+    fontSize: '16px',
     cursor: 'pointer',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-    transition: 'all 0.2s ease-in-out',
-  })
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'color 0.3s ease',
+    height: '60px',
+    position: 'relative' as const,
+  }
 
   return (
     <nav
@@ -65,82 +63,59 @@ export default function Navbar() {
         bottom: 20,
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: '#121212',
-        padding: '12px 20px',
+        backgroundColor: 'transparent',
+         padding: '10px 75px', 
         borderRadius: '16px',
-        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.4)',
         display: 'flex',
-        gap: '10px',
+        gap: '14px',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
+        //boxShadow: '0 4px 20px rgba(0, 0, 0, 0.6)',
+        userSelect: 'none',
       }}
+      ref={containerRef}
     >
-      <button onClick={() => router.push('/home')} style={navButtonStyle(isActive('/home'))}>
-        Home
-      </button>
-      <button onClick={() => router.push('/azul')} style={navButtonStyle(isActive('/azul'))}>
-        Azul
-      </button>
-      <button onClick={() => router.push('/amarelo')} style={navButtonStyle(isActive('/amarelo'))}>
-        Amarelo
-      </button>
-      <button onClick={() => router.push('/tudo')} style={navButtonStyle(isActive('/tudo'))}>
-        Tudo
-      </button>
+      {buttons.map(({ key, path, title, Icon }, index) => {
+        const onClick = key === 'logout'
+          ? async () => {
+              await signOut(auth)
+              router.push('/login')
+            }
+          : () => router.push(path)
 
-      <button
-        onClick={handleLogout}
-        style={{
-          backgroundColor: '#1a1a1a',
-          color: '#ccc',
-          border: '1px solid #444',
-          padding: '10px 16px',
-          borderRadius: '8px',
-          fontSize: '14px',
-          cursor: 'pointer',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          transition: 'all 0.2s ease-in-out',
-          fontWeight: 500,
-        }}
-      >
-        Logout
-      </button>
-
-      {userPhotoUrl && (
-        <div
-          style={{
-            width: 54,
-            height: 54,
-            borderRadius: '50%',
-            backgroundColor: '#00ff00',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0,
-          }}
-        >
-          <div
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: '50%',
-              backgroundColor: '#121212',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
+        return (
+          <button
+            key={key}
+            onClick={onClick}
+            style={navButtonStyle}
+            title={title}
           >
-            <Image
-              src={userPhotoUrl}
-              alt="Eu"
-              width={40}
-              height={40}
-              style={{ objectFit: 'cover', borderRadius: '50%' }}
-            />
-          </div>
-        </div>
-      )}
+            <Icon size={24} color="#fff" />
+          </button>
+        )
+      })}
+
+      {/* Underline animado */}
+      <div
+        style={{
+          position: 'absolute',
+          bottom: 8,
+          left: underlineStyle.left,
+          width: underlineStyle.width,
+          height: 3,
+          borderRadius: 2,
+          backgroundColor: 'rgb(255, 255, 255)',
+          boxShadow: `
+            0 -4px 6px rgba(255, 255, 255, 0.9),
+            0 -8px 12px rgba(255, 255, 255, 0.6),
+            0 -14px 20px rgba(255, 255, 255, 0.3)
+          `,
+          transition: 'left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+          pointerEvents: 'none',
+          zIndex: 1100,
+        }}
+      />
     </nav>
   )
 }

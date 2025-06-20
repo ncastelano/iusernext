@@ -2,7 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import Navbar from './Navbar'
-import DevWidget from './DevWidgets'
+import UserAvatar from './UserAvatar'
 
 export default function ConditionalUI() {
   const pathname = usePathname()
@@ -13,7 +13,7 @@ export default function ConditionalUI() {
   return (
     <>
       <Navbar />
-      <DevWidget />
+      <UserAvatar />
     </>
   )
 }

@@ -1,9 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import ConditionalUI from './components/ConditionalUI'
-import { TrackingProvider } from './context/TrackingContext' // ⬅️ Caminho correto
+import { UserProvider } from './components/UserContext' // importe aqui
 
-// ✅ Metadados corretos
 export const metadata: Metadata = {
   title: 'iUser',
   description: 'a melhor plataforma',
@@ -14,7 +13,6 @@ export const metadata: Metadata = {
   },
 }
 
-// ✅ Apenas o necessário no viewport
 export const viewport = {
   themeColor: '#0f172a',
 }
@@ -23,10 +21,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body>
-        <TrackingProvider>
+        <UserProvider>
           <ConditionalUI />
           {children}
-        </TrackingProvider>
+        </UserProvider>
       </body>
     </html>
   )

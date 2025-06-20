@@ -16,7 +16,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, senha);
-      router.push('/home');
+      router.push('/inicio');
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(error.message);
