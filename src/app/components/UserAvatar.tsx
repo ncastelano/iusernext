@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/app/components/UserContext'
 
 export default function UserAvatar() {
-  const { user, loading } = useUser()
+  const { user } = useUser()
 
   const [showText, setShowText] = useState(false)
   const router = useRouter()
@@ -16,12 +16,10 @@ export default function UserAvatar() {
 
   useEffect(() => {
     if (!user?.image) {
-      const interval = setInterval(() => setShowText(prev => !prev), 2500)
+      const interval = setInterval(() => setShowText((prev) => !prev), 2500)
       return () => clearInterval(interval)
     }
   }, [user?.image])
-
-  
 
   return (
     <div
