@@ -76,25 +76,27 @@ export default function Navbar() {
       }}
       ref={containerRef}
     >
-      {buttons.map(({ key, path, title, Icon }, index) => {
-        const onClick = key === 'logout'
-          ? async () => {
-              await signOut(auth)
-              router.push('/login')
-            }
-          : () => router.push(path)
+      {buttons.map(({ key, path, title, Icon }) => {
+  // seu código aqui, sem 'index'
+  const onClick = key === 'logout'
+    ? async () => {
+        await signOut(auth)
+        router.push('/login')
+      }
+    : () => router.push(path)
 
-        return (
-          <button
-            key={key}
-            onClick={onClick}
-            style={navButtonStyle}
-            title={title}
-          >
-            <Icon size={24} color="#fff" />
-          </button>
-        )
-      })}
+  return (
+    <button
+      key={key}
+      onClick={onClick}
+      style={navButtonStyle}
+      title={title}
+    >
+      <Icon size={24} color="#fff" />
+    </button>
+  )
+})}
+
 
       {/* Underline animado */}
       <div
