@@ -20,8 +20,7 @@ export default function UserAvatar() {
     }
   }, [user?.image])
 
-  // Só renderiza em ambiente de desenvolvimento
-  if (process.env.NODE_ENV !== 'development') return null
+  
 
   return (
     <div
