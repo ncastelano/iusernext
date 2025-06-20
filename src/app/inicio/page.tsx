@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import { Dice5, Play, Pause, Volume, VolumeX, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 
 type Video = {
   videoID: string
@@ -27,13 +28,9 @@ export default function TelaInicio() {
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
-  const [isBuffering, setIsBuffering] = useState(false)
-
-  const [windowWidth, setWindowWidth] = useState<number>(0)
-  const [windowHeight, setWindowHeight] = useState<number>(0)
+  const [isBuffering, setIsBuffering] = useState(false) // controla o loading do video
 
   const videoRef = useRef<HTMLVideoElement>(null)
-  const [autoPlayDelay, setAutoPlayDelay] = useState(2000)
   const autoplayAttemptTimeout = useRef<number | null>(null)
 
   async function fetchVideos() {
@@ -59,17 +56,6 @@ export default function TelaInicio() {
     fetchVideos()
   }, [])
 
-  // Atualiza largura e altura da tela
-  useEffect(() => {
-    function updateWindowSize() {
-      setWindowWidth(window.innerWidth)
-      setWindowHeight(window.innerHeight)
-    }
-    updateWindowSize()
-    window.addEventListener('resize', updateWindowSize)
-    return () => window.removeEventListener('resize', updateWindowSize)
-  }, [])
-
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = isMuted
@@ -77,9 +63,9 @@ export default function TelaInicio() {
         videoRef.current.pause()
       }
     }
-  }, [isMuted, randomVideo])
+  }, [isMuted, randomVideo, isPlaying])
 
-  function tryAutoplay(delay: number) {
+  const tryAutoplay = useCallback((delay: number) => {
     if (!videoRef.current) return
 
     autoplayAttemptTimeout.current = window.setTimeout(async () => {
@@ -90,16 +76,12 @@ export default function TelaInicio() {
           clearTimeout(autoplayAttemptTimeout.current)
           autoplayAttemptTimeout.current = null
         }
-        setAutoPlayDelay(2000)
       } catch {
-        setAutoPlayDelay((oldDelay) => {
-          const newDelay = oldDelay * 2
-          tryAutoplay(newDelay)
-          return newDelay
-        })
+        // dobra o delay e tenta de novo
+        tryAutoplay(delay * 2)
       }
     }, delay)
-  }
+  }, [])
 
   useEffect(() => {
     if (randomVideo?.videoUrl) {
@@ -107,6 +89,7 @@ export default function TelaInicio() {
       setIsBuffering(true)
       tryAutoplay(2000)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [randomVideo])
 
   function togglePlayPause() {
@@ -115,16 +98,19 @@ export default function TelaInicio() {
       videoRef.current.pause()
       setIsPlaying(false)
     } else {
-      videoRef.current.play().then(() => {
-        setIsPlaying(true)
-      }).catch(() => {
-        setIsPlaying(false)
-      })
+      videoRef.current
+        .play()
+        .then(() => {
+          setIsPlaying(true)
+        })
+        .catch(() => {
+          setIsPlaying(false)
+        })
     }
   }
 
   function toggleMute() {
-    setIsMuted((prev) => !prev)
+    setIsMuted(prev => !prev)
   }
 
   function handleRefreshVideo() {
@@ -135,7 +121,6 @@ export default function TelaInicio() {
       clearTimeout(autoplayAttemptTimeout.current)
       autoplayAttemptTimeout.current = null
     }
-    setAutoPlayDelay(2000)
     setIsBuffering(false)
 
     setTimeout(() => {
@@ -156,11 +141,25 @@ export default function TelaInicio() {
     setIsPlaying(true)
   }
 
+  // Para mostrar largura e altura da tela no canto superior direito
+  const [windowWidth, setWindowWidth] = useState(0)
+  const [windowHeight, setWindowHeight] = useState(0)
+
+  useEffect(() => {
+    function updateSize() {
+      setWindowWidth(window.innerWidth)
+      setWindowHeight(window.innerHeight)
+    }
+    updateSize()
+    window.addEventListener('resize', updateSize)
+    return () => window.removeEventListener('resize', updateSize)
+  }, [])
+
   return (
     <div
       style={{
         backgroundColor: '#000',
-        color: 'rgb(255, 255, 255)', // branco
+        color: '#fff',
         height: '100vh',
         padding: '100px 50px 200px',
         boxSizing: 'border-box',
@@ -170,25 +169,24 @@ export default function TelaInicio() {
         position: 'relative',
       }}
     >
-      {/* Exibir largura e altura da tela no canto superior direito */}
+      {/* Largura e altura no canto superior direito */}
       <div
         style={{
           position: 'absolute',
-          top: 10,
-          right: 10,
+          top: 12,
+          right: 12,
           color: 'white',
           fontSize: 14,
           fontWeight: 'bold',
-          backgroundColor: 'rgba(0,0,0,0.4)',
-          padding: '4px 8px',
-          borderRadius: 8,
+          textAlign: 'right',
           userSelect: 'none',
-          display: 'flex',
-          gap: 12,
+          zIndex: 110,
+          lineHeight: 1.2,
+          whiteSpace: 'nowrap',
         }}
       >
-        <div>Largura: {windowWidth}px</div>
-        <div>Altura: {windowHeight}px</div>
+        <div>W: {windowWidth}px</div>
+        <div>H: {windowHeight}px</div>
       </div>
 
       <div
@@ -198,7 +196,7 @@ export default function TelaInicio() {
           borderRadius: '20px',
           padding: '20px 1px',
           textAlign: 'center',
-          border: '1px solid rgb(0, 0, 0)',
+          border: '1px solid #222',
           fontSize: '24px',
           fontWeight: 'bold',
           display: 'flex',
@@ -239,19 +237,37 @@ export default function TelaInicio() {
 
             {/* Mostrar thumbnail enquanto carrega */}
             {isLoading && randomVideo.thumbnailUrl ? (
-              <img
-                src={randomVideo.thumbnailUrl}
-                alt="Thumbnail"
+              <div
                 style={{
+                  position: 'relative',
                   width: '100%',
                   height: '100%',
-                  objectFit: 'cover',
-                  borderRadius: '20px',
                   marginTop: '30px',
+                  borderRadius: '20px',
+                  overflow: 'hidden',
                 }}
-              />
+              >
+                <Image
+                  src={randomVideo.thumbnailUrl}
+                  alt="Thumbnail"
+                  fill
+                  sizes="(max-width: 400px) 100vw, 400px"
+                  style={{
+                    objectFit: 'cover',
+                    borderRadius: '20px',
+                  }}
+                  priority
+                />
+              </div>
             ) : (
-              <div style={{ marginTop: '30px', width: '100%', height: '100%', position: 'relative' }}>
+              <div
+                style={{
+                  marginTop: '30px',
+                  width: '100%',
+                  height: '100%',
+                  position: 'relative',
+                }}
+              >
                 <video
                   ref={videoRef}
                   src={randomVideo.videoUrl}
@@ -294,6 +310,7 @@ export default function TelaInicio() {
                       justifyContent: 'center',
                     }}
                   >
+                    {/* Se estiver carregando, mostra ampulheta animada */}
                     {isBuffering ? (
                       <Loader2 size={20} className="animate-spin" />
                     ) : isPlaying ? (
