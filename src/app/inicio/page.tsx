@@ -155,6 +155,10 @@ export default function TelaInicio() {
     return () => window.removeEventListener('resize', updateSize)
   }, [])
 
+  // Define altura do container conforme proporção da tela
+  const containerHeight =
+    windowHeight > windowWidth ? windowHeight * 0.6 : 420
+
   return (
     <div
       style={{
@@ -202,7 +206,7 @@ export default function TelaInicio() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          height: '420px',
+          height: containerHeight,
           boxSizing: 'border-box',
           flexDirection: 'column',
           position: 'relative',
