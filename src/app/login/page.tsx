@@ -1,11 +1,15 @@
-///src/app/login/page.tsx
-
 'use client';
 
-import { useState } from 'react';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import {
+  GoogleAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signInWithEmailAndPassword,
+} from 'firebase/auth';
+import { auth } from '@/lib/firebase';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -14,36 +18,50 @@ export default function LoginPage() {
   const [senha, setSenha] = useState('');
   const router = useRouter();
 
+  useEffect(() => {
+    // Após redirecionamento do login com Google
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          router.push('/inicio');
+        }
+      })
+      .catch((error) => {
+        console.error('Erro no redirect do Google:', error);
+      });
+  }, []);
+
+  const isMobileOrPWA = () => {
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+    );
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       router.push('/inicio');
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        alert(error.message);
-      } else {
-        alert('Erro inesperado ao fazer login.');
-      }
+    } catch (error: any) {
+      alert(error?.message || 'Erro ao fazer login.');
     }
   };
 
-const handleGoogleLogin = async () => {
-  try {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
-    router.push('/inicio');
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.error('Erro ao fazer login com Google:', error.message);
-      alert(`Erro ao entrar com Google: ${error.message}`);
-    } else {
-      console.error('Erro desconhecido ao fazer login com Google:', error);
-      alert('Erro desconhecido ao entrar com Google');
-    }
-  }
-};
+  const handleGoogleLogin = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
 
+      if (isMobileOrPWA()) {
+        await signInWithRedirect(auth, provider); // ✅ Recomendado para mobile/PWA
+      } else {
+        await signInWithPopup(auth, provider); // ✅ Funciona bem em desktop
+        router.push('/inicio');
+      }
+    } catch (error: any) {
+      alert('Erro ao entrar com Google: ' + (error?.message || 'desconhecido'));
+    }
+  };
 
   return (
     <main
@@ -76,10 +94,7 @@ const handleGoogleLogin = async () => {
             alt="Logo"
             width={200}
             height={200}
-            style={{
-              borderRadius: 12,
-              filter: 'invert(1)',
-            }}
+            style={{ borderRadius: 12, filter: 'invert(1)' }}
           />
         </div>
 
