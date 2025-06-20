@@ -1,15 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import {
-  GoogleAuthProvider,
+  signInWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
+  GoogleAuthProvider,
   getRedirectResult,
-  signInWithEmailAndPassword,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -18,8 +18,17 @@ export default function LoginPage() {
   const [senha, setSenha] = useState('');
   const router = useRouter();
 
+  // Detecta se está em PWA ou mobile
+  const isMobileOrPWA = () => {
+    return (
+      typeof window !== 'undefined' &&
+      (window.matchMedia('(display-mode: standalone)').matches ||
+        /android|iphone|ipad|ipod/i.test(navigator.userAgent))
+    );
+  };
+
+  // Redirecionamento após login via Google em mobile/PWA
   useEffect(() => {
-    // Após redirecionamento do login com Google
     getRedirectResult(auth)
       .then((result) => {
         if (result?.user) {
@@ -29,37 +38,37 @@ export default function LoginPage() {
       .catch((error) => {
         console.error('Erro no redirect do Google:', error);
       });
-  }, []);
-
-  const isMobileOrPWA = () => {
-    return (
-      window.matchMedia('(display-mode: standalone)').matches ||
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-    );
-  };
+  }, [router]); // ✅ adiciona router
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, senha);
       router.push('/inicio');
-    } catch (error: any) {
-      alert(error?.message || 'Erro ao fazer login.');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert('Erro inesperado ao fazer login.');
+      }
     }
   };
 
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-
       if (isMobileOrPWA()) {
-        await signInWithRedirect(auth, provider); // ✅ Recomendado para mobile/PWA
+        await signInWithRedirect(auth, provider);
       } else {
-        await signInWithPopup(auth, provider); // ✅ Funciona bem em desktop
+        await signInWithPopup(auth, provider);
         router.push('/inicio');
       }
-    } catch (error: any) {
-      alert('Erro ao entrar com Google: ' + (error?.message || 'desconhecido'));
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        alert(`Erro ao entrar com Google: ${error.message}`);
+      } else {
+        alert('Erro desconhecido ao entrar com Google.');
+      }
     }
   };
 
@@ -94,7 +103,10 @@ export default function LoginPage() {
             alt="Logo"
             width={200}
             height={200}
-            style={{ borderRadius: 12, filter: 'invert(1)' }}
+            style={{
+              borderRadius: 12,
+              filter: 'invert(1)',
+            }}
           />
         </div>
 
@@ -137,6 +149,7 @@ export default function LoginPage() {
   );
 }
 
+// Styles
 const inputStyle = {
   width: '100%',
   padding: '12px',

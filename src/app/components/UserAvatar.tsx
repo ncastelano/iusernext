@@ -7,7 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/app/components/UserContext'
 
 export default function UserAvatar() {
-  const user = useUser()
+  const { user, loading } = useUser()
+
   const [showText, setShowText] = useState(false)
   const router = useRouter()
 

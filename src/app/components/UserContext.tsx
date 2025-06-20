@@ -3,7 +3,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { auth, db } from '@/lib/firebase'
 import { doc, getDoc } from 'firebase/firestore'
-import { onAuthStateChanged } from 'firebase/auth'
+import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 
 type UserContextType = {
   uid: string | null
@@ -16,43 +16,62 @@ type UserContextType = {
   visible: boolean
 }
 
-const UserContext = createContext<UserContextType | null>(null)
+type ContextValue = {
+  user: UserContextType | null
+  loading: boolean
+}
+
+const UserContext = createContext<ContextValue>({ user: null, loading: true })
 
 export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [userData, setUserData] = useState<UserContextType | null>(null)
+  const [user, setUser] = useState<UserContextType | null>(null)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userRef = doc(db, 'users', user.uid)
-        const snapshot = await getDoc(userRef)
+    const initUser = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        const firebaseUser = result?.user ?? auth.currentUser
 
-        if (snapshot.exists()) {
-          const data = snapshot.data()
+        if (firebaseUser) {
+          const userRef = doc(db, 'users', firebaseUser.uid)
+          const snapshot = await getDoc(userRef)
 
-          setUserData({
-            uid: user.uid,
-            email: user.email || null,
-            name: data.name || null,
-            username: data.username || null,
-            image: data.image || null,
-            latitude: data.latitude ?? null,
-            longitude: data.longitude ?? null,
-            visible: data.visible ?? false,
-          })
+          if (snapshot.exists()) {
+            const data = snapshot.data()
+            setUser({
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || null,
+              name: data.name || null,
+              username: data.username || null,
+              image: data.image || null,
+              latitude: data.latitude ?? null,
+              longitude: data.longitude ?? null,
+              visible: data.visible ?? false,
+            })
+          } else {
+            setUser(null)
+          }
         } else {
-          setUserData(null)
+          setUser(null)
         }
-      } else {
-        setUserData(null)
+      } catch (error) {
+        console.error('Erro ao processar redirecionamento do Google:', error)
+        setUser(null)
+      } finally {
+        setLoading(false)
       }
+    }
+
+    const unsubscribe = onAuthStateChanged(auth, () => {
+      initUser()
     })
 
     return () => unsubscribe()
   }, [])
 
   return (
-    <UserContext.Provider value={userData}>
+    <UserContext.Provider value={{ user, loading }}>
       {children}
     </UserContext.Provider>
   )
