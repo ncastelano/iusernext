@@ -30,7 +30,7 @@ const handleGoogleLogin = async () => {
   try {
     const provider = new GoogleAuthProvider();
     await signInWithPopup(auth, provider);
-    router.push('/home');
+    router.push('/inicio');
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Erro ao fazer login com Google:', error.message);

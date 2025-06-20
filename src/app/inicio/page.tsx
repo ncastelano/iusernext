@@ -194,8 +194,8 @@ const containerWidth =
           whiteSpace: 'nowrap',
         }}
       >
-        <div>W: {windowWidth}px</div>
-        <div>H: {windowHeight}px</div>
+        <div>largura: {windowWidth}px</div>
+        <div>altura: {windowHeight}px</div>
       </div>
 
       <div
