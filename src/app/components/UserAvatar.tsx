@@ -3,50 +3,29 @@
 import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { onAuthStateChanged } from 'firebase/auth'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useUser } from '@/app/components/UserContext'
 
-export default function DevWidget() {
-  const [image, setImage] = useState<string | null>(null)
-  const [name, setName] = useState<string | null>(null)
-  const [email, setEmail] = useState<string | null>(null)
+export default function UserAvatar() {
+  const user = useUser()
   const [showText, setShowText] = useState(false)
   const router = useRouter()
 
   const fallbackImage = '/icon/icon-white-512x512.png'
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const userDocRef = doc(db, 'users', user.uid)
-        const userSnap = await getDoc(userDocRef)
-
-        if (userSnap.exists()) {
-          const userData = userSnap.data()
-          setImage(userData.image || null)
-          setName(userData.name || null)
-          setEmail(userData.email || null)
-        }
-      }
-    })
-
-    return () => unsubscribe()
-  }, [])
-
-  useEffect(() => {
-    if (!image) {
+    if (!user?.image) {
       const interval = setInterval(() => setShowText(prev => !prev), 2500)
       return () => clearInterval(interval)
     }
-  }, [image])
+  }, [user?.image])
 
+  // Só renderiza em ambiente de desenvolvimento
   if (process.env.NODE_ENV !== 'development') return null
 
   return (
     <div
-      title={`Usuário: ${name ?? 'desconhecido'}\nEmail: ${email ?? '---'}`}
+      title={`Usuário: ${user?.name ?? 'desconhecido'}\nEmail: ${user?.email ?? '---'}`}
       style={{
         position: 'fixed',
         bottom: 30,
@@ -68,7 +47,7 @@ export default function DevWidget() {
           width: 54,
           height: 54,
           borderRadius: '50%',
-          backgroundColor: image ? '#00ff00' : '#fff', // ✅ alterna verde e branco
+          backgroundColor: user?.image ? '#00ff00' : '#fff',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -87,7 +66,7 @@ export default function DevWidget() {
           }}
         >
           <AnimatePresence mode="wait">
-            {image ? (
+            {user?.image ? (
               <motion.div
                 key="photo"
                 initial={{ opacity: 0, rotate: -30, scale: 0.7 }}
@@ -96,7 +75,7 @@ export default function DevWidget() {
                 transition={{ duration: 0.6 }}
               >
                 <Image
-                  src={image}
+                  src={user.image}
                   alt="Foto do Usuário"
                   width={40}
                   height={40}
