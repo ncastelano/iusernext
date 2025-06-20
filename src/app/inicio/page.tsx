@@ -156,8 +156,13 @@ export default function TelaInicio() {
   }, [])
 
   // Define altura do container conforme proporção da tela
-  const containerHeight =
-    windowHeight > windowWidth ? windowHeight * 0.6 : 420
+  // Define altura e largura do container conforme proporção da tela
+const containerHeight =
+  windowHeight > windowWidth ? windowHeight * 0.8 : 420
+
+const containerWidth =
+  windowHeight > windowWidth ? Math.min(windowWidth * 0.9, 600) : '100%'
+
 
   return (
     <div
@@ -194,25 +199,26 @@ export default function TelaInicio() {
       </div>
 
       <div
-        style={{
-          width: '100%',
-          maxWidth: '400px',
-          borderRadius: '20px',
-          padding: '20px 1px',
-          textAlign: 'center',
-          border: '1px solid #222',
-          fontSize: '24px',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          height: containerHeight,
-          boxSizing: 'border-box',
-          flexDirection: 'column',
-          position: 'relative',
-          overflow: 'hidden',
-        }}
-      >
+  style={{
+    width: containerWidth,
+    maxWidth: '100%', // para garantir responsividade
+    borderRadius: '20px',
+    padding: '20px 1px',
+    textAlign: 'center',
+    border: '1px solid #222',
+    fontSize: '24px',
+    fontWeight: 'bold',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    height: containerHeight,
+    boxSizing: 'border-box',
+    flexDirection: 'column',
+    position: 'relative',
+    overflow: 'hidden',
+  }}
+>
+
         {randomVideo ? (
           <>
             {/* Título */}
