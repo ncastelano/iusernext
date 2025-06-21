@@ -26,7 +26,7 @@ export default function UserAvatar() {
       title={`Usuário: ${user?.name ?? 'desconhecido'}\nEmail: ${user?.email ?? '---'}`}
       style={{
         position: 'fixed',
-        bottom: 30,
+        bottom: 10,
         left: 20,
         width: 64,
         height: 64,
