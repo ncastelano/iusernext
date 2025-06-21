@@ -11,5 +11,6 @@ export type Video = {
   isFlash: boolean
   isPlace: boolean
   isStore: boolean
+  isProduct: boolean
   videoUrl?: string
 }
