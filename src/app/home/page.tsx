@@ -89,37 +89,42 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
       const videoSnapshot = await getDocs(collection(db, 'videos'))
 
       const videoData: Video[] = videoSnapshot.docs
-        .map((doc) => {
-          const data = doc.data()
-          if (
-            typeof data.videoID === 'string' &&
-            typeof data.userProfileImage === 'string' &&
-            typeof data.userName === 'string' &&
-            typeof data.userID === 'string' &&
-            typeof data.latitude === 'number' &&
-            typeof data.longitude === 'number' &&
-            typeof data.artistSongName === 'string' &&
-            data.createdAt
-          ) {
-            return {
-              id: doc.id,
-              videoID: data.videoID,
-              userProfileImage: data.userProfileImage,
-              userName: data.userName,
-              userID: data.userID,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              artistSongName: data.artistSongName,
-              isFlash: data.isFlash,
-              isStore: data.isStore,
-              isPlace: data.isPlace,
-              isProduct: data.isProduct,
-              createdAt: data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt,
-            } as Video
-          }
-          return null
-        })
-        .filter(Boolean) as Video[]
+  .map((doc) => {
+    const data = doc.data()
+    if (
+      typeof data.videoID === 'string' &&
+      typeof data.userProfileImage === 'string' &&
+      typeof data.userName === 'string' &&
+      typeof data.userID === 'string' &&
+      typeof data.latitude === 'number' &&
+      typeof data.longitude === 'number' &&
+      typeof data.artistSongName === 'string' &&
+      typeof data.thumbnailUrl === 'string' && // 👈 novo campo
+      data.publishedDateTime &&                 // 👈 novo campo
+      data.createdAt
+    ) {
+      return {
+        id: doc.id,
+        videoID: data.videoID,
+        userProfileImage: data.userProfileImage,
+        userName: data.userName,
+        userID: data.userID,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        artistSongName: data.artistSongName,
+        isFlash: data.isFlash,
+        isStore: data.isStore,
+        isPlace: data.isPlace,
+        isProduct: data.isProduct,
+        createdAt: data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt,
+        thumbnailUrl: data.thumbnailUrl,
+        publishedDateTime: data.publishedDateTime.toDate ? data.publishedDateTime.toDate() : data.publishedDateTime,
+      } as Video
+    }
+    return null
+  })
+  .filter(Boolean) as Video[]
+
 
       setVideos(videoData)
 
