@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import Image from 'next/image'
 import { db } from '@/lib/firebase'
 import { collection, getDocs } from 'firebase/firestore'
 import RandomVideo from 'src/app/components/RandomVideo'
@@ -8,6 +9,16 @@ import DistanceOrLocation from 'src/app/components/DistanceOrLocation'
 import NextProfileVideo from 'src/app/components/NextProfileVideo'
 import TimeAgoCustom from 'src/app/components/TimeAgoCustom'
 import { Video } from 'types/video'
+import AnimatedText from 'src/app/components/AnimatedTextProps'
+
+function getRandomString(length: number) {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+  let result = ''
+  for (let i = 0; i < length; i++) {
+    result += chars.charAt(Math.floor(Math.random() * chars.length))
+  }
+  return result
+}
 
 export default function TelaInicio() {
   const [randomVideo, setRandomVideo] = useState<Video | null>(null)
@@ -18,6 +29,8 @@ export default function TelaInicio() {
 
   const [userLocation, setUserLocation] = useState<{ lat: number; lon: number } | null>(null)
   const [distance, setDistance] = useState<number | null>(null)
+
+  const [userNameAnim, setUserNameAnim] = useState('')
 
   function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     const toRad = (x: number) => (x * Math.PI) / 180
@@ -80,6 +93,18 @@ export default function TelaInicio() {
     fetchVideos()
   }, [])
 
+  // Efeito para animar o userName enquanto está carregando
+  useEffect(() => {
+    if (isLoading) {
+      const interval = setInterval(() => {
+        setUserNameAnim(getRandomString(8))
+      }, 150)
+      return () => clearInterval(interval)
+    } else if (randomVideo) {
+      setUserNameAnim(randomVideo.userName)
+    }
+  }, [isLoading, randomVideo])
+
   function toggleMute() {
     setIsMuted(prev => !prev)
   }
@@ -119,6 +144,27 @@ export default function TelaInicio() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', width: '100vw', height: '100vh', margin: 0, padding: 0, backgroundColor: '#000' }}>
       <div style={{ position: 'relative', width: '100%', height: 'calc(100vh - 100px)', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        {/* Loading Overlay */}
+        {isLoading && (
+          <div style={{
+            position: 'absolute',
+            zIndex: 10,
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            color: '#fff',
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            fontSize: 24,
+            fontWeight: 'bold',
+          }}>
+            Carregando...
+          </div>
+        )}
+
         {/* RandomVideo Component */}
         <RandomVideo
           video={randomVideo}
@@ -136,11 +182,17 @@ export default function TelaInicio() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', border: '4px solid green', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', border: '4px solid rgba(255, 255, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <img src={randomVideo.userProfileImage} alt={`${randomVideo.userName} profile`} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover' }} />
+                    <Image
+                      src={randomVideo.userProfileImage}
+                      alt={`${randomVideo.userName} profile`}
+                      width={44}
+                      height={44}
+                      style={{ borderRadius: '50%', objectFit: 'cover' }}
+                    />
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <span style={{ fontWeight: 'bold', fontSize: 20 }}>{randomVideo.userName}</span>
+                  <AnimatedText text={userNameAnim} isLoading={isLoading} />
                   <span style={{ fontWeight: 'normal', fontSize: 12, opacity: 0.7 }}>
                     <TimeAgoCustom timestamp={randomVideo.publishedDateTime} />
                   </span>
@@ -153,7 +205,7 @@ export default function TelaInicio() {
                 distance={distance}
               />
 
-              <span style={{ fontSize: 14 }}>{randomVideo.artistSongName}</span>
+              <AnimatedText text={randomVideo.artistSongName} isLoading={isLoading} />
             </>
           )}
         </div>

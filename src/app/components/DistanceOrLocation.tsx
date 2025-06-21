@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { MapPin, ArrowRight } from 'lucide-react'
+import AnimatedText from 'src/app/components/AnimatedTextProps'
 
 type DistanceOrLocationProps = {
   latitude?: number
@@ -26,6 +27,10 @@ function getRandomString(length: number) {
   return result
 }
 
+function getRandomDistance() {
+  return (Math.random() * 999).toFixed(1) // Exemplo: "452.3"
+}
+
 export default function DistanceOrLocation({ latitude, longitude, distance }: DistanceOrLocationProps) {
   const [address, setAddress] = useState<Address | null>(null)
   const [loading, setLoading] = useState(false)
@@ -33,12 +38,12 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
   const [loadingCharIndex, setLoadingCharIndex] = useState(0)
   const [notLocated, setNotLocated] = useState(false)
 
-  // Estados para animação dos placeholders enquanto carrega
+  // Animações para placeholders enquanto carrega
   const [cityAnim, setCityAnim] = useState('')
   const [stateAnim, setStateAnim] = useState('')
   const [countryAnim, setCountryAnim] = useState('')
+  const [distanceAnim, setDistanceAnim] = useState('0.0')
 
-  // Estado para controle de piscar "não localizado"
   const [blink, setBlink] = useState(true)
 
   useEffect(() => {
@@ -50,19 +55,17 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
     setNotLocated(false)
     setLoadingCharIndex(0)
 
-    // Intervalo para o loading spinner (carregando localização)
     const loadingInterval = setInterval(() => {
       setLoadingCharIndex(prev => (prev + 1) % loadingChars.length)
     }, 150)
 
-    // Intervalo para atualizar os placeholders de city, state e country
     const placeholderInterval = setInterval(() => {
       setCityAnim(getRandomString(6))
       setStateAnim(getRandomString(6))
       setCountryAnim(getRandomString(6))
+      setDistanceAnim(getRandomDistance())
     }, 150)
 
-    // Timeout para mostrar "não localizado" após 3 segundos
     const timeoutNotLocated = setTimeout(() => {
       setNotLocated(true)
       setLoading(false)
@@ -89,7 +92,7 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
         clearTimeout(timeoutNotLocated)
         clearInterval(loadingInterval)
         clearInterval(placeholderInterval)
-      } catch (err) {
+      } catch {
         setError('Não foi possível obter o endereço')
         setLoading(false)
         clearTimeout(timeoutNotLocated)
@@ -107,7 +110,6 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
     }
   }, [latitude, longitude])
 
-  // Efeito para piscar "não localizado" quando estiver nessa condição
   useEffect(() => {
     if (!notLocated) return
 
@@ -123,32 +125,40 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
       {latitude !== undefined && longitude !== undefined && (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <MapPin size={16} color="red" />
-        {loading && !notLocated && (
-  <div>
-    <div>Procurando localização {loadingChars[loadingCharIndex]}</div>
-    <div style={{ fontFamily: 'monospace', display: 'flex', gap: 8 }}>
-      <span>{cityAnim}</span>
-      <span>{stateAnim}</span>
-      <span>{countryAnim}</span>
-    </div>
-  </div>
-)}
+
+          {loading && !notLocated && (
+            <div>
+              <div>Procurando localização {loadingChars[loadingCharIndex]}</div>
+              <div style={{ fontFamily: 'monospace', display: 'flex', gap: 8 }}>
+                <AnimatedText text={cityAnim} isLoading />
+                <AnimatedText text={stateAnim} isLoading />
+                <AnimatedText text={countryAnim} isLoading />
+                <AnimatedText text={`${distanceAnim} km`} isLoading isNumberAnimation /> {/* Distância animada */}
+              </div>
+            </div>
+          )}
 
           {notLocated && (
             <span style={{ opacity: blink ? 1 : 0, transition: 'opacity 0.3s' }}>
               não localizado
             </span>
           )}
+
           {error && <span>{error}</span>}
+
           {!loading && !error && address && (
             <>
               <span>
-                {address.city ? `${address.city}, ` : ''}
-                {address.state ? `${address.state}, ` : ''}
-                {address.country || ''}
+                {address.city ? <><AnimatedText text={address.city} isLoading={false} />, </> : null}
+                {address.state ? <><AnimatedText text={address.state} isLoading={false} />, </> : null}
+                <AnimatedText text={address.country || ''} isLoading={false} />
               </span>
               {distance !== null && distance !== undefined && (
-                <span style={{ marginLeft: 8, whiteSpace: 'nowrap' }}> - {distance.toFixed(1)} km</span>
+                <AnimatedText
+                  text={` - ${distance.toFixed(1)} km`}
+                  isLoading={false}
+                  isNumberAnimation
+                />
               )}
               <ArrowRight size={16} style={{ marginLeft: 8 }} />
             </>

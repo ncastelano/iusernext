@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@/app/components/UserContext'
 
-export default function UserAvatar() {
+export default function IuserEnterLogin() {
   const { user } = useUser()
 
   const [showText, setShowText] = useState(false)
