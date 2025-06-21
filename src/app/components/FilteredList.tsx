@@ -150,9 +150,9 @@ export function FilteredList({
 
             return (
               <div
-                key={video.id}
+                key={video.videoID}
                 onClick={() => {
-                  onSelectVideo(video.id)
+                  onSelectVideo(video.videoID)
                   if (video.latitude && video.longitude) {
                     goToLocation({ lat: video.latitude, lng: video.longitude })
                   }
