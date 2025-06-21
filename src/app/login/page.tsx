@@ -6,17 +6,19 @@ import {
   signInWithPopup,
   signInWithRedirect,
   GoogleAuthProvider,
-  getRedirectResult,
 } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useUser } from '@/app/components/UserContext';
 
 export default function LoginPage() {
+  const { user, loading } = useUser();
+  const router = useRouter();
+
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const router = useRouter();
 
   // Detecta se está em PWA ou mobile
   const isMobileOrPWA = () => {
@@ -27,18 +29,12 @@ export default function LoginPage() {
     );
   };
 
-  // Redirecionamento após login via Google em mobile/PWA
+  // Redireciona para /inicio se o usuário estiver logado e carregado
   useEffect(() => {
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result?.user) {
-          router.push('/inicio');
-        }
-      })
-      .catch((error) => {
-        console.error('Erro no redirect do Google:', error);
-      });
-  }, [router]); // ✅ adiciona router
+    if (!loading && user) {
+      router.push('/inicio');
+    }
+  }, [user, loading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,8 +54,10 @@ export default function LoginPage() {
     try {
       const provider = new GoogleAuthProvider();
       if (isMobileOrPWA()) {
+        // Em mobile/PWA o redirect é usado, o resultado será tratado pelo UserProvider
         await signInWithRedirect(auth, provider);
       } else {
+        // Em desktop popup é suficiente, redireciona logo após login
         await signInWithPopup(auth, provider);
         router.push('/inicio');
       }
@@ -71,6 +69,23 @@ export default function LoginPage() {
       }
     }
   };
+
+  if (loading) {
+    return (
+      <main
+        style={{
+          minHeight: '100vh',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          background: 'linear-gradient(to bottom right, #0e0e0e, #1a1a1a)',
+          color: '#ccc',
+        }}
+      >
+        <p>Carregando...</p>
+      </main>
+    );
+  }
 
   return (
     <main
