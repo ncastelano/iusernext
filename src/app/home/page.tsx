@@ -84,14 +84,9 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
 }, [])
 
   useEffect(() => {
-  async function fetchData() {
-    try {
-      const videoSnapshot = await getDocs(collection(db, 'videos'))
-
-      const videoData: Video[] = videoSnapshot.docs
-  .map((doc) => {
-    const data = doc.data()
-    if (
+  // Função para garantir que o objeto tem formato de Video
+  function isVideo(data: any): data is Video {
+    return (
       typeof data.videoID === 'string' &&
       typeof data.userProfileImage === 'string' &&
       typeof data.userName === 'string' &&
@@ -99,37 +94,50 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
       typeof data.latitude === 'number' &&
       typeof data.longitude === 'number' &&
       typeof data.artistSongName === 'string' &&
-      typeof data.thumbnailUrl === 'string' && // 👈 novo campo
-      data.publishedDateTime &&                 // 👈 novo campo
-      data.createdAt
-    ) {
-      return {
-        id: doc.id,
-        videoID: data.videoID,
-        userProfileImage: data.userProfileImage,
-        userName: data.userName,
-        userID: data.userID,
-        latitude: data.latitude,
-        longitude: data.longitude,
-        artistSongName: data.artistSongName,
-        isFlash: data.isFlash,
-        isStore: data.isStore,
-        isPlace: data.isPlace,
-        isProduct: data.isProduct,
-        createdAt: data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt,
-        thumbnailUrl: data.thumbnailUrl,
-        publishedDateTime: data.publishedDateTime.toDate ? data.publishedDateTime.toDate() : data.publishedDateTime,
-      } as Video
-    }
-    return null
-  })
-  .filter(Boolean) as Video[]
+      typeof data.thumbnailUrl === 'string' &&
+      data.publishedDateTime !== undefined &&
+      data.createdAt !== undefined
+    )
+  }
 
+  async function fetchData() {
+    try {
+      const videoSnapshot = await getDocs(collection(db, 'videos'))
+
+      const videoData: Video[] = videoSnapshot.docs
+        .map((doc) => {
+          const data = doc.data()
+
+          if (isVideo(data)) {
+            const rawData = doc.data() as any;
+            return {
+              id: doc.id,
+              videoID: data.videoID,
+              userProfileImage: data.userProfileImage,
+              userName: data.userName,
+              userID: data.userID,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              artistSongName: data.artistSongName,
+              isFlash: data.isFlash ?? false,
+              isStore: data.isStore ?? false,
+              isPlace: data.isPlace ?? false,
+              isProduct: data.isProduct ?? false,
+            
+              thumbnailUrl: data.thumbnailUrl,
+             publishedDateTime:
+  typeof rawData.publishedDateTime === 'object' && rawData.publishedDateTime !== null && 'toDate' in rawData.publishedDateTime
+    ? rawData.publishedDateTime.toDate()
+    : new Date(rawData.publishedDateTime),
+            } as Video
+          }
+
+          // Caso não seja um vídeo válido, retorna null
+          return null
+        })
+        .filter((v): v is Video => v !== null) // Filtra só os que são Videos
 
       setVideos(videoData)
-
-      // ... user fetch igual como já está no seu código ...
-
     } catch (error) {
       console.error('Erro ao buscar dados:', error)
     } finally {
@@ -139,6 +147,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
 
   fetchData()
 }, [goToMyLocation])
+
 
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
