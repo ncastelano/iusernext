@@ -25,7 +25,8 @@ const containerStyle = {
 
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
-  const [users, setUsers] = useState<User[]>([])
+ const [users] = useState<User[]>([])
+
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
