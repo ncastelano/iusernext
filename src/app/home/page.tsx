@@ -83,44 +83,57 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
 }, [])
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const videoSnapshot = await getDocs(collection(db, 'videos'))
-        const videoData: Video[] = videoSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Video[]
-        setVideos(videoData)
+  async function fetchData() {
+    try {
+      const videoSnapshot = await getDocs(collection(db, 'videos'))
 
-        const userSnapshot = await getDocs(collection(db, 'users'))
-        const userData: User[] = userSnapshot.docs
-          .map((doc) => {
-            const data = doc.data()
-            if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
-              return {
-                id: doc.id,
-                name: data.name || '',
-                email: data.email || '',
-                image: data.image || '',
-                latitude: data.latitude,
-                longitude: data.longitude,
-              }
-            }
-            return null
-          })
-          .filter(Boolean) as User[]
-        setUsers(userData)
+      const videoData: Video[] = videoSnapshot.docs
+        .map((doc) => {
+          const data = doc.data()
+          if (
+            typeof data.videoID === 'string' &&
+            typeof data.userProfileImage === 'string' &&
+            typeof data.userName === 'string' &&
+            typeof data.userID === 'string' &&
+            typeof data.latitude === 'number' &&
+            typeof data.longitude === 'number' &&
+            typeof data.artistSongName === 'string' &&
+            data.createdAt
+          ) {
+            return {
+              id: doc.id,
+              videoID: data.videoID,
+              userProfileImage: data.userProfileImage,
+              userName: data.userName,
+              userID: data.userID,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              artistSongName: data.artistSongName,
+              isFlash: data.isFlash,
+              isStore: data.isStore,
+              isPlace: data.isPlace,
+              isProduct: data.isProduct,
+              createdAt: data.createdAt.toDate ? data.createdAt.toDate() : data.createdAt,
+            } as Video
+          }
+          return null
+        })
+        .filter(Boolean) as Video[]
 
-        goToMyLocation()
-      } catch (error) {
-        console.error('Erro ao buscar dados:', error)
-      } finally {
-        setLoading(false)
-      }
+      setVideos(videoData)
+
+      // ... user fetch igual como já está no seu código ...
+
+    } catch (error) {
+      console.error('Erro ao buscar dados:', error)
+    } finally {
+      setLoading(false)
     }
+  }
 
-    fetchData()
-  }, [goToMyLocation])
+  fetchData()
+}, [goToMyLocation])
+
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
@@ -242,13 +255,13 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         >
           {filteredVideos.map((video) => (
             <OverlayView
-              key={video.id}
+              key={video.videoID}
               position={{ lat: video.latitude!, lng: video.longitude! }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
-                <VideoMarker video={video} onClick={() => setSelectedVideoId(video.id)} />
-                {selectedVideoId === video.id && (
+                <VideoMarker video={video} onClick={() => setSelectedVideoId(video.videoID)} />
+                {selectedVideoId === video.videoID && (
                   <OverlayView
                     position={{ lat: video.latitude!, lng: video.longitude! }}
                     mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
