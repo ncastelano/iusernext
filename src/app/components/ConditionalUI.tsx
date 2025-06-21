@@ -2,7 +2,6 @@
 
 import { usePathname } from 'next/navigation'
 import Navbar from './Navbar'
-import UserAvatar from './IuserEnterLogin'
 import IuserEnterLogin from './IuserEnterLogin'
 
 export default function ConditionalUI() {

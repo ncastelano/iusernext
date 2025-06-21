@@ -3,14 +3,17 @@ import React, { useEffect, useState } from 'react'
 interface AnimatedTextProps {
   text: string
   isLoading: boolean
-  isNumberAnimation?: boolean // NOVO: Flag para dizer se é só número
+  isNumberAnimation?: boolean
 }
 
 const AnimatedText: React.FC<AnimatedTextProps> = ({ text, isLoading, isNumberAnimation = false }) => {
-  const chars = isNumberAnimation ? '0123456789.' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   const [displayText, setDisplayText] = useState('')
 
   useEffect(() => {
+    const chars = isNumberAnimation
+      ? '0123456789.'
+      : 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+
     if (!isLoading) {
       setDisplayText(text)
       return
