@@ -3,6 +3,8 @@
 import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { Dice5, Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle } from 'lucide-react'
 import { Video } from 'types/video'
+import Image from 'next/image'
+
 
 type RandomVideoProps = {
   video: Video | null
@@ -236,20 +238,28 @@ export default function RandomVideo({
         )}
       </div>
 
-      {/* Botão refresh */}
-      <div
-        style={{
-          position: 'absolute',
-          bottom: 30,
-          right: 20,
-          zIndex: 3,
-          color: '#fff',
-          cursor: 'pointer',
-        }}
-        onClick={onRefreshVideo}
-      >
-        <Dice5 size={28} />
-      </div>
+      {/* Botão refresh com SVG personalizado */}
+<div
+  style={{
+    position: 'absolute',
+    bottom: 30,
+    right: 20,
+    zIndex: 3,
+    cursor: 'pointer',
+  }}
+  onClick={onRefreshVideo}
+>
+  <Image
+  src="/icon/mudar-video-do-mesmo.svg"
+  alt="Mudar vídeo do mesmo perfil"
+  width={60}
+  height={60}
+  style={{ filter: 'invert(1)' }}
+  unoptimized
+/>
+
+</div>
+
     </div>
   )
 }
