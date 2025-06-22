@@ -18,6 +18,13 @@ export default function Navbar() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0)
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -30,6 +37,12 @@ export default function Navbar() {
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
+
+  const getIconSize = () => {
+    if (windowWidth < 500) return 30
+    if (windowWidth >= 500 && windowWidth < 900) return 90
+    return 120
+  }
 
   const buttons = [
     { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
@@ -59,7 +72,7 @@ export default function Navbar() {
       left: activeButton.offsetLeft,
       width: activeButton.offsetWidth,
     })
-  }, [activeIndex])
+  }, [activeIndex, windowWidth])
 
   const navButtonStyle = {
     backgroundColor: 'transparent',
@@ -86,7 +99,7 @@ export default function Navbar() {
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: 'transparent',
-        padding: '10px 20px',    // ⬅️ Leve ajuste de padding lateral para ajudar no espaço
+        padding: '10px 20px',
         borderRadius: '16px',
         display: 'flex',
         gap: '14px',
@@ -94,8 +107,8 @@ export default function Navbar() {
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
-        width: '90%',             // ⬅️ Responsivo: Ocupa até 90% da tela
-        maxWidth: '600px',        // ⬅️ Limita o tamanho máximo (não fica gigante em telas largas)
+        width: '90%',
+        maxWidth: '600px',
       }}
       ref={containerRef}
     >
@@ -123,7 +136,7 @@ export default function Navbar() {
 
         return (
           <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
-            <Icon size={24} color="#fff" />
+            <Icon size={getIconSize()} color="#fff" />
           </button>
         )
       })}
