@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import {
   signInWithEmailAndPassword,
-  signInWithPopup,
   signInWithRedirect,
   GoogleAuthProvider,
 } from 'firebase/auth';
@@ -20,22 +19,12 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
 
-  // Detecta se está em PWA ou mobile
-  const isMobileOrPWA = () => {
-    return (
-      typeof window !== 'undefined' &&
-      (window.matchMedia('(display-mode: standalone)').matches ||
-        /android|iphone|ipad|ipod/i.test(navigator.userAgent))
-    );
-  };
-
-  // Redireciona para /inicio se o usuário estiver logado e carregado
- useEffect(() => {
-  if (!loading && user) {
-    router.replace('/inicio');  // replace evita criar um passo a mais no histórico
-  }
-}, [user, loading, router]);
-
+  // Redireciona para /inicio se o usuário já estiver logado
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace('/inicio');
+    }
+  }, [user, loading, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,14 +43,7 @@ export default function LoginPage() {
   const handleGoogleLogin = async () => {
     try {
       const provider = new GoogleAuthProvider();
-      if (isMobileOrPWA()) {
-        // Em mobile/PWA o redirect é usado, o resultado será tratado pelo UserProvider
-        await signInWithRedirect(auth, provider);
-      } else {
-        // Em desktop popup é suficiente, redireciona logo após login
-        await signInWithPopup(auth, provider);
-        router.push('/inicio');
-      }
+      await signInWithRedirect(auth, provider);
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(`Erro ao entrar com Google: ${error.message}`);
