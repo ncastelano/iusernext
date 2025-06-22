@@ -1,70 +1,80 @@
 'use client'
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { auth } from '@/lib/firebase'
-import { onAuthStateChanged, getRedirectResult, User as FirebaseUser } from 'firebase/auth'
-import { User } from 'types/user' // 👉 Aqui é o seu User, com image, latitude etc.
-import { getUserFromFirestore } from 'src/app/components/GetUserFromFirestore' // 👉 Exemplo de função para buscar Firestore (ajuste ao seu)
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, getRedirectResult, User as FirebaseUser } from 'firebase/auth';
+import { User } from 'types/user';
+import { getUserFromFirestore } from 'src/app/components/GetUserFromFirestore';
 
 interface UserContextType {
-  user: User | null
-  loading: boolean
+  user: User | null;
+  loading: boolean;
 }
 
 const UserContext = createContext<UserContextType>({
   user: null,
   loading: true,
-})
+});
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   async function loadUser(firebaseUser: FirebaseUser) {
     try {
-      const data = await getUserFromFirestore(firebaseUser.uid) // 👈 Você busca o perfil do Firestore
+      const data = await getUserFromFirestore(firebaseUser.uid);
       if (data) {
         setUser({
           uid: firebaseUser.uid,
           email: firebaseUser.email ?? '',
           name: data.name,
-          username: data.username ?? null,
+          username: data.username ?? '',
           image: data.image,
           latitude: data.latitude,
           longitude: data.longitude,
           visible: data.visible,
-        })
+        });
       } else {
-        setUser(null)
+        setUser(null);
       }
     } catch (err) {
-      console.error('Erro ao buscar perfil do usuário:', err)
-      setUser(null)
+      console.error('Erro ao buscar perfil do usuário:', err);
+      setUser(null);
     }
   }
 
   useEffect(() => {
-    getRedirectResult(auth).then((result) => {
-      if (result?.user) loadUser(result.user)
-    })
+    let unsubscribe: () => void;
 
-    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        loadUser(firebaseUser)
-      } else {
-        setUser(null)
+    const checkRedirectAndAuth = async () => {
+      try {
+        await getRedirectResult(auth);
+      } catch (error) {
+        console.error('Erro ao obter resultado de redirect:', error);
       }
-      setLoading(false)
-    })
 
-    return () => unsubscribe()
-  }, [])
+      unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+        if (firebaseUser) {
+          loadUser(firebaseUser);
+        } else {
+          setUser(null);
+        }
+        setLoading(false);
+      });
+    };
+
+    checkRedirectAndAuth();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
+  }, []);
 
   return (
     <UserContext.Provider value={{ user, loading }}>
       {children}
     </UserContext.Provider>
-  )
+  );
 }
 
-export const useUser = () => useContext(UserContext)
+export const useUser = () => useContext(UserContext);
