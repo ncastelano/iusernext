@@ -86,7 +86,7 @@ export default function Navbar() {
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: 'transparent',
-        padding: '10px 75px',
+        padding: '10px 20px',    // ⬅️ Leve ajuste de padding lateral para ajudar no espaço
         borderRadius: '16px',
         display: 'flex',
         gap: '14px',
@@ -94,6 +94,8 @@ export default function Navbar() {
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
+        width: '90%',             // ⬅️ Responsivo: Ocupa até 90% da tela
+        maxWidth: '600px',        // ⬅️ Limita o tamanho máximo (não fica gigante em telas largas)
       }}
       ref={containerRef}
     >
