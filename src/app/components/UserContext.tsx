@@ -1,107 +1,49 @@
-'use client'
+'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { auth, db } from '@/lib/firebase'
-import { doc, getDoc } from 'firebase/firestore'
-import { onAuthStateChanged, getRedirectResult, User as FirebaseUser } from 'firebase/auth'
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { auth } from '@/lib/firebase';
+import { User, onAuthStateChanged, getRedirectResult } from 'firebase/auth';
 
-type UserContextType = {
-  uid: string | null
-  email: string | null
-  name: string | null
-  username: string | null
-  image: string | null
-  latitude: number | null
-  longitude: number | null
-  visible: boolean
+interface UserContextType {
+  user: User | null;
+  loading: boolean;
 }
 
-type ContextValue = {
-  user: UserContextType | null
-  loading: boolean
-}
+const UserContext = createContext<UserContextType>({
+  user: null,
+  loading: true,
+});
 
-const UserContext = createContext<ContextValue>({ user: null, loading: true })
-
-export const UserProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<UserContextType | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  const fetchUserData = async (firebaseUser: FirebaseUser) => {
-    try {
-      const userRef = doc(db, 'users', firebaseUser.uid)
-      const snapshot = await getDoc(userRef)
-
-      if (snapshot.exists()) {
-        const data = snapshot.data()
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email || null,
-          name: data.name || null,
-          username: data.username || null,
-          image: data.image || null,
-          latitude: data.latitude ?? null,
-          longitude: data.longitude ?? null,
-          visible: data.visible ?? false,
-        })
-      } else {
-        setUser(null)
-      }
-    } catch (error) {
-      console.error('Erro ao buscar dados do Firestore:', error)
-      setUser(null)
-    }
-  }
+export function UserProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // 1. Primeiro: Verifica se houve login por redirect
-        const redirectResult = await getRedirectResult(auth)
-
-        if (redirectResult?.user) {
-          await fetchUserData(redirectResult.user)
-        } else if (auth.currentUser) {
-          // 2. Se não houve redirect, mas já tem um usuário logado
-          await fetchUserData(auth.currentUser)
-        } else {
-          setUser(null)
-        }
-      } catch (error) {
-        console.error('Erro ao processar resultado de redirect:', error)
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
-
-      // 3. Escuta mudanças futuras (ex: logout, login manual, etc)
-      const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (firebaseUser) {
-          await fetchUserData(firebaseUser)
-        } else {
-          setUser(null)
+    // Primeiro: Captura resultado do redirect (ex: login com Google em mobile/PWA)
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result?.user) {
+          setUser(result.user);
         }
       })
+      .catch((error) => {
+        console.error('Erro no getRedirectResult:', error);
+      });
 
-      return unsubscribe
-    }
+    // Segundo: Escuta mudanças de auth state (email/password, popup, etc)
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      setLoading(false);
+    });
 
-    const unsubscribePromise = initAuth()
-
-    return () => {
-      unsubscribePromise.then((unsubscribe) => {
-        if (typeof unsubscribe === 'function') {
-          unsubscribe()
-        }
-      })
-    }
-  }, [])
+    return () => unsubscribe();
+  }, []);
 
   return (
     <UserContext.Provider value={{ user, loading }}>
       {children}
     </UserContext.Provider>
-  )
+  );
 }
 
-export const useUser = () => useContext(UserContext)
+export const useUser = () => useContext(UserContext);
