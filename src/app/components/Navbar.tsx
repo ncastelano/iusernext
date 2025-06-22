@@ -6,57 +6,38 @@ import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Home, MapPin, Search, LogOut, Download } from 'lucide-react'
 
+// Definição manual do tipo BeforeInstallPromptEvent
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
+}
+
 export default function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
 
-  // Capturar o evento beforeinstallprompt
   useEffect(() => {
-    const handler = (e: any) => {
+    const handler = (e: Event) => {
+      const promptEvent = e as BeforeInstallPromptEvent
       e.preventDefault()
-      setDeferredPrompt(e)
+      setDeferredPrompt(promptEvent)
       setIsInstallable(true)
     }
 
     window.addEventListener('beforeinstallprompt', handler)
-
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
-
-  const handleInstallClick = async () => {
-    if (deferredPrompt) {
-      deferredPrompt.prompt()
-      const result = await deferredPrompt.userChoice
-      if (result.outcome === 'accepted') {
-        console.log('Usuário instalou o PWA')
-      } else {
-        console.log('Usuário recusou a instalação')
-      }
-      setDeferredPrompt(null)
-      setIsInstallable(false)
-    }
-  }
 
   const buttons = [
     { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
     { key: 'home', path: '/home', title: 'Mapa', Icon: MapPin },
     { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
+    ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
     { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
   ]
-
-  // Adiciona o botão de download dinamicamente
-  if (isInstallable) {
-    buttons.unshift({
-      key: 'install',
-      path: '',
-      title: 'Baixar',
-      Icon: Download,
-      onClick: handleInstallClick,
-    })
-  }
 
   const activeIndex = buttons.findIndex(btn => pathname === btn.path)
 
@@ -116,19 +97,30 @@ export default function Navbar() {
       }}
       ref={containerRef}
     >
-      {buttons.map(({ key, path, title, Icon, onClick }) => {
-        const handleClick =
+      {buttons.map(({ key, path, title, Icon }) => {
+        const onClick =
           key === 'logout'
             ? async () => {
                 await signOut(auth)
                 router.push('/login')
               }
             : key === 'install'
-            ? onClick
-            : () => router.push(path)
+            ? async () => {
+                if (deferredPrompt) {
+                  deferredPrompt.prompt()
+                  const result = await deferredPrompt.userChoice
+                  if (result.outcome === 'accepted') {
+                    setIsInstallable(false)
+                    setDeferredPrompt(null)
+                  }
+                }
+              }
+            : () => {
+                if (path) router.push(path)
+              }
 
         return (
-          <button key={key} onClick={handleClick} style={navButtonStyle} title={title}>
+          <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
             <Icon size={24} color="#fff" />
           </button>
         )
