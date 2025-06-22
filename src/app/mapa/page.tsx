@@ -109,6 +109,9 @@ export default function Mapa() {
   // Função para transformar doc.data() no tipo User corretamente
   const parseUser = (docId: string, docData: Partial<User>): User | null => {
     if (
+     typeof docData.username === 'string' &&
+      typeof docData.visible === 'boolean' &&
+      typeof docData.uid === 'string' &&
       typeof docData.latitude === 'number' &&
       typeof docData.longitude === 'number' &&
       typeof docData.name === 'string' &&
@@ -116,7 +119,9 @@ export default function Mapa() {
       typeof docData.image === 'string'
     ) {
       return {
-        id: docId,
+        visible: docData.visible,
+        username:docData.username,
+        uid: docData.uid,
         name: docData.name,
         email: docData.email,
         image: docData.image,
@@ -301,13 +306,13 @@ export default function Mapa() {
 
           {filteredUsers.map((user) => (
             <OverlayView
-              key={user.id}
+              key={user.uid}
               position={{ lat: user.latitude, lng: user.longitude }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
                 <div
-                  onClick={() => setSelectedUserId(user.id)}
+                  onClick={() => setSelectedUserId(user.uid)}
                   title={user.name}
                   style={{
                     width: 48,
@@ -323,14 +328,14 @@ export default function Mapa() {
                   tabIndex={0}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
-                      setSelectedUserId(user.id)
+                      setSelectedUserId(user.uid)
                     }
                   }}
                 >
                   <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
                 </div>
 
-                {selectedUserId === user.id && (
+                {selectedUserId === user.uid && (
                   <OverlayView
                     position={{ lat: user.latitude, lng: user.longitude }}
                     mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
