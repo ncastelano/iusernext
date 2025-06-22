@@ -1,7 +1,3 @@
-//mapa/page.tsx
-
-
-
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
@@ -33,7 +29,7 @@ export default function Mapa() {
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
   const [searchTerm, setSearchTerm] = useState('')
@@ -61,8 +57,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords
-          const location = { lat: latitude, lng: longitude }
-          goToLocationWithZoom(location)
+          goToLocationWithZoom({ lat: latitude, lng: longitude })
         },
         (error) => {
           console.error('Erro ao obter localização atual:', error)
@@ -74,28 +69,53 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
 
   // Detectar evento de instalação PWA
   useEffect(() => {
-  const handler = (e: Event) => {
-    e.preventDefault()
-    setDeferredPrompt(e as BeforeInstallPromptEvent)
-  }
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
+    }
 
-  window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('beforeinstallprompt', handler)
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
 
-  return () => {
-    window.removeEventListener('beforeinstallprompt', handler)
+  // Função para transformar doc.data() no tipo Video corretamente, sem usar doc.id
+  const parseVideo = (docData: any): Video | null => {
+    if (
+      typeof docData.videoID === 'string' &&
+      typeof docData.latitude === 'number' &&
+      typeof docData.longitude === 'number' &&
+      typeof docData.artistSongName === 'string'
+    ) {
+      return {
+        thumbnailUrl: docData.thumbnailUrl || '',
+        videoID: docData.videoID,
+        userProfileImage: docData.userProfileImage || '',
+        userName: docData.userName || '',
+        userID: docData.userID || '',
+        artistSongName: docData.artistSongName,
+        latitude: docData.latitude,
+        longitude: docData.longitude,
+        isFlash: !!docData.isFlash,
+        isStore: !!docData.isStore,
+        isPlace: !!docData.isPlace,
+        isProduct: !!docData.isProduct,
+      }
+    }
+    return null
   }
-}, [])
 
   useEffect(() => {
     async function fetchData() {
+      setLoading(true)
       try {
+        // Buscar vídeos
         const videoSnapshot = await getDocs(collection(db, 'videos'))
-        const videoData: Video[] = videoSnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Video[]
+        const videoData: Video[] = videoSnapshot.docs
+          .map((doc) => parseVideo(doc.data()))  // só doc.data(), sem doc.id
+          .filter((v): v is Video => v !== null)
         setVideos(videoData)
 
+        // Buscar usuários
         const userSnapshot = await getDocs(collection(db, 'users'))
         const userData: User[] = userSnapshot.docs
           .map((doc) => {
@@ -112,7 +132,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
             }
             return null
           })
-          .filter(Boolean) as User[]
+          .filter((u): u is User => u !== null)
         setUsers(userData)
 
         goToMyLocation()
@@ -129,6 +149,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
 
+  // Filtrar vídeos com lat/lng válidos
   const videosWithLocation = videos.filter(
     (video) => typeof video.latitude === 'number' && typeof video.longitude === 'number'
   )
@@ -142,7 +163,7 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
       (selectedFilter === 'place' && video.isPlace) ||
       (selectedFilter === 'product' && video.isProduct)
 
-    const matchesSearch = video.artistSongName?.toLowerCase().includes(normalizedSearch)
+    const matchesSearch = video.artistSongName.toLowerCase().includes(normalizedSearch)
 
     return matchesFilter && matchesSearch
   })
@@ -189,6 +210,8 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           transition: 'all 0.2s ease-in-out',
         }}
+        aria-label="Ir para minha localização"
+        title="Ir para minha localização"
       >
         📍 Minha localização
       </button>
@@ -219,6 +242,8 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
             cursor: 'pointer',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
           }}
+          aria-label="Instalar iUser"
+          title="Instalar iUser"
         >
           📲 Instalar iUser
         </button>
@@ -246,15 +271,15 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         >
           {filteredVideos.map((video) => (
             <OverlayView
-              key={video.id}
-              position={{ lat: video.latitude!, lng: video.longitude! }}
+              key={video.videoID}
+              position={{ lat: video.latitude, lng: video.longitude }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
-                <VideoMarker video={video} onClick={() => setSelectedVideoId(video.id)} />
-                {selectedVideoId === video.id && (
+                <VideoMarker video={video} onClick={() => setSelectedVideoId(video.videoID)} />
+                {selectedVideoId === video.videoID && (
                   <OverlayView
-                    position={{ lat: video.latitude!, lng: video.longitude! }}
+                    position={{ lat: video.latitude, lng: video.longitude }}
                     mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
                   >
                     <CustomInfoWindowVideo video={video} onClose={() => setSelectedVideoId(null)} />
@@ -283,6 +308,13 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
                     boxShadow: '0 0 5px rgba(0,0,0,0.3)',
                     cursor: 'pointer',
                     backgroundColor: '#fff',
+                  }}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      setSelectedUserId(user.id)
+                    }
                   }}
                 >
                   <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
