@@ -1,11 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
-  signInWithEmailAndPassword,
-  signInWithRedirect,
-  GoogleAuthProvider,
-} from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -36,19 +32,6 @@ export default function LoginPage() {
         alert(error.message);
       } else {
         alert('Erro inesperado ao fazer login.');
-      }
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    try {
-      const provider = new GoogleAuthProvider();
-      await signInWithRedirect(auth, provider);
-    } catch (error: unknown) {
-      if (error instanceof Error) {
-        alert(`Erro ao entrar com Google: ${error.message}`);
-      } else {
-        alert('Erro desconhecido ao entrar com Google.');
       }
     }
   };
@@ -130,12 +113,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        <hr style={{ margin: '16px 0', borderColor: '#444' }} />
-
-        <button onClick={handleGoogleLogin} style={googleButtonStyle}>
-          <span style={{ marginRight: 8 }}>🔵</span> Entrar com Google
-        </button>
-
         <p style={{ marginTop: 20, fontSize: 14, color: '#aaa' }}>
           Não tem uma conta?{' '}
           <Link href="/cadastro" style={{ color: '#4ea1f3', textDecoration: 'underline' }}>
@@ -170,14 +147,4 @@ const buttonStyle = {
   fontSize: '14px',
   boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
   transition: 'all 0.2s ease-in-out',
-};
-
-const googleButtonStyle = {
-  ...buttonStyle,
-  backgroundColor: '#fff',
-  color: '#000',
-  border: '1px solid #ccc',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
 };

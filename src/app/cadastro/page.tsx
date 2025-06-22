@@ -1,31 +1,32 @@
-'use client'
+'use client';
 
-import { useState } from 'react'
-import { auth, db, storage } from '@/lib/firebase'
-import { createUserWithEmailAndPassword } from 'firebase/auth'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
-import { collection, doc, setDoc } from 'firebase/firestore'
-import { useRouter } from 'next/navigation'
+import { useState } from 'react';
+import { auth, db, storage } from '@/lib/firebase';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { collection, doc, setDoc } from 'firebase/firestore';
+import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import Image from 'next/image';
 
 export default function CadastroPage() {
-  const [email, setEmail] = useState('')
-  const [senha, setSenha] = useState('')
-  const [name, setName] = useState('')
-  const [imageFile, setImageFile] = useState<File | null>(null)
-  const router = useRouter()
-
-  const handleCadastro = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const [email, setEmail] = useState('');
+  const [senha, setSenha] = useState('');
+  const [name, setName] = useState('');
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [previewURL, setPreviewURL] = useState<string | null>(null);
+    const handleCadastro = async (e: React.FormEvent) => {
+    e.preventDefault();
     try {
-      const cred = await createUserWithEmailAndPassword(auth, email, senha)
-      const uid = cred.user.uid
+      const cred = await createUserWithEmailAndPassword(auth, email, senha);
+      const uid = cred.user.uid;
 
-      let imageURL = ''
+      let imageURL = '';
 
       if (imageFile) {
-        const imageRef = ref(storage, `users/${uid}/profile.jpg`)
-        await uploadBytes(imageRef, imageFile)
-        imageURL = await getDownloadURL(imageRef)
+        const imageRef = ref(storage, `users/${uid}/profile.jpg`);
+        await uploadBytes(imageRef, imageFile);
+        imageURL = await getDownloadURL(imageRef);
       }
 
       await setDoc(doc(collection(db, 'users'), uid), {
@@ -33,17 +34,45 @@ export default function CadastroPage() {
         name,
         email,
         image: imageURL,
-      })
+      });
 
-      router.push('/home')
+      router.push('/inicio');
     } catch (error: unknown) {
       if (error instanceof Error) {
-        alert(error.message)
+        alert(error.message);
       } else {
-        alert('Erro desconhecido ao cadastrar usuário.')
+        alert('Erro desconhecido ao cadastrar usuário.');
       }
     }
-  }
+  };
+  
+  const router = useRouter();
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+
+    if (file) {
+      // Limitar tamanho em 6MB (6 * 1024 * 1024)
+      if (file.size > 6 * 1024 * 1024) {
+        alert('Arquivo muito grande! Máximo permitido: 6MB.');
+        e.target.value = ''; // reset input
+        setImageFile(null);
+        setPreviewURL(null);
+        return;
+      }
+
+      setImageFile(file);
+
+      // Criar preview
+      const url = URL.createObjectURL(file);
+      setPreviewURL(url);
+    } else {
+      setImageFile(null);
+      setPreviewURL(null);
+    }
+  };
+
+  // seu handleCadastro (não modifiquei)
 
   return (
     <main
@@ -52,36 +81,40 @@ export default function CadastroPage() {
         display: 'flex',
         justifyContent: 'center',
         alignItems: 'center',
-        background: 'linear-gradient(135deg, #1f2937 0%, #111827 100%)',
-        padding: 16,
+        background: 'linear-gradient(to bottom right, #0e0e0e, #1a1a1a)',
+        padding: '16px',
       }}
     >
       <div
         style={{
-          backgroundColor: '#22272e',
-          padding: 40,
+          padding: 24,
           borderRadius: 16,
-          boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          backgroundColor: '#1a1a1a',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
           width: '100%',
-          maxWidth: 420,
-          color: 'white',
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          maxWidth: 400,
+          display: 'flex',
+          flexDirection: 'column',
+          textAlign: 'center',
+          color: '#ccc',
         }}
       >
-        <h1
-          style={{
-            marginBottom: 32,
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            letterSpacing: '1.5px',
-            color: '#4f46e5',
-          }}
-        >
-          Criar Conta
-        </h1>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
+          {/* Label como botão circular */}
+          <label htmlFor="avatarInput" style={avatarLabelStyle}>
+            {previewURL ? (
+              <img
+                src={previewURL}
+                alt="Preview Avatar"
+                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+              />
+            ) : (
+              'Escolher Avatar'
+            )}
+          </label>
+        </div>
 
-        <form onSubmit={handleCadastro} style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+        <form onSubmit={handleCadastro} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             type="text"
             placeholder="Nome"
@@ -89,10 +122,7 @@ export default function CadastroPage() {
             onChange={(e) => setName(e.target.value)}
             required
             style={inputStyle}
-            onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
-            onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
-
           <input
             type="email"
             placeholder="E-mail"
@@ -100,10 +130,7 @@ export default function CadastroPage() {
             onChange={(e) => setEmail(e.target.value)}
             required
             style={inputStyle}
-            onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
-            onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
-
           <input
             type="password"
             placeholder="Senha"
@@ -111,61 +138,74 @@ export default function CadastroPage() {
             onChange={(e) => setSenha(e.target.value)}
             required
             style={inputStyle}
-            onFocus={e => (e.currentTarget.style.backgroundColor = '#3c4653')}
-            onBlur={e => (e.currentTarget.style.backgroundColor = '#323b47')}
           />
 
+          {/* Input de arquivo escondido */}
           <input
+            id="avatarInput"
             type="file"
-            accept="image/*"
-            onChange={(e) => setImageFile(e.target.files?.[0] ?? null)}
+            accept="image/gif,image/bmp,image/jpeg,image/png,image/jpg"
+            onChange={handleImageChange}
+            style={{ display: 'none' }}
             required
-            style={{
-              color: 'white',
-              fontSize: 14,
-              borderRadius: 10,
-              backgroundColor: '#323b47',
-              padding: 8,
-              cursor: 'pointer',
-              boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
-              border: 'none',
-            }}
           />
 
-          <button
-            type="submit"
-            style={{
-              marginTop: 12,
-              padding: 14,
-              borderRadius: 12,
-              border: 'none',
-              backgroundColor: '#4f46e5',
-              color: 'white',
-              fontSize: 18,
-              fontWeight: 'bold',
-              cursor: 'pointer',
-              boxShadow: '0 6px 15px #4f46e5',
-              transition: 'background-color 0.3s',
-            }}
-            onMouseEnter={e => (e.currentTarget.style.backgroundColor = '#4338ca')}
-            onMouseLeave={e => (e.currentTarget.style.backgroundColor = '#4f46e5')}
-          >
+         
+
+          <button type="submit" style={buttonStyle}>
             Cadastrar
           </button>
         </form>
+
+        <p style={{ marginTop: 20, fontSize: 14, color: '#aaa' }}>
+          Já tem uma conta?{' '}
+          <Link href="/login" style={{ color: '#4ea1f3', textDecoration: 'underline' }}>
+            Entrar
+          </Link>
+        </p>
       </div>
     </main>
-  )
+  );
 }
 
-const inputStyle: React.CSSProperties = {
-  padding: 14,
-  borderRadius: 10,
-  border: 'none',
-  backgroundColor: '#323b47',
-  color: 'white',
+// Estilo do círculo do avatar (200x200 px para igualar logo)
+const avatarLabelStyle: React.CSSProperties = {
+  width: 200,
+  height: 200,
+  borderRadius: '50%',
+  backgroundColor: '#2a2a2a',
+  border: '2px dashed #444',
+  color: '#ccc',
   fontSize: 16,
-  boxShadow: 'inset 0 0 6px rgba(255, 255, 255, 0.1)',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  cursor: 'pointer',
+  userSelect: 'none',
+  margin: '0 auto',
+  transition: 'background-color 0.2s',
+};
+
+const inputStyle = {
+  width: '100%',
+  padding: '12px',
+  backgroundColor: '#2a2a2a',
+  border: '1px solid #444',
+  borderRadius: 8,
+  color: '#ccc',
+  fontSize: '14px',
   outline: 'none',
-  transition: 'background-color 0.3s',
-}
+} as React.CSSProperties;
+
+const buttonStyle = {
+  padding: '12px',
+  backgroundColor: '#1a1a1a',
+  color: '#ccc',
+  border: '1px solid #444',
+  borderRadius: 8,
+  cursor: 'pointer',
+  fontWeight: 500,
+  fontSize: '14px',
+  boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+  transition: 'all 0.2s ease-in-out',
+} as React.CSSProperties;
