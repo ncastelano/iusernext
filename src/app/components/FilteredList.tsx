@@ -88,10 +88,10 @@ export function FilteredList({
       {items.map((item) =>
         filter === 'users' ? (
           <div
-            key={(item as User).id}
+            key={(item as User).uid}
             onClick={() => {
               const user = item as User
-              onSelectUser(user.id)
+              onSelectUser(user.uid)
               if (user.latitude && user.longitude) {
                 goToLocation({ lat: user.latitude, lng: user.longitude })
               }
