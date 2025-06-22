@@ -78,8 +78,8 @@ export default function Mapa() {
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
 
-  // Função para transformar doc.data() no tipo Video corretamente, sem usar doc.id
-  const parseVideo = (docData: any): Video | null => {
+  // Função para transformar doc.data() no tipo Video corretamente
+  const parseVideo = (docData: Partial<Video>): Video | null => {
     if (
       typeof docData.videoID === 'string' &&
       typeof docData.latitude === 'number' &&
@@ -99,6 +99,29 @@ export default function Mapa() {
         isStore: !!docData.isStore,
         isPlace: !!docData.isPlace,
         isProduct: !!docData.isProduct,
+        publishedDateTime: docData.publishedDateTime,
+        videoUrl: docData.videoUrl,
+      }
+    }
+    return null
+  }
+
+  // Função para transformar doc.data() no tipo User corretamente
+  const parseUser = (docId: string, docData: Partial<User>): User | null => {
+    if (
+      typeof docData.latitude === 'number' &&
+      typeof docData.longitude === 'number' &&
+      typeof docData.name === 'string' &&
+      typeof docData.email === 'string' &&
+      typeof docData.image === 'string'
+    ) {
+      return {
+        id: docId,
+        name: docData.name,
+        email: docData.email,
+        image: docData.image,
+        latitude: docData.latitude,
+        longitude: docData.longitude,
       }
     }
     return null
@@ -111,27 +134,14 @@ export default function Mapa() {
         // Buscar vídeos
         const videoSnapshot = await getDocs(collection(db, 'videos'))
         const videoData: Video[] = videoSnapshot.docs
-          .map((doc) => parseVideo(doc.data()))  // só doc.data(), sem doc.id
+          .map((doc) => parseVideo(doc.data()))
           .filter((v): v is Video => v !== null)
         setVideos(videoData)
 
         // Buscar usuários
         const userSnapshot = await getDocs(collection(db, 'users'))
         const userData: User[] = userSnapshot.docs
-          .map((doc) => {
-            const data = doc.data()
-            if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
-              return {
-                id: doc.id,
-                name: data.name || '',
-                email: data.email || '',
-                image: data.image || '',
-                latitude: data.latitude,
-                longitude: data.longitude,
-              }
-            }
-            return null
-          })
+          .map((doc) => parseUser(doc.id, doc.data()))
           .filter((u): u is User => u !== null)
         setUsers(userData)
 
