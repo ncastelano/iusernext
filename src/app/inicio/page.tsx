@@ -46,30 +46,36 @@ export default function TelaInicio() {
   }
 
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      position => {
-        setUserLocation({
-          lat: position.coords.latitude,
-          lon: position.coords.longitude,
-        })
-      },
-      error => {
-        console.error('Erro ao obter localização:', error)
-      }
-    )
-  }, [])
+  navigator.geolocation.getCurrentPosition(
+    position => {
+      setUserLocation({
+        lat: position.coords.latitude,
+        lon: position.coords.longitude,
+      });
+    },
+    error => {
+      console.error('Erro ao obter localização:', error);
+      // Exibir feedback ao usuário
+      alert('Não foi possível obter sua localização. Algumas funcionalidades podem não funcionar corretamente.');
+    }
+  );
+}, []);
+
 
   useEffect(() => {
-    if (userLocation && randomVideo) {
-      const dist = haversineDistance(
-        userLocation.lat,
-        userLocation.lon,
-        randomVideo.latitude,
-        randomVideo.longitude
-      )
-      setDistance(dist)
-    }
-  }, [userLocation, randomVideo])
+  if (userLocation && randomVideo) {
+    const dist = haversineDistance(
+      userLocation.lat,
+      userLocation.lon,
+      randomVideo.latitude,
+      randomVideo.longitude
+    );
+    setDistance(dist);
+  } else {
+    setDistance(null);
+  }
+}, [userLocation, randomVideo]);
+
 
   async function fetchVideos() {
     setIsLoading(true)
@@ -95,15 +101,21 @@ export default function TelaInicio() {
   }, [])
 
   useEffect(() => {
-    if (isLoading) {
-      const interval = setInterval(() => {
-        setUserNameAnim(getRandomString(8))
-      }, 150)
-      return () => clearInterval(interval)
-    } else if (randomVideo) {
-      setUserNameAnim(randomVideo.userName)
-    }
-  }, [isLoading, randomVideo])
+  let interval: NodeJS.Timeout;
+
+  if (isLoading) {
+    interval = setInterval(() => {
+      setUserNameAnim(getRandomString(8));
+    }, 150);
+  } else if (randomVideo) {
+    setUserNameAnim(randomVideo.userName);
+  }
+
+  return () => {
+    if (interval) clearInterval(interval);
+  };
+}, [isLoading, randomVideo]);
+
 
   function toggleMute() {
     setIsMuted(prev => !prev)
@@ -183,12 +195,14 @@ export default function TelaInicio() {
                 <div style={{ width: 60, height: 60, borderRadius: '50%', border: '4px solid green', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', border: '4px solid rgba(255, 255, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     <Image
-                      src={randomVideo.userProfileImage}
-                      alt={`${randomVideo.userName} profile`}
-                      width={44}
-                      height={44}
-                      style={{ borderRadius: '50%', objectFit: 'cover' }}
-                    />
+  src={randomVideo.userProfileImage || '/default-profile.png'}
+  alt={`${randomVideo.userName} profile`}
+  onError={(e) => (e.currentTarget.src = '/default-profile.png')}
+  width={44}
+  height={44}
+  style={{ borderRadius: '50%', objectFit: 'cover' }}
+/>
+
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

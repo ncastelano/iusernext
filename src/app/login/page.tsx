@@ -30,11 +30,12 @@ export default function LoginPage() {
   };
 
   // Redireciona para /inicio se o usuário estiver logado e carregado
-  useEffect(() => {
-    if (!loading && user) {
-      router.push('/inicio');
-    }
-  }, [user, loading, router]);
+ useEffect(() => {
+  if (!loading && user) {
+    router.replace('/inicio');  // replace evita criar um passo a mais no histórico
+  }
+}, [user, loading, router]);
+
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -134,7 +134,7 @@ export default function RandomVideo({
     padding: 10,
     cursor: 'pointer',
     transition: 'background-color 0.2s',
-    display: 'flex',
+    display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
   }
@@ -240,25 +240,28 @@ export default function RandomVideo({
 
       {/* Botão refresh com SVG personalizado */}
 <div
+  onClick={onRefreshVideo}
   style={{
+    ...buttonStyle,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // garantir mesma cor de fundo
     position: 'absolute',
     bottom: 30,
     right: 20,
-    zIndex: 3,
-    cursor: 'pointer',
   }}
-  onClick={onRefreshVideo}
+  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)')}
+  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)')}
 >
   <Image
-  src="/icon/mudar-video-do-mesmo.svg"
-  alt="Mudar vídeo do mesmo perfil"
-  width={60}
-  height={60}
-  style={{ filter: 'invert(1)' }}
-  unoptimized
-/>
-
+    src="/icon/mudar-video-do-mesmo.svg"
+    alt="Mudar vídeo do mesmo perfil"
+    width={32}
+    height={32}
+   style={{ filter: 'invert(1) ' }}
+    unoptimized
+  />
 </div>
+
+
 
     </div>
   )
