@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useCallback, useState } from 'react'
-import { Dice5, Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle } from 'lucide-react'
+import { Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle } from 'lucide-react'
 import { Video } from 'types/video'
 import Image from 'next/image'
 
