@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
   GoogleMap,
@@ -23,14 +23,55 @@ const containerStyle = {
   height: '100vh',
 }
 
+interface VideoRawData {
+  videoID: string
+  userProfileImage: string
+  userName: string
+  userID: string
+  latitude: number
+  longitude: number
+  artistSongName: string
+  isFlash?: boolean
+  isStore?: boolean
+  isPlace?: boolean
+  isProduct?: boolean
+  thumbnailUrl: string
+  createdAt?: Timestamp | Date
+  publishedDateTime?: number | Timestamp | Date
+}
+
+function convertVideoRawToVideo(id: string, data: VideoRawData): Video {
+  return {
+    
+    videoID: data.videoID,
+    userProfileImage: data.userProfileImage,
+    userName: data.userName,
+    userID: data.userID,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    artistSongName: data.artistSongName,
+    isFlash: data.isFlash ?? false,
+    isStore: data.isStore ?? false,
+    isPlace: data.isPlace ?? false,
+    isProduct: data.isProduct ?? false,
+    thumbnailUrl: data.thumbnailUrl,
+    publishedDateTime:
+      data.publishedDateTime instanceof Timestamp
+        ? data.publishedDateTime.toDate().getTime()
+        : typeof data.publishedDateTime === 'number'
+        ? data.publishedDateTime
+        : undefined,
+  }
+}
+
+
 export default function HomePage() {
   const [videos, setVideos] = useState<Video[]>([])
- const [users] = useState<User[]>([])
-
+  const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null)
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
-const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
 
   const [selectedFilter, setSelectedFilter] = useState<'users' | 'flash' | 'store' | 'place' | 'product'>('users')
   const [searchTerm, setSearchTerm] = useState('')
@@ -69,86 +110,58 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
     }
   }, [])
 
-  // Detectar evento de instalação PWA
   useEffect(() => {
-  const handler = (e: Event) => {
-    e.preventDefault()
-    setDeferredPrompt(e as BeforeInstallPromptEvent)
-  }
-
-  window.addEventListener('beforeinstallprompt', handler)
-
-  return () => {
-    window.removeEventListener('beforeinstallprompt', handler)
-  }
-}, [])
-
-  useEffect(() => {
-  // Função para garantir que o objeto tem formato de Video
-  function isVideo(data: any): data is Video {
-    return (
-      typeof data.videoID === 'string' &&
-      typeof data.userProfileImage === 'string' &&
-      typeof data.userName === 'string' &&
-      typeof data.userID === 'string' &&
-      typeof data.latitude === 'number' &&
-      typeof data.longitude === 'number' &&
-      typeof data.artistSongName === 'string' &&
-      typeof data.thumbnailUrl === 'string' &&
-      data.publishedDateTime !== undefined &&
-      data.createdAt !== undefined
-    )
-  }
-
-  async function fetchData() {
-    try {
-      const videoSnapshot = await getDocs(collection(db, 'videos'))
-
-      const videoData: Video[] = videoSnapshot.docs
-        .map((doc) => {
-          const data = doc.data()
-
-          if (isVideo(data)) {
-            const rawData = doc.data() as any;
-            return {
-              id: doc.id,
-              videoID: data.videoID,
-              userProfileImage: data.userProfileImage,
-              userName: data.userName,
-              userID: data.userID,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              artistSongName: data.artistSongName,
-              isFlash: data.isFlash ?? false,
-              isStore: data.isStore ?? false,
-              isPlace: data.isPlace ?? false,
-              isProduct: data.isProduct ?? false,
-            
-              thumbnailUrl: data.thumbnailUrl,
-             publishedDateTime:
-  typeof rawData.publishedDateTime === 'object' && rawData.publishedDateTime !== null && 'toDate' in rawData.publishedDateTime
-    ? rawData.publishedDateTime.toDate()
-    : new Date(rawData.publishedDateTime),
-            } as Video
-          }
-
-          // Caso não seja um vídeo válido, retorna null
-          return null
-        })
-        .filter((v): v is Video => v !== null) // Filtra só os que são Videos
-
-      setVideos(videoData)
-    } catch (error) {
-      console.error('Erro ao buscar dados:', error)
-    } finally {
-      setLoading(false)
+    const handler = (e: Event) => {
+      e.preventDefault()
+      setDeferredPrompt(e as BeforeInstallPromptEvent)
     }
-  }
 
-  fetchData()
-}, [goToMyLocation])
+    window.addEventListener('beforeinstallprompt', handler)
 
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+    }
+  }, [])
 
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const videoSnapshot = await getDocs(collection(db, 'videos'))
+        const videoData: Video[] = videoSnapshot.docs.map((doc) => {
+          const data = doc.data() as VideoRawData
+          return convertVideoRawToVideo(doc.id, data)
+        })
+        setVideos(videoData)
+
+        const userSnapshot = await getDocs(collection(db, 'users'))
+        const userData: User[] = userSnapshot.docs
+          .map((doc) => {
+            const data = doc.data()
+            if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+              return {
+                id: doc.id,
+                name: data.name || '',
+                email: data.email || '',
+                image: data.image || '',
+                latitude: data.latitude,
+                longitude: data.longitude,
+              }
+            }
+            return null
+          })
+          .filter(Boolean) as User[]
+        setUsers(userData)
+
+        goToMyLocation()
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchData()
+  }, [goToMyLocation])
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
@@ -194,7 +207,6 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         searchTerm={searchTerm}
       />
 
-      {/* Botão: Ir para minha localização */}
       <button
         onClick={goToMyLocation}
         style={{
@@ -217,7 +229,6 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         📍 Minha localização
       </button>
 
-      {/* Botão: Instalar iUser */}
       {deferredPrompt && (
         <button
           onClick={async () => {
@@ -248,7 +259,6 @@ const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | 
         </button>
       )}
 
-      {/* Mapa e Marcadores */}
       {loading ? (
         <p style={{ textAlign: 'center' }}>Carregando vídeos...</p>
       ) : (

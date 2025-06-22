@@ -23,6 +23,7 @@ function getRandomString(length: number) {
 export default function TelaInicio() {
   const [randomVideo, setRandomVideo] = useState<Video | null>(null)
   const [videos, setVideos] = useState<Video[]>([])
+  const [videoHistory, setVideoHistory] = useState<Video[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isMuted, setIsMuted] = useState(true)
@@ -93,7 +94,6 @@ export default function TelaInicio() {
     fetchVideos()
   }, [])
 
-  // Efeito para animar o userName enquanto está carregando
   useEffect(() => {
     if (isLoading) {
       const interval = setInterval(() => {
@@ -109,36 +109,34 @@ export default function TelaInicio() {
     setIsMuted(prev => !prev)
   }
 
+  // Função para ir para o próximo vídeo (diferente do atual)
+  function goToNextVideo() {
+    if (!randomVideo || videos.length === 0) return
+
+    const otherVideos = videos.filter(v => v.videoID !== randomVideo.videoID)
+    if (otherVideos.length === 0) return
+
+    const nextVideo = otherVideos[Math.floor(Math.random() * otherVideos.length)]
+
+    setVideoHistory(prev => [...prev, randomVideo])
+    setRandomVideo(nextVideo)
+    setIsPlaying(false)
+    setIsMuted(true)
+  }
+
+  // Função para voltar ao vídeo anterior (se houver)
+  function goToPreviousVideo() {
+    if (videoHistory.length === 0) return
+
+    const previousVideo = videoHistory[videoHistory.length - 1]
+    setVideoHistory(prev => prev.slice(0, -1))
+    setRandomVideo(previousVideo)
+    setIsPlaying(false)
+    setIsMuted(true)
+  }
+
   function handleRefreshVideo() {
-    if (videos.length === 0 || !randomVideo) return
-
-    setIsLoading(true)
-
-    setTimeout(() => {
-      const differentUserVideos = videos.filter(
-        v => v.userID !== randomVideo.userID && v.videoID !== randomVideo.videoID
-      )
-
-      let nextVideo: Video | null = null
-
-      if (differentUserVideos.length > 0) {
-        const randomIndex = Math.floor(Math.random() * differentUserVideos.length)
-        nextVideo = differentUserVideos[randomIndex]
-      } else {
-        const otherVideos = videos.filter(v => v.videoID !== randomVideo.videoID)
-        if (otherVideos.length > 0) {
-          const randomIndex = Math.floor(Math.random() * otherVideos.length)
-          nextVideo = otherVideos[randomIndex]
-        } else {
-          nextVideo = randomVideo
-        }
-      }
-
-      setRandomVideo(nextVideo)
-      setIsPlaying(false)
-      setIsMuted(true)
-      setIsLoading(false)
-    }, 800)
+    goToNextVideo()
   }
 
   return (
@@ -173,6 +171,8 @@ export default function TelaInicio() {
           isPlaying={isPlaying}
           setIsPlaying={setIsPlaying}
           onRefreshVideo={handleRefreshVideo}
+          onSwipeLeft={goToNextVideo}
+          onSwipeRight={goToPreviousVideo}
         />
 
         {/* Overlay de info topo esquerda */}
@@ -194,7 +194,13 @@ export default function TelaInicio() {
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <AnimatedText text={userNameAnim} isLoading={isLoading} />
                   <span style={{ fontWeight: 'normal', fontSize: 12, opacity: 0.7 }}>
-                    <TimeAgoCustom timestamp={randomVideo.publishedDateTime} />
+                    <TimeAgoCustom
+                      timestamp={
+                        randomVideo.publishedDateTime
+                          ? new Date(randomVideo.publishedDateTime).getTime()
+                          : undefined
+                      }
+                    />
                   </span>
                 </div>
               </div>

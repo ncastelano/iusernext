@@ -4,7 +4,6 @@ import React, { useRef, useEffect, useCallback, useState } from 'react'
 import { Dice5, Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle } from 'lucide-react'
 import { Video } from 'types/video'
 
-
 type RandomVideoProps = {
   video: Video | null
   isMuted: boolean
@@ -12,6 +11,8 @@ type RandomVideoProps = {
   isPlaying: boolean
   setIsPlaying: (playing: boolean) => void
   onRefreshVideo: () => void
+  onSwipeLeft: () => void
+  onSwipeRight: () => void
 }
 
 export default function RandomVideo({
@@ -21,6 +22,8 @@ export default function RandomVideo({
   isPlaying,
   setIsPlaying,
   onRefreshVideo,
+  onSwipeLeft,
+  onSwipeRight,
 }: RandomVideoProps) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isBuffering, setIsBuffering] = useState(false)
@@ -76,6 +79,53 @@ export default function RandomVideo({
     setIsPlaying(true)
   }
 
+  // Swipe detection simples (toque ou mouse arrastando horizontal)
+  useEffect(() => {
+    let startX = 0
+    let endX = 0
+
+    function handleTouchStart(e: TouchEvent) {
+      startX = e.touches[0].clientX
+    }
+
+    function handleTouchEnd(e: TouchEvent) {
+      endX = e.changedTouches[0].clientX
+      handleSwipe()
+    }
+
+    function handleMouseDown(e: MouseEvent) {
+      startX = e.clientX
+    }
+
+    function handleMouseUp(e: MouseEvent) {
+      endX = e.clientX
+      handleSwipe()
+    }
+
+    function handleSwipe() {
+      const diff = endX - startX
+      if (Math.abs(diff) > 50) {
+        if (diff < 0) {
+          onSwipeLeft()
+        } else {
+          onSwipeRight()
+        }
+      }
+    }
+
+    window.addEventListener('touchstart', handleTouchStart)
+    window.addEventListener('touchend', handleTouchEnd)
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('touchstart', handleTouchStart)
+      window.removeEventListener('touchend', handleTouchEnd)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [onSwipeLeft, onSwipeRight])
+
   const buttonStyle: React.CSSProperties = {
     backgroundColor: 'rgba(0, 0, 0, 0.5)',
     borderRadius: '50%',
@@ -96,11 +146,19 @@ export default function RandomVideo({
           muted={isMuted}
           onWaiting={handleWaiting}
           onPlaying={handlePlaying}
-          style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', objectFit: 'cover', zIndex: 0 }}
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            zIndex: 0,
+          }}
         />
       )}
 
-      {/* Gradiente no fundo */}
+      {/* Gradiente inferior */}
       <div
         style={{
           position: 'absolute',
@@ -114,7 +172,7 @@ export default function RandomVideo({
         }}
       />
 
-      {/* Botões no topo direito (coluna, estilo padrão) */}
+      {/* Botões de ação (direita) */}
       <div
         style={{
           position: 'absolute',
@@ -156,7 +214,7 @@ export default function RandomVideo({
         </div>
       </div>
 
-      {/* Play/Pause central */}
+      {/* Botão central Play/Pause */}
       <div
         style={{
           position: 'absolute',

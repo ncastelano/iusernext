@@ -4,7 +4,7 @@ export type Video = {
   userName: string
   userID: string
   thumbnailUrl: string
-  publishedDateTime: number
+  publishedDateTime?: number
   latitude: number
   longitude: number
   artistSongName: string
