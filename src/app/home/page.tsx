@@ -134,22 +134,26 @@ export default function HomePage() {
         setVideos(videoData)
 
         const userSnapshot = await getDocs(collection(db, 'users'))
-        const userData: User[] = userSnapshot.docs
-          .map((doc) => {
-            const data = doc.data()
-            if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
-              return {
-                id: doc.id,
-                name: data.name || '',
-                email: data.email || '',
-                image: data.image || '',
-                latitude: data.latitude,
-                longitude: data.longitude,
-              }
-            }
-            return null
-          })
-          .filter(Boolean) as User[]
+       const userData = userSnapshot.docs
+  .map((doc) => {
+    const data = doc.data()
+    if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+      return {
+     
+        uid: data.uid,
+        username: data.username ?? '',           // <-- Ensure this field exists
+        visible: data.visible ?? [],         // <-- Ensure this field exists
+        name: data.name || '',
+        email: data.email || '',
+        image: data.image || '',
+        latitude: data.latitude,
+        longitude: data.longitude,
+      } satisfies User
+    }
+    return null
+  })
+  .filter((u): u is User => u !== null)
+
         setUsers(userData)
 
         goToMyLocation()
@@ -300,13 +304,13 @@ export default function HomePage() {
 
           {filteredUsers.map((user) => (
             <OverlayView
-              key={user.id}
+              key={user.uid}
               position={{ lat: user.latitude, lng: user.longitude }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
                 <div
-                  onClick={() => setSelectedUserId(user.id)}
+                  onClick={() => setSelectedUserId(user.uid)}
                   title={user.name}
                   style={{
                     width: 48,
@@ -322,7 +326,7 @@ export default function HomePage() {
                   <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
                 </div>
 
-                {selectedUserId === user.id && (
+                {selectedUserId === user.uid && (
                   <OverlayView
                     position={{ lat: user.latitude, lng: user.longitude }}
                     mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
