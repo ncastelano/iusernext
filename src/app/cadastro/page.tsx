@@ -15,7 +15,34 @@ export default function CadastroPage() {
   const [name, setName] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [previewURL, setPreviewURL] = useState<string | null>(null);
-    const handleCadastro = async (e: React.FormEvent) => {
+  const router = useRouter();
+
+  const customLoader = ({ src }: { src: string }) => {
+    return src;
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+
+    if (file) {
+      if (file.size > 6 * 1024 * 1024) {
+        alert('Arquivo muito grande! Máximo permitido: 6MB.');
+        e.target.value = '';
+        setImageFile(null);
+        setPreviewURL(null);
+        return;
+      }
+
+      setImageFile(file);
+      const url = URL.createObjectURL(file);
+      setPreviewURL(url);
+    } else {
+      setImageFile(null);
+      setPreviewURL(null);
+    }
+  };
+
+  const handleCadastro = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       const cred = await createUserWithEmailAndPassword(auth, email, senha);
@@ -45,34 +72,6 @@ export default function CadastroPage() {
       }
     }
   };
-  
-  const router = useRouter();
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0] ?? null;
-
-    if (file) {
-      // Limitar tamanho em 6MB (6 * 1024 * 1024)
-      if (file.size > 6 * 1024 * 1024) {
-        alert('Arquivo muito grande! Máximo permitido: 6MB.');
-        e.target.value = ''; // reset input
-        setImageFile(null);
-        setPreviewURL(null);
-        return;
-      }
-
-      setImageFile(file);
-
-      // Criar preview
-      const url = URL.createObjectURL(file);
-      setPreviewURL(url);
-    } else {
-      setImageFile(null);
-      setPreviewURL(null);
-    }
-  };
-
-  // seu handleCadastro (não modifiquei)
 
   return (
     <main
@@ -100,13 +99,22 @@ export default function CadastroPage() {
         }}
       >
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 20 }}>
-          {/* Label como botão circular */}
+          {/* Avatar circular com preview */}
           <label htmlFor="avatarInput" style={avatarLabelStyle}>
             {previewURL ? (
-              <img
+              <Image
                 src={previewURL}
                 alt="Preview Avatar"
-                style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover' }}
+                width={200}
+                height={200}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                }}
+                loader={customLoader}
+                unoptimized
               />
             ) : (
               'Escolher Avatar'
@@ -150,8 +158,6 @@ export default function CadastroPage() {
             required
           />
 
-         
-
           <button type="submit" style={buttonStyle}>
             Cadastrar
           </button>
@@ -168,7 +174,6 @@ export default function CadastroPage() {
   );
 }
 
-// Estilo do círculo do avatar (200x200 px para igualar logo)
 const avatarLabelStyle: React.CSSProperties = {
   width: 200,
   height: 200,
