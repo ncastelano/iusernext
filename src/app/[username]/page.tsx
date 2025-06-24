@@ -1,39 +1,27 @@
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { useParams } from 'next/navigation'
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { User } from 'types/user'
 import Image from 'next/image'
 
-export default function UserProfilePage() {
-  const { username } = useParams<{ username: string }>()
-  const [user, setUser] = useState<User | null>(null)
-  const [loading, setLoading] = useState(true)
+interface Props {
+  params: { username: string }
+}
 
-  useEffect(() => {
-    async function fetchUser() {
-      try {
-        const usersRef = collection(db, 'users')
-        const q = query(usersRef, where('username', '==', username))
-        const snapshot = await getDocs(q)
-        if (!snapshot.empty) {
-          const userData = snapshot.docs[0].data() as User
-          setUser(userData)
-        } else {
-          setUser(null)
-        }
-      } catch (error) {
-        console.error('Erro ao buscar usuário:', error)
-      }
-      setLoading(false)
+export default async function UserProfilePage({ params }: Props) {
+  const { username } = params
+
+  let user: User | null = null
+
+  try {
+    const usersRef = collection(db, 'users')
+    const q = query(usersRef, where('username', '==', username))
+    const snapshot = await getDocs(q)
+    if (!snapshot.empty) {
+      user = snapshot.docs[0].data() as User
     }
-
-    fetchUser()
-  }, [username])
-
-  if (loading) return <div>Carregando perfil...</div>
+  } catch (error) {
+    console.error('Erro ao buscar usuário:', error)
+  }
 
   if (!user) return <div>Usuário não encontrado!</div>
 

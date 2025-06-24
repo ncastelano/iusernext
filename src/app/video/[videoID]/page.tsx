@@ -1,5 +1,5 @@
 'use client'
-
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { db } from '@/lib/firebase'
@@ -11,6 +11,7 @@ import TimeAgoCustom from 'src/app/components/TimeAgoCustom'
 import { Video } from 'types/video'
 import AnimatedText from 'src/app/components/AnimatedTextProps'
 import SkeletonInicio from '@/app/components/SkeletonInicio'
+
 
 function getRandomString(length: number) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
@@ -183,14 +184,16 @@ export default function TelaVideo() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', border: '4px solid green', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', border: '4px solid rgba(255, 255, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Image
-                      src={randomVideo.userProfileImage || '/default-profile.png'}
-                      alt={`${randomVideo.userName} profile`}
-                      onError={(e) => (e.currentTarget.src = '/default-profile.png')}
-                      width={44}
-                      height={44}
-                      style={{ borderRadius: '50%', objectFit: 'cover' }}
-                    />
+                   <Link href={`/user/${randomVideo.userName}`}>
+  <Image
+    src={randomVideo.userProfileImage || '/default-profile.png'}
+    alt={`${randomVideo.userName} profile`}
+    onError={(e) => (e.currentTarget.src = '/default-profile.png')}
+    width={44}
+    height={44}
+    style={{ borderRadius: '50%', objectFit: 'cover', cursor: 'pointer' }}
+  />
+</Link>
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
