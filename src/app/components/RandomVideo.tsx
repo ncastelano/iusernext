@@ -1,10 +1,9 @@
 'use client'
 
 import React, { useRef, useEffect, useCallback, useState } from 'react'
-import { Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle } from 'lucide-react'
+import { Play, Pause, Volume, VolumeX, Loader2, Heart, MessageCircle, Check, Share2 } from 'lucide-react'
 import { Video } from 'types/video'
 import Image from 'next/image'
-
 
 type RandomVideoProps = {
   video: Video | null
@@ -30,6 +29,7 @@ export default function RandomVideo({
   const videoRef = useRef<HTMLVideoElement>(null)
   const [isBuffering, setIsBuffering] = useState(false)
   const autoplayAttemptTimeout = useRef<number | null>(null)
+  const [sharedRecently, setSharedRecently] = useState(false)
 
   const tryAutoplay = useCallback((delay: number) => {
     if (!videoRef.current) return
@@ -139,6 +139,17 @@ export default function RandomVideo({
     justifyContent: 'center',
   }
 
+  // Função de compartilhar
+  function handleShare() {
+    if (video?.videoID) {
+      const link = `https://iuser.com.br/video/${video.videoID}`
+      navigator.clipboard.writeText(link).then(() => {
+        setSharedRecently(true)
+        setTimeout(() => setSharedRecently(false), 5000)
+      })
+    }
+  }
+
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%' }}>
       {video?.videoUrl && (
@@ -188,6 +199,7 @@ export default function RandomVideo({
           alignItems: 'center',
         }}
       >
+        {/* Botão Mute */}
         <div
           onClick={onToggleMute}
           style={buttonStyle}
@@ -197,6 +209,7 @@ export default function RandomVideo({
           {isMuted ? <VolumeX size={24} /> : <Volume size={24} />}
         </div>
 
+        {/* Botão Comentário */}
         <div
           onClick={() => console.log('Comentário')}
           style={buttonStyle}
@@ -206,6 +219,7 @@ export default function RandomVideo({
           <MessageCircle size={24} />
         </div>
 
+        {/* Botão Curtir */}
         <div
           onClick={() => console.log('Curtir')}
           style={buttonStyle}
@@ -213,6 +227,16 @@ export default function RandomVideo({
           onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)')}
         >
           <Heart size={24} />
+        </div>
+
+        {/* Botão Share */}
+        <div
+          onClick={handleShare}
+          style={buttonStyle}
+          onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)')}
+          onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)')}
+        >
+          {sharedRecently ? <Check size={24} color="lime" /> : <Share2 size={24} />}
         </div>
       </div>
 
@@ -239,30 +263,27 @@ export default function RandomVideo({
       </div>
 
       {/* Botão refresh com SVG personalizado */}
-<div
-  onClick={onRefreshVideo}
-  style={{
-    ...buttonStyle,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // garantir mesma cor de fundo
-    position: 'absolute',
-    bottom: 30,
-    right: 20,
-  }}
-  onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)')}
-  onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)')}
->
-  <Image
-    src="/icon/mudar-video-do-mesmo.svg"
-    alt="Mudar vídeo do mesmo perfil"
-    width={32}
-    height={32}
-   style={{ filter: 'invert(1) ' }}
-    unoptimized
-  />
-</div>
-
-
-
+      <div
+        onClick={onRefreshVideo}
+        style={{
+          ...buttonStyle,
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          position: 'absolute',
+          bottom: 30,
+          right: 20,
+        }}
+        onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)')}
+        onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'rgba(0, 0, 0, 0.5)')}
+      >
+        <Image
+          src="/icon/mudar-video-do-mesmo.svg"
+          alt="Mudar vídeo do mesmo perfil"
+          width={32}
+          height={32}
+          style={{ filter: 'invert(1)' }}
+          unoptimized
+        />
+      </div>
     </div>
   )
 }
