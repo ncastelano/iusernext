@@ -2,16 +2,13 @@ import { db } from '@/lib/firebase'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { notFound } from 'next/navigation'
 import { Video } from 'types/video'
-import Image from 'next/image' // ✅ Adicionado
+import Image from 'next/image'
 
-interface Props {
-  params: {
-    name: string
-    videoID: string
-  }
-}
-
-export default async function VideoPage({ params }: Props) {
+export default async function VideoPage({
+  params,
+}: {
+  params: { name: string; videoID: string }
+}) {
   const { videoID } = params
 
   const videosRef = collection(db, 'videos')
