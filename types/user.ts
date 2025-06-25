@@ -1,3 +1,5 @@
+//types/user.ts
+
 export interface User {
   uid: string
   username: string 

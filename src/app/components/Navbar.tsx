@@ -18,10 +18,13 @@ export default function Navbar() {
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
-  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0)
+
+  // Inicializa com 0 para evitar mismatch SSR/CSR
+  const [windowWidth, setWindowWidth] = useState<number>(0)
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
+    handleResize() // Atualiza o valor logo que o componente monta no client
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -39,6 +42,7 @@ export default function Navbar() {
   }, [])
 
   const getIconSize = () => {
+    if (windowWidth === 0) return 30 // fallback SSR para evitar hydration error
     if (windowWidth < 500) return 30
     if (windowWidth >= 500 && windowWidth < 900) return 90
     return 120

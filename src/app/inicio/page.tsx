@@ -1,5 +1,5 @@
 'use client'
-
+import Link from 'next/link'
 import React, { useEffect, useState } from 'react'
 import Image from 'next/image'
 import { db } from '@/lib/firebase'
@@ -194,6 +194,7 @@ export default function TelaInicio() {
               <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                 <div style={{ width: 60, height: 60, borderRadius: '50%', border: '4px solid green', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ width: 52, height: 52, borderRadius: '50%', border: '4px solid rgba(255, 255, 255, 0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Link href={`/${randomVideo.userName}`}>
                     <Image
   src={randomVideo.userProfileImage || '/default-profile.png'}
   alt={`${randomVideo.userName} profile`}
@@ -202,7 +203,7 @@ export default function TelaInicio() {
   height={44}
   style={{ borderRadius: '50%', objectFit: 'cover' }}
 />
-
+</Link>
                   </div>
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>

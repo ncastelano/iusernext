@@ -128,7 +128,7 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
 
           {loading && !notLocated && (
             <div>
-              <div>Procurando localização {loadingChars[loadingCharIndex]}</div>
+            
               <div style={{ fontFamily: 'monospace', display: 'flex', gap: 8 }}>
                 <AnimatedText text={cityAnim} isLoading />
                 <AnimatedText text={stateAnim} isLoading />
