@@ -1,6 +1,5 @@
-'use client' // obrigatório para usar hooks como useState
+'use client'
 
-import { useState } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import 'swiper/css'
 import { Video } from 'types/video'
@@ -11,13 +10,11 @@ interface VideoSwiperProps {
 }
 
 export default function VideoSwiper({ videos, initialIndex }: VideoSwiperProps) {
-  const [activeIndex, setActiveIndex] = useState(initialIndex)
-
   return (
     <div className="bg-black min-h-screen flex flex-col items-center justify-center text-white">
       <Swiper
         initialSlide={initialIndex}
-        onSlideChange={(swiper) => setActiveIndex(swiper.activeIndex)}
+        onSlideChange={() => {}} // ou simplesmente remova esta linha se o índice não for necessário
         spaceBetween={50}
         slidesPerView={1}
       >

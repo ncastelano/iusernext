@@ -1,10 +1,8 @@
-// app/[name]/[videoID]/page.tsx
-
 import { db } from '@/lib/firebase'
 import { collection, getDocs, query, where } from 'firebase/firestore'
 import { notFound } from 'next/navigation'
 import { Video } from 'types/video'
-import { User } from 'types/user'
+import Image from 'next/image' // ✅ Adicionado
 
 interface Props {
   params: {
@@ -16,7 +14,6 @@ interface Props {
 export default async function VideoPage({ params }: Props) {
   const { videoID } = params
 
-  // Buscar o vídeo específico pelo ID
   const videosRef = collection(db, 'videos')
   const qVideo = query(videosRef, where('videoID', '==', videoID))
   const videoSnapshot = await getDocs(qVideo)
@@ -25,14 +22,11 @@ export default async function VideoPage({ params }: Props) {
 
   const video = videoSnapshot.docs[0].data() as Video
 
-  // Buscar o dono do vídeo
   const usersRef = collection(db, 'users')
   const qUser = query(usersRef, where('uid', '==', video.userID))
   const userSnapshot = await getDocs(qUser)
 
   if (userSnapshot.empty) return notFound()
-
- 
 
   return (
     <main
@@ -49,10 +43,13 @@ export default async function VideoPage({ params }: Props) {
       }}
     >
       <h1>{video.artistSongName}</h1>
-      <img
-        src={video.thumbnailUrl}
+      <Image
+        src={video.thumbnailUrl || '/default-thumbnail.png'}
         alt={`Thumbnail do vídeo ${video.videoID}`}
-        style={{ maxWidth: '100%', borderRadius: 12, boxShadow: '0 0 10px rgba(0,0,0,0.7)' }}
+        width={640}
+        height={360}
+        style={{ borderRadius: 12, boxShadow: '0 0 10px rgba(0,0,0,0.7)' }}
+        className="w-full h-auto max-w-full"
       />
       <p><strong>Usuário:</strong> {video.userName}</p>
       <p>

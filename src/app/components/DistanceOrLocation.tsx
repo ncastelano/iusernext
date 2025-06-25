@@ -16,8 +16,6 @@ type Address = {
   country?: string
 }
 
-const loadingChars = ['|', '/', '-', '\\']
-
 function getRandomString(length: number) {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
   let result = ''
@@ -35,7 +33,6 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
   const [address, setAddress] = useState<Address | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [loadingCharIndex, setLoadingCharIndex] = useState(0)
   const [notLocated, setNotLocated] = useState(false)
 
   // Animações para placeholders enquanto carrega
@@ -53,11 +50,6 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
     setError(null)
     setAddress(null)
     setNotLocated(false)
-    setLoadingCharIndex(0)
-
-    const loadingInterval = setInterval(() => {
-      setLoadingCharIndex(prev => (prev + 1) % loadingChars.length)
-    }, 150)
 
     const placeholderInterval = setInterval(() => {
       setCityAnim(getRandomString(6))
@@ -69,7 +61,6 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
     const timeoutNotLocated = setTimeout(() => {
       setNotLocated(true)
       setLoading(false)
-      clearInterval(loadingInterval)
       clearInterval(placeholderInterval)
     }, 3000)
 
@@ -90,13 +81,11 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
         setLoading(false)
         setNotLocated(false)
         clearTimeout(timeoutNotLocated)
-        clearInterval(loadingInterval)
         clearInterval(placeholderInterval)
       } catch {
         setError('Não foi possível obter o endereço')
         setLoading(false)
         clearTimeout(timeoutNotLocated)
-        clearInterval(loadingInterval)
         clearInterval(placeholderInterval)
       }
     }
@@ -104,7 +93,6 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
     fetchAddress()
 
     return () => {
-      clearInterval(loadingInterval)
       clearInterval(placeholderInterval)
       clearTimeout(timeoutNotLocated)
     }
@@ -128,12 +116,11 @@ export default function DistanceOrLocation({ latitude, longitude, distance }: Di
 
           {loading && !notLocated && (
             <div>
-            
               <div style={{ fontFamily: 'monospace', display: 'flex', gap: 8 }}>
                 <AnimatedText text={cityAnim} isLoading />
                 <AnimatedText text={stateAnim} isLoading />
                 <AnimatedText text={countryAnim} isLoading />
-                <AnimatedText text={`${distanceAnim} km`} isLoading isNumberAnimation /> {/* Distância animada */}
+                <AnimatedText text={`${distanceAnim} km`} isLoading isNumberAnimation />
               </div>
             </div>
           )}
