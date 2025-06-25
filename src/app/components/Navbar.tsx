@@ -12,7 +12,7 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
 }
 
-export default function Navbar() {
+function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
@@ -42,10 +42,18 @@ export default function Navbar() {
   }, [])
 
   const getIconSize = () => {
-    if (windowWidth === 0) return 30 // fallback SSR para evitar hydration error
-    if (windowWidth < 500) return 30
-    if (windowWidth >= 500 && windowWidth < 900) return 90
-    return 120
+    if (windowWidth === 0) return 24
+    if (windowWidth < 400) return 24
+    if (windowWidth < 600) return 30
+    if (windowWidth < 900) return 40
+    return 50
+  }
+
+  const getButtonPadding = () => {
+    if (windowWidth < 400) return '6px'
+    if (windowWidth < 600) return '8px'
+    if (windowWidth < 900) return '10px'
+    return '12px'
   }
 
   const buttons = [
@@ -80,9 +88,9 @@ export default function Navbar() {
 
   const navButtonStyle = {
     backgroundColor: 'transparent',
-    color: 'transparent',
+    color: 'white',
     border: 'none',
-    padding: '10px',
+    padding: getButtonPadding(),
     borderRadius: '12px',
     fontSize: '16px',
     cursor: 'pointer',
@@ -91,7 +99,7 @@ export default function Navbar() {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'color 0.3s ease',
-    height: '60px',
+    height: '50px',
     position: 'relative' as const,
   }
 
@@ -102,17 +110,18 @@ export default function Navbar() {
         bottom: 20,
         left: '50%',
         transform: 'translateX(-50%)',
-        backgroundColor: 'transparent',
-        padding: '10px 20px',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: windowWidth < 400 ? '6px 10px' : windowWidth < 600 ? '8px 16px' : '10px 20px',
         borderRadius: '16px',
         display: 'flex',
-        gap: '14px',
+        gap: windowWidth < 400 ? '8px' : windowWidth < 600 ? '12px' : '14px',
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
-        width: '90%',
-        maxWidth: '600px',
+        width: windowWidth < 400 ? '95%' : windowWidth < 600 ? '90%' : '600px',
+        maxWidth: '100%',
+        boxShadow: '0 0 10px rgba(0,0,0,0.5)',
       }}
       ref={containerRef}
     >
@@ -168,3 +177,4 @@ export default function Navbar() {
     </nav>
   )
 }
+export default Navbar

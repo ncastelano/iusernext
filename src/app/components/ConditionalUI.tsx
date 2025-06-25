@@ -1,7 +1,7 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import Navbar from './Navbar'
+import Navbar from 'src/app/components/Navbar'
 import IuserEnterLogin from './IuserEnterLogin'
 
 export default function ConditionalUI() {
