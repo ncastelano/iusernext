@@ -6,17 +6,14 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
-interface Props {
-  params: { name: string }
-}
-
-export default async function UserProfilePage({ params }: Props) {
-  const name = decodeURIComponent(params.name)
+export default async function UserProfilePage({ params }: { params: Promise<{ name: string }> }) {
+  const { name } = await params
+  const decodedName = decodeURIComponent(name)
 
   try {
     // Buscar usuário pelo nome
     const usersRef = collection(db, 'users')
-    const qUser = query(usersRef, where('name', '==', name))
+    const qUser = query(usersRef, where('name', '==', decodedName))
     const userSnapshot = await getDocs(qUser)
 
     if (userSnapshot.empty) return notFound()
@@ -69,7 +66,6 @@ export default async function UserProfilePage({ params }: Props) {
           </p>
         </section>
 
-        {/* Lista de thumbnails dos vídeos */}
         <section>
           <h2 className="text-2xl font-semibold mb-4 text-white">Vídeos de {user.name}</h2>
           {videos.length === 0 ? (
@@ -78,9 +74,7 @@ export default async function UserProfilePage({ params }: Props) {
             <ul className="flex flex-col space-y-4">
               {videos.map(video => (
                 <li key={video.videoID} className="w-full max-w-md mx-auto">
-            <Link href={`/${user.name}/${video.videoID}`}>
-
-                    {/* No Next.js 13 app router, não precisa de <a> */}
+                  <Link href={`/${encodeURIComponent(user.name)}/${encodeURIComponent(video.videoID)}`}>
                     <Image
                       src={video.thumbnailUrl || '/default-thumbnail.png'}
                       alt={`Thumbnail do vídeo: ${video.artistSongName}`}
