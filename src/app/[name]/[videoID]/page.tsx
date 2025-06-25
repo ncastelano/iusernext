@@ -4,12 +4,10 @@ import { notFound } from 'next/navigation'
 import { Video } from 'types/video'
 import Image from 'next/image'
 
-export default async function VideoPage({
-  params,
-}: {
-  params: { name: string; videoID: string }
-}) {
-  const { videoID } = params
+export const revalidate = 0 // para SSR sem cache
+
+export default async function VideoPage({ params }: { params: Promise<Record<string, string>> }) {
+  const { videoID } = await params  // <-- aqui está o importante
 
   const videosRef = collection(db, 'videos')
   const qVideo = query(videosRef, where('videoID', '==', videoID))
@@ -18,6 +16,8 @@ export default async function VideoPage({
   if (videoSnapshot.empty) return notFound()
 
   const video = videoSnapshot.docs[0].data() as Video
+
+  if (!video.userID) return notFound()
 
   const usersRef = collection(db, 'users')
   const qUser = query(usersRef, where('uid', '==', video.userID))
