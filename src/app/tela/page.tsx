@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState, useRef, useCallback } from 'react'
 import { collection, getDocs, doc, updateDoc, arrayUnion } from 'firebase/firestore'
 import { auth, db } from '@/lib/firebase'
 import Image from 'next/image'
@@ -19,6 +19,29 @@ export default function TelaSimplificada() {
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const touchStartX = useRef<number | null>(null)
+
+  // Gera cores com base nas flags
+  const getSegmentColors = useCallback((videos: Video[]): string[] => {
+    return videos.map(v => {
+      if (v.isFlash) return 'limegreen'
+      if (v.isPlace) return 'deepskyblue'
+      if (v.isProduct) return 'gold'
+      if (v.isStore) return 'magenta'
+      return 'gray'
+    })
+  }, [])
+
+  // Atualiza para um usuário e índice de vídeo
+  const updateUserByIndex = useCallback((userIndex: number, videoIndex: number = 0) => {
+    const userID = userList[userIndex]
+    const videos = userVideosMap.get(userID) || []
+    const selectedVideo = videos[videoIndex]
+
+    setCurrentUserIndex(userIndex)
+    setCurrentVideoIndex(videoIndex)
+    setVideo(selectedVideo)
+    setSegmentColors(getSegmentColors(videos))
+  }, [userList, userVideosMap, getSegmentColors])
 
   // Swipe handlers
   function handleTouchStart(e: React.TouchEvent) {
@@ -55,54 +78,30 @@ export default function TelaSimplificada() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown)
     }
-  }, [currentUserIndex, userList])
-
-  // Gera cores com base nas flags
-  function getSegmentColors(videos: Video[]): string[] {
-    return videos.map(v => {
-      if (v.isFlash) return 'limegreen'
-      if (v.isPlace) return 'deepskyblue'
-      if (v.isProduct) return 'gold'
-      if (v.isStore) return 'magenta'
-      return 'gray'
-    })
-  }
+  }, [currentUserIndex, userList, updateUserByIndex])
 
   // Quando um vídeo termina, avança e registra no Firestore
-  async function handleVideoEnd() {
-  const userID = userList[currentUserIndex]
-  const videos = userVideosMap.get(userID) || []
-
-  if (video && auth.currentUser?.uid) {
-    try {
-      const videoDocRef = doc(db, 'videos', video.videoID)
-      await updateDoc(videoDocRef, {
-        visaID: arrayUnion(auth.currentUser.uid),
-      })
-      console.log('visaID adicionado com sucesso')
-    } catch (err) {
-      console.error('Erro ao adicionar visaID:', err)
-    }
-  }
-
-  if (currentVideoIndex < videos.length - 1) {
-    updateUserByIndex(currentUserIndex, currentVideoIndex + 1)
-  } else if (currentUserIndex < userList.length - 1) {
-    updateUserByIndex(currentUserIndex + 1, 0)
-  }
-}
-
-
-  // Atualiza para um usuário e índice de vídeo
-  function updateUserByIndex(userIndex: number, videoIndex: number = 0) {
-    const userID = userList[userIndex]
+  const handleVideoEnd = async () => {
+    const userID = userList[currentUserIndex]
     const videos = userVideosMap.get(userID) || []
-    const selectedVideo = videos[videoIndex]
 
-    setCurrentUserIndex(userIndex)
-    setCurrentVideoIndex(videoIndex)
-    setVideo(selectedVideo)
-    setSegmentColors(getSegmentColors(videos))
+    if (video && auth.currentUser?.uid) {
+      try {
+        const videoDocRef = doc(db, 'videos', video.videoID)
+        await updateDoc(videoDocRef, {
+          visaID: arrayUnion(auth.currentUser.uid),
+        })
+        console.log('visaID adicionado com sucesso')
+      } catch (err) {
+        console.error('Erro ao adicionar visaID:', err)
+      }
+    }
+
+    if (currentVideoIndex < videos.length - 1) {
+      updateUserByIndex(currentUserIndex, currentVideoIndex + 1)
+    } else if (currentUserIndex < userList.length - 1) {
+      updateUserByIndex(currentUserIndex + 1, 0)
+    }
   }
 
   // Carrega vídeos do Firestore
@@ -119,9 +118,11 @@ export default function TelaSimplificada() {
           if (!grouped.has(vid.userID)) grouped.set(vid.userID, [])
           grouped.get(vid.userID)!.push(vid)
         }
+
         for (const [uid, vids] of grouped.entries()) {
           grouped.set(uid, vids.sort((a, b) => b.publishedDateTime! - a.publishedDateTime!))
         }
+
         const sortedUsers = Array.from(grouped.entries())
           .sort(([, a], [, b]) => b[0].publishedDateTime! - a[0].publishedDateTime!)
           .map(([uid]) => uid)
@@ -129,7 +130,6 @@ export default function TelaSimplificada() {
         setUserVideosMap(grouped)
         setUserList(sortedUsers)
 
-        // primeira carga
         const firstUser = sortedUsers[0]
         const firstVids = grouped.get(firstUser) || []
         setCurrentUserIndex(0)
@@ -140,8 +140,9 @@ export default function TelaSimplificada() {
         console.error(err)
       }
     }
+
     fetchData()
-  }, [])
+  }, [getSegmentColors])
 
   return (
     <div

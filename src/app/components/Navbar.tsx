@@ -6,10 +6,7 @@ import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react' // <- Download removido
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
-}
+
 
 function Navbar() {
   const pathname = usePathname()
