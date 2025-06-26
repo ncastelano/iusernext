@@ -240,48 +240,57 @@ export default function TelaSimplificada() {
 
       {/* ✅ Botão de Check sempre visível */}
       {video && (
-        <button
-          onClick={async () => {
-            if (!auth.currentUser || !video) return
-            const uid = auth.currentUser.uid
-            const videoDocRef = doc(db, 'videos', video.videoID)
+  <button
+    onClick={async () => {
+      if (!auth.currentUser || !video) return
 
-            try {
-              if (isChecked) {
-                const updatedVisaID = (video.visaID || []).filter(id => id !== uid)
-                await updateDoc(videoDocRef, { visaID: updatedVisaID })
-                setIsChecked(false)
-                setVideo(prev => prev ? { ...prev, visaID: updatedVisaID } : null)
-              } else {
-                await updateDoc(videoDocRef, {
-                  visaID: arrayUnion(uid),
-                })
-                setIsChecked(true)
-                setVideo(prev => prev ? {
-                  ...prev,
-                  visaID: [...(prev.visaID || []), uid]
-                } : null)
-              }
-            } catch (err) {
-              console.error('Erro ao atualizar visaID:', err)
-            }
-          }}
-          style={{
-            position: 'absolute',
-            top: 20,
-            right: 20,
-            zIndex: 3,
-            background: 'transparent',
-            border: 'none',
-            fontSize: 28,
-            color: isChecked ? 'limegreen' : 'white',
-            cursor: 'pointer',
-            transition: 'color 0.2s ease-in-out',
-          }}
-        >
-          {isChecked ? '✔️' : '☐'}
-        </button>
-      )}
+      const uid = auth.currentUser.uid
+      const videoDocRef = doc(db, 'videos', video.videoID)
+
+      try {
+        const currentVisaID = video.visaID ?? []
+
+        if (currentVisaID.includes(uid)) {
+          // ✅ Se já está no visaID, remove
+          const updatedVisaID = currentVisaID.filter(id => id !== uid)
+          await updateDoc(videoDocRef, { visaID: updatedVisaID })
+
+          setIsChecked(false)
+          setVideo(prev =>
+            prev ? { ...prev, visaID: updatedVisaID } : null
+          )
+        } else {
+          // ✅ Se não está, adiciona
+          await updateDoc(videoDocRef, {
+            visaID: arrayUnion(uid),
+          })
+
+          setIsChecked(true)
+          setVideo(prev =>
+            prev ? { ...prev, visaID: [...currentVisaID, uid] } : null
+          )
+        }
+      } catch (err) {
+        console.error('Erro ao atualizar visaID:', err)
+      }
+    }}
+    style={{
+      position: 'absolute',
+      top: 20,
+      right: 20,
+      zIndex: 3,
+      background: 'transparent',
+      border: 'none',
+      fontSize: 28,
+      color: isChecked ? 'limegreen' : 'white',
+      cursor: 'pointer',
+      transition: 'color 0.2s ease-in-out',
+    }}
+  >
+    {isChecked ? '✔️' : '☐'}
+  </button>
+)}
+
 
       {/* Anel de progresso + avatar */}
       {video && (
