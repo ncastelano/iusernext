@@ -14,21 +14,17 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db, storage } from '@/lib/firebase';
-import { createFFmpeg, fetchFile } from '@ffmpeg/ffmpeg';
 import { useUser } from 'src/app/context/auth-context';
 
-export default function TelaAmarela() {
+export default function UploadPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [videoURL, setVideoURL] = useState('');
   const [artistSongName, setArtistSongName] = useState('');
   const [descriptionTags, setDescriptionTags] = useState('');
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
-  const [compressing, setCompressing] = useState(false);
 
   const router = useRouter();
   const { user, loading } = useUser();
-
-  const ffmpeg = createFFmpeg({ log: true });
 
   const generateThumbnailFromVideo = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
@@ -59,28 +55,6 @@ export default function TelaAmarela() {
     });
   };
 
-  async function compressVideo(file: File): Promise<Blob> {
-    if (!ffmpeg.isLoaded()) {
-      setCompressing(true);
-      await ffmpeg.load();
-      setCompressing(false);
-    }
-
-    ffmpeg.FS('writeFile', 'input.mp4', await fetchFile(file));
-    await ffmpeg.run(
-      '-i', 'input.mp4',
-      '-vf', 'scale=640:-2',
-      '-preset', 'veryfast',
-      '-crf', '28',
-      '-c:a', 'aac',
-      '-b:a', '96k',
-      'output.mp4'
-    );
-
-    const data = ffmpeg.FS('readFile', 'output.mp4');
-    return new Blob([data], { type: 'video/mp4' });
-  }
-
   const handleUpload = async () => {
     if (!videoFile || !artistSongName || !descriptionTags) {
       alert('Preencha todos os campos.');
@@ -95,10 +69,6 @@ export default function TelaAmarela() {
     try {
       setUploadProgress(0);
 
-      setCompressing(true);
-      const compressedVideoBlob = await compressVideo(videoFile);
-      setCompressing(false);
-
       const newDocRef = doc(collection(db, 'videos'));
       const videoID = newDocRef.id;
 
@@ -106,7 +76,7 @@ export default function TelaAmarela() {
       const userData = userDoc.data();
 
       const videoRef = ref(storage, `All Videos/${videoID}.mp4`);
-      const uploadTask = uploadBytesResumable(videoRef, compressedVideoBlob);
+      const uploadTask = uploadBytesResumable(videoRef, videoFile);
 
       await new Promise<void>((resolve, reject) => {
         uploadTask.on(
@@ -139,7 +109,7 @@ export default function TelaAmarela() {
 
       const postData = {
         userID: user.uid,
-        userName: userData?.name || 'Desconhecido',
+        userName: userData?.name || 'Anônimo',
         userProfileImage: userData?.image || '',
         postID: videoID,
         totalComments: 0,
@@ -160,7 +130,6 @@ export default function TelaAmarela() {
       console.error('Erro desconhecido:', error);
       alert('Erro ao enviar vídeo.');
       setUploadProgress(null);
-      setCompressing(false);
     }
   };
 
@@ -229,30 +198,28 @@ export default function TelaAmarela() {
 
       <button
         onClick={handleUpload}
-        disabled={uploadProgress !== null || compressing}
+        disabled={uploadProgress !== null}
         style={{
           marginTop: 16,
           padding: 12,
-          backgroundColor: uploadProgress !== null || compressing ? '#555' : '#fff',
+          backgroundColor: uploadProgress !== null ? '#555' : '#fff',
           borderRadius: 10,
           fontWeight: 'bold',
-          cursor: uploadProgress !== null || compressing ? 'not-allowed' : 'pointer',
-          color: uploadProgress !== null || compressing ? '#ccc' : '#000',
+          cursor: uploadProgress !== null ? 'not-allowed' : 'pointer',
+          color: uploadProgress !== null ? '#ccc' : '#000',
         }}
       >
-        {compressing
-          ? 'Comprimindo vídeo...'
-          : uploadProgress !== null
+        {uploadProgress !== null
           ? `Enviando... ${Math.round(uploadProgress)}%`
           : 'Upload Now'}
       </button>
 
-      {(uploadProgress !== null || compressing) && (
+      {uploadProgress !== null && (
         <div style={{ marginTop: 12 }}>
           <div style={{ height: '8px', backgroundColor: '#333', borderRadius: '4px', overflow: 'hidden' }}>
             <div
               style={{
-                width: compressing ? '100%' : `${uploadProgress}%`,
+                width: `${uploadProgress}%`,
                 height: '100%',
                 backgroundColor: '#2ecc71',
                 transition: 'width 0.3s ease',
@@ -260,11 +227,10 @@ export default function TelaAmarela() {
             />
           </div>
           <p style={{ fontSize: 12, marginTop: 4 }}>
-            {compressing ? 'Processando...' : `${Math.round(uploadProgress ?? 0)}%`}
+            {`${Math.round(uploadProgress ?? 0)}%`}
           </p>
         </div>
       )}
     </main>
   );
 }
-

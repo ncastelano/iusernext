@@ -23,7 +23,7 @@ export default function IuserEnterLogin() {
 
   return (
     <div
-      title={`Usuário: ${user?.name ?? 'desconhecido'}\nEmail: ${user?.email ?? '---'}`}
+      title={`Usuário: ${user?.name ?? 'Anônimo'}\nEmail: ${user?.email ?? 'Anônimo'}`}
       style={{
         position: 'fixed',
         bottom: 10,

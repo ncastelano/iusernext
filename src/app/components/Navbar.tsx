@@ -5,6 +5,8 @@ import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Home, MapPin, Search, LogOut, Download } from 'lucide-react'
+import { Upload } from 'lucide-react'
+
 
 // Definição manual do tipo BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
@@ -56,13 +58,14 @@ function Navbar() {
     return '12px'
   }
 
-  const buttons = [
-    { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
-    { key: 'home', path: '/home', title: 'Mapa', Icon: MapPin },
-    { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
-    ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
-    { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
-  ]
+ const buttons = [
+  { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
+  { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
+  { key: 'upload', path: '/upload', title: 'Upload', Icon: Upload },
+  { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
+  { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
+  ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
+]
 
   const activeIndex = buttons.findIndex(btn => pathname === btn.path)
 

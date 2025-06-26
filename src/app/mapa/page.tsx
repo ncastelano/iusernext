@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from '@/lib/firebase'
 import {
   GoogleMap,
@@ -22,6 +22,48 @@ const containerStyle = {
   width: '100%',
   height: '100vh',
 }
+
+interface VideoRawData {
+  videoID: string
+  userProfileImage: string
+  userName: string
+  userID: string
+  latitude: number
+  longitude: number
+  artistSongName: string
+  isFlash?: boolean
+  isStore?: boolean
+  isPlace?: boolean
+  isProduct?: boolean
+  thumbnailUrl: string
+  createdAt?: Timestamp | Date
+  publishedDateTime?: number | Timestamp | Date
+}
+
+function convertVideoRawToVideo(id: string, data: VideoRawData): Video {
+  return {
+    
+    videoID: data.videoID,
+    userProfileImage: data.userProfileImage,
+    userName: data.userName,
+    userID: data.userID,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    artistSongName: data.artistSongName,
+    isFlash: data.isFlash ?? false,
+    isStore: data.isStore ?? false,
+    isPlace: data.isPlace ?? false,
+    isProduct: data.isProduct ?? false,
+    thumbnailUrl: data.thumbnailUrl,
+    publishedDateTime:
+      data.publishedDateTime instanceof Timestamp
+        ? data.publishedDateTime.toDate().getTime()
+        : typeof data.publishedDateTime === 'number'
+        ? data.publishedDateTime
+        : undefined,
+  }
+}
+
 
 export default function Mapa() {
   const [videos, setVideos] = useState<Video[]>([])
@@ -57,7 +99,8 @@ export default function Mapa() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords
-          goToLocationWithZoom({ lat: latitude, lng: longitude })
+          const location = { lat: latitude, lng: longitude }
+          goToLocationWithZoom(location)
         },
         (error) => {
           console.error('Erro ao obter localização atual:', error)
@@ -67,7 +110,6 @@ export default function Mapa() {
     }
   }, [])
 
-  // Detectar evento de instalação PWA
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault()
@@ -75,79 +117,43 @@ export default function Mapa() {
     }
 
     window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler)
+    }
   }, [])
-
-  // Função para transformar doc.data() no tipo Video corretamente
-  const parseVideo = (docData: Partial<Video>): Video | null => {
-    if (
-      typeof docData.videoID === 'string' &&
-      typeof docData.latitude === 'number' &&
-      typeof docData.longitude === 'number' &&
-      typeof docData.artistSongName === 'string'
-    ) {
-      return {
-        thumbnailUrl: docData.thumbnailUrl || '',
-        videoID: docData.videoID,
-        userProfileImage: docData.userProfileImage || '',
-        userName: docData.userName || '',
-        userID: docData.userID || '',
-        artistSongName: docData.artistSongName,
-        latitude: docData.latitude,
-        longitude: docData.longitude,
-        isFlash: !!docData.isFlash,
-        isStore: !!docData.isStore,
-        isPlace: !!docData.isPlace,
-        isProduct: !!docData.isProduct,
-        publishedDateTime: docData.publishedDateTime,
-        videoUrl: docData.videoUrl,
-      }
-    }
-    return null
-  }
-
-  // Função para transformar doc.data() no tipo User corretamente
-  const parseUser = (docId: string, docData: Partial<User>): User | null => {
-    if (
-     typeof docData.username === 'string' &&
-      typeof docData.visible === 'boolean' &&
-      typeof docData.uid === 'string' &&
-      typeof docData.latitude === 'number' &&
-      typeof docData.longitude === 'number' &&
-      typeof docData.name === 'string' &&
-      typeof docData.email === 'string' &&
-      typeof docData.image === 'string'
-    ) {
-      return {
-        visible: docData.visible,
-        username:docData.username,
-        uid: docData.uid,
-        name: docData.name,
-        email: docData.email,
-        image: docData.image,
-        latitude: docData.latitude,
-        longitude: docData.longitude,
-      }
-    }
-    return null
-  }
 
   useEffect(() => {
     async function fetchData() {
-      setLoading(true)
       try {
-        // Buscar vídeos
         const videoSnapshot = await getDocs(collection(db, 'videos'))
-        const videoData: Video[] = videoSnapshot.docs
-          .map((doc) => parseVideo(doc.data()))
-          .filter((v): v is Video => v !== null)
+        const videoData: Video[] = videoSnapshot.docs.map((doc) => {
+          const data = doc.data() as VideoRawData
+          return convertVideoRawToVideo(doc.id, data)
+        })
         setVideos(videoData)
 
-        // Buscar usuários
         const userSnapshot = await getDocs(collection(db, 'users'))
-        const userData: User[] = userSnapshot.docs
-          .map((doc) => parseUser(doc.id, doc.data()))
-          .filter((u): u is User => u !== null)
+       const userData = userSnapshot.docs
+  .map((doc) => {
+    const data = doc.data()
+    if (typeof data.latitude === 'number' && typeof data.longitude === 'number') {
+      return {
+     
+        uid: data.uid,
+        username: data.username ?? '',           // <-- Ensure this field exists
+        visible: data.visible ?? [],         // <-- Ensure this field exists
+        name: data.name || '',
+        email: data.email || '',
+        image: data.image || '',
+        latitude: data.latitude,
+        longitude: data.longitude,
+      } satisfies User
+    }
+    return null
+  })
+  .filter((u): u is User => u !== null)
+
         setUsers(userData)
 
         goToMyLocation()
@@ -164,7 +170,6 @@ export default function Mapa() {
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>
   if (!isLoaded) return <p>Carregando mapa...</p>
 
-  // Filtrar vídeos com lat/lng válidos
   const videosWithLocation = videos.filter(
     (video) => typeof video.latitude === 'number' && typeof video.longitude === 'number'
   )
@@ -178,7 +183,7 @@ export default function Mapa() {
       (selectedFilter === 'place' && video.isPlace) ||
       (selectedFilter === 'product' && video.isProduct)
 
-    const matchesSearch = video.artistSongName.toLowerCase().includes(normalizedSearch)
+    const matchesSearch = video.artistSongName?.toLowerCase().includes(normalizedSearch)
 
     return matchesFilter && matchesSearch
   })
@@ -206,12 +211,11 @@ export default function Mapa() {
         searchTerm={searchTerm}
       />
 
-      {/* Botão: Ir para minha localização */}
       <button
         onClick={goToMyLocation}
         style={{
           position: 'fixed',
-          bottom: 20,
+          bottom: 90,
           left: 20,
           zIndex: 1000,
           padding: '10px 16px',
@@ -225,13 +229,10 @@ export default function Mapa() {
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
           transition: 'all 0.2s ease-in-out',
         }}
-        aria-label="Ir para minha localização"
-        title="Ir para minha localização"
       >
         📍 Minha localização
       </button>
 
-      {/* Botão: Instalar iUser */}
       {deferredPrompt && (
         <button
           onClick={async () => {
@@ -257,14 +258,11 @@ export default function Mapa() {
             cursor: 'pointer',
             boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
           }}
-          aria-label="Instalar iUser"
-          title="Instalar iUser"
         >
           📲 Instalar iUser
         </button>
       )}
 
-      {/* Mapa e Marcadores */}
       {loading ? (
         <p style={{ textAlign: 'center' }}>Carregando vídeos...</p>
       ) : (
@@ -287,14 +285,14 @@ export default function Mapa() {
           {filteredVideos.map((video) => (
             <OverlayView
               key={video.videoID}
-              position={{ lat: video.latitude, lng: video.longitude }}
+              position={{ lat: video.latitude!, lng: video.longitude! }}
               mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
             >
               <div>
                 <VideoMarker video={video} onClick={() => setSelectedVideoId(video.videoID)} />
                 {selectedVideoId === video.videoID && (
                   <OverlayView
-                    position={{ lat: video.latitude, lng: video.longitude }}
+                    position={{ lat: video.latitude!, lng: video.longitude! }}
                     mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
                   >
                     <CustomInfoWindowVideo video={video} onClose={() => setSelectedVideoId(null)} />
@@ -323,13 +321,6 @@ export default function Mapa() {
                     boxShadow: '0 0 5px rgba(0,0,0,0.3)',
                     cursor: 'pointer',
                     backgroundColor: '#fff',
-                  }}
-                  role="button"
-                  tabIndex={0}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      setSelectedUserId(user.uid)
-                    }
                   }}
                 >
                   <Image src={user.image} alt={user.name} width={60} height={60} style={{ objectFit: 'cover' }} />
