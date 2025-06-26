@@ -178,7 +178,7 @@ export default function TelaSimplificada() {
     >
       {/* Áreas clicáveis para navegação */}
       <div onClick={() => {
-        const videos = userVideosMap.get(userList[currentUserIndex]) || []
+      
         if (currentVideoIndex > 0) {
           updateUserByIndex(currentUserIndex, currentVideoIndex - 1)
         } else if (currentUserIndex > 0) {
