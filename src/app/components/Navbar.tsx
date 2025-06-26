@@ -4,11 +4,10 @@ import React, { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { Home, MapPin, Search, LogOut, Download } from 'lucide-react'
-import { Upload } from 'lucide-react'
+import { Home, MapPin, Search, LogOut, Download, Upload } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { useUser } from 'src/app/context/auth-context'
 
-
-// Definição manual do tipo BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
@@ -17,16 +16,18 @@ interface BeforeInstallPromptEvent extends Event {
 function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
+  const { user } = useUser()
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
-
-  // Inicializa com 0 para evitar mismatch SSR/CSR
   const [windowWidth, setWindowWidth] = useState<number>(0)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
 
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
-    handleResize() // Atualiza o valor logo que o componente monta no client
+    handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
@@ -58,19 +59,34 @@ function Navbar() {
     return '12px'
   }
 
- const buttons = [
-  { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
-  { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
-  { key: 'upload', path: '/upload', title: 'Upload', Icon: Upload },
-  { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
-  { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
-  ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
-]
+  const baseButtons = [
+    { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
+    { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
+    { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
+    { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
+  ]
 
-  const activeIndex = buttons.findIndex(btn => pathname === btn.path)
+  if (isInstallable) {
+    baseButtons.push({ key: 'install', path: '', title: 'Baixar', Icon: Download })
+  }
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
+  const activeIndex = baseButtons.findIndex(btn => pathname === btn.path)
+  const navButtonStyle = {
+    backgroundColor: 'transparent',
+    color: 'white',
+    border: 'none',
+    padding: getButtonPadding(),
+    borderRadius: '12px',
+    fontSize: '16px',
+    cursor: 'pointer',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'color 0.3s ease',
+    height: '50px',
+    position: 'relative' as const,
+  }
 
   useEffect(() => {
     if (activeIndex === -1) {
@@ -89,21 +105,21 @@ function Navbar() {
     })
   }, [activeIndex, windowWidth])
 
-  const navButtonStyle = {
-    backgroundColor: 'transparent',
-    color: 'white',
-    border: 'none',
-    padding: getButtonPadding(),
-    borderRadius: '12px',
-    fontSize: '16px',
-    cursor: 'pointer',
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'color 0.3s ease',
-    height: '50px',
-    position: 'relative' as const,
+  const handleClick = (key: string, path: string) => {
+    if (key === 'logout') {
+      signOut(auth).then(() => router.push('/login'))
+    } else if (key === 'install' && deferredPrompt) {
+      deferredPrompt.prompt().then(() => {
+        deferredPrompt.userChoice.then(result => {
+          if (result.outcome === 'accepted') {
+            setIsInstallable(false)
+            setDeferredPrompt(null)
+          }
+        })
+      })
+    } else if (path) {
+      router.push(path)
+    }
   }
 
   return (
@@ -128,34 +144,30 @@ function Navbar() {
       }}
       ref={containerRef}
     >
-      {buttons.map(({ key, path, title, Icon }) => {
-        const onClick =
-          key === 'logout'
-            ? async () => {
-                await signOut(auth)
-                router.push('/login')
-              }
-            : key === 'install'
-            ? async () => {
-                if (deferredPrompt) {
-                  deferredPrompt.prompt()
-                  const result = await deferredPrompt.userChoice
-                  if (result.outcome === 'accepted') {
-                    setIsInstallable(false)
-                    setDeferredPrompt(null)
-                  }
-                }
-              }
-            : () => {
-                if (path) router.push(path)
-              }
+      {/* Botões principais */}
+      {baseButtons.map(({ key, path, title, Icon }) => (
+        <button key={key} onClick={() => handleClick(key, path)} style={navButtonStyle} title={title}>
+          <Icon size={getIconSize()} color="#fff" />
+        </button>
+      ))}
 
-        return (
-          <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
-            <Icon size={getIconSize()} color="#fff" />
-          </button>
-        )
-      })}
+      {/* Botão de Upload com animação - só se logado */}
+      <AnimatePresence>
+        {user && (
+          <motion.button
+            key="upload"
+            onClick={() => router.push('/upload')}
+            style={navButtonStyle}
+            title="Upload"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, ease: 'easeOut' }}
+          >
+            <Upload size={getIconSize()} color="#fff" />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* Underline animado */}
       <div
@@ -180,4 +192,5 @@ function Navbar() {
     </nav>
   )
 }
+
 export default Navbar
