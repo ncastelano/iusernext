@@ -66,28 +66,34 @@ export default async function UserProfilePage({ params }: { params: Promise<{ na
           </p>
         </section>
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 text-white">Vídeos de {user.name}</h2>
-          {videos.length === 0 ? (
-            <p className="text-gray-400">Nenhum vídeo encontrado.</p>
-          ) : (
-            <ul className="flex flex-col space-y-4">
-              {videos.map(video => (
-                <li key={video.videoID} className="w-full max-w-md mx-auto">
-                  <Link href={`/${encodeURIComponent(user.name)}/${encodeURIComponent(video.videoID)}`}>
-                    <Image
-                      src={video.thumbnailUrl || '/default-thumbnail.png'}
-                      alt={`Thumbnail do vídeo: ${video.artistSongName}`}
-                      width={320}
-                      height={180}
-                      className="rounded-lg object-cover shadow-lg cursor-pointer"
-                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+       <section>
+  <h2 className="text-2xl font-semibold mb-4 text-white flex items-center gap-2">
+    Vídeos de {user.name}
+    <span className="bg-gray-700 text-sm px-2 py-1 rounded-full">
+      {videos.length}
+    </span>
+  </h2>
+  {videos.length === 0 ? (
+    <p className="text-gray-400">Nenhum vídeo encontrado.</p>
+  ) : (
+    <ul className="flex flex-col space-y-4">
+      {videos.map(video => (
+        <li key={video.videoID} className="w-full max-w-md mx-auto">
+          <Link href={`/${encodeURIComponent(user.name)}/${encodeURIComponent(video.videoID)}`}>
+            <Image
+              src={video.thumbnailUrl || '/default-thumbnail.png'}
+              alt={`Thumbnail do vídeo: ${video.artistSongName}`}
+              width={320}
+              height={180}
+              className="rounded-lg object-cover shadow-lg cursor-pointer"
+            />
+          </Link>
+        </li>
+      ))}
+    </ul>
+  )}
+</section>
+
       </main>
     )
   } catch (error) {

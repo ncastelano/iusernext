@@ -4,9 +4,8 @@ import React, { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { Home, MapPin, Search, LogOut, Download } from 'lucide-react'
+import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react' // <- Download removido
 
-// Definição manual do tipo BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
@@ -16,29 +15,20 @@ function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
-  const [isInstallable, setIsInstallable] = useState(false)
-
-  // Inicializa com 0 para evitar mismatch SSR/CSR
   const [windowWidth, setWindowWidth] = useState<number>(0)
 
+  const [user, setUser] = useState(() => auth.currentUser)
+
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
-    handleResize() // Atualiza o valor logo que o componente monta no client
-    window.addEventListener('resize', handleResize)
-    return () => window.removeEventListener('resize', handleResize)
+    const unsubscribe = auth.onAuthStateChanged(setUser)
+    return () => unsubscribe()
   }, [])
 
   useEffect(() => {
-    const handler = (e: Event) => {
-      const promptEvent = e as BeforeInstallPromptEvent
-      e.preventDefault()
-      setDeferredPrompt(promptEvent)
-      setIsInstallable(true)
-    }
-
-    window.addEventListener('beforeinstallprompt', handler)
-    return () => window.removeEventListener('beforeinstallprompt', handler)
+    const handleResize = () => setWindowWidth(window.innerWidth)
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
   }, [])
 
   const getIconSize = () => {
@@ -56,15 +46,18 @@ function Navbar() {
     return '12px'
   }
 
+  const normalizePath = (path: string) => path.replace(/\/+$/, '')
+  const cleanPathname = normalizePath(pathname === '/' ? '/inicio' : pathname || '')
+
   const buttons = [
     { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
     { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
+    ...(user ? [{ key: 'upload', path: '/upload', title: 'Upload', Icon: Upload }] : []),
     { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
-    { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
-    ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
+    ...(user ? [{ key: 'logout', path: '/login', title: 'Sair', Icon: LogOut }] : []),
   ]
 
-  const activeIndex = buttons.findIndex(btn => pathname === btn.path)
+  const activeIndex = buttons.findIndex(btn => normalizePath(btn.path) === cleanPathname)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
@@ -132,17 +125,6 @@ function Navbar() {
                 await signOut(auth)
                 router.push('/login')
               }
-            : key === 'install'
-            ? async () => {
-                if (deferredPrompt) {
-                  deferredPrompt.prompt()
-                  const result = await deferredPrompt.userChoice
-                  if (result.outcome === 'accepted') {
-                    setIsInstallable(false)
-                    setDeferredPrompt(null)
-                  }
-                }
-              }
             : () => {
                 if (path) router.push(path)
               }
@@ -154,7 +136,6 @@ function Navbar() {
         )
       })}
 
-      {/* Underline animado */}
       <div
         style={{
           position: 'absolute',
@@ -177,4 +158,5 @@ function Navbar() {
     </nav>
   )
 }
+
 export default Navbar

@@ -13,4 +13,5 @@ export type Video = {
   isStore: boolean
   isProduct: boolean
   videoUrl?: string
+  visaID?: string[]  
 }
