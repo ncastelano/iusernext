@@ -4,10 +4,9 @@ import React, { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { Home, MapPin, Search, LogOut, Download, Upload } from 'lucide-react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useUser } from 'src/app/context/auth-context'
+import { Home, MapPin, Search, LogOut, Download } from 'lucide-react'
 
+// Definição manual do tipo BeforeInstallPromptEvent
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>
@@ -16,24 +15,20 @@ interface BeforeInstallPromptEvent extends Event {
 function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user } = useUser()
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
+
+  // Inicializa com 0 para evitar mismatch SSR/CSR
   const [windowWidth, setWindowWidth] = useState<number>(0)
 
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
-
-  // Atualiza largura da janela
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth)
-    handleResize()
+    handleResize() // Atualiza o valor logo que o componente monta no client
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
-  // Captura evento de instalação PWA
   useEffect(() => {
     const handler = (e: Event) => {
       const promptEvent = e as BeforeInstallPromptEvent
@@ -45,32 +40,6 @@ function Navbar() {
     window.addEventListener('beforeinstallprompt', handler)
     return () => window.removeEventListener('beforeinstallprompt', handler)
   }, [])
-
-  // Ajusta underline no botão ativo
-  useEffect(() => {
-    if (containerRef.current == null || pathname == null) {
-      setUnderlineStyle({ left: 0, width: 0 })
-      return
-    }
-    const baseButtons = [...containerRef.current.children].filter(
-      (child) => (child as HTMLElement).getAttribute('data-key') !== 'upload'
-    )
-
-    const activeIndex = baseButtons.findIndex((btn) => {
-      return (btn as HTMLElement).getAttribute('data-path') === pathname
-    })
-
-    if (activeIndex === -1) {
-      setUnderlineStyle({ left: 0, width: 0 })
-      return
-    }
-
-    const activeButton = baseButtons[activeIndex] as HTMLElement
-    setUnderlineStyle({
-      left: activeButton.offsetLeft,
-      width: activeButton.offsetWidth,
-    })
-  }, [pathname, windowWidth])
 
   const getIconSize = () => {
     if (windowWidth === 0) return 24
@@ -87,50 +56,51 @@ function Navbar() {
     return '12px'
   }
 
-  // Botões básicos do navbar
-  const baseButtons = [
+  const buttons = [
     { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
     { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
     { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
     { key: 'logout', path: '/login', title: 'Sair', Icon: LogOut },
+    ...(isInstallable ? [{ key: 'install', path: '', title: 'Baixar', Icon: Download }] : []),
   ]
 
-  if (isInstallable) {
-    baseButtons.push({ key: 'install', path: '', title: 'Baixar', Icon: Download })
-  }
+  const activeIndex = buttons.findIndex(btn => pathname === btn.path)
 
-  const navButtonStyle: React.CSSProperties = {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
+
+  useEffect(() => {
+    if (activeIndex === -1) {
+      setUnderlineStyle({ left: 0, width: 0 })
+      return
+    }
+    const container = containerRef.current
+    if (!container) return
+
+    const activeButton = container.children[activeIndex] as HTMLElement
+    if (!activeButton) return
+
+    setUnderlineStyle({
+      left: activeButton.offsetLeft,
+      width: activeButton.offsetWidth,
+    })
+  }, [activeIndex, windowWidth])
+
+  const navButtonStyle = {
     backgroundColor: 'transparent',
     color: 'white',
     border: 'none',
     padding: getButtonPadding(),
-    borderRadius: 12,
-    fontSize: 16,
+    borderRadius: '12px',
+    fontSize: '16px',
     cursor: 'pointer',
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'column' as const,
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'color 0.3s ease',
-    height: 50,
-    position: 'relative',
-  }
-
-  const handleClick = (key: string, path: string) => {
-    if (key === 'logout') {
-      signOut(auth).then(() => router.push('/login'))
-    } else if (key === 'install' && deferredPrompt) {
-      deferredPrompt.prompt().then(() => {
-        deferredPrompt.userChoice.then((result) => {
-          if (result.outcome === 'accepted') {
-            setIsInstallable(false)
-            setDeferredPrompt(null)
-          }
-        })
-      })
-    } else if (path) {
-      router.push(path)
-    }
+    height: '50px',
+    position: 'relative' as const,
   }
 
   return (
@@ -141,9 +111,8 @@ function Navbar() {
         left: '50%',
         transform: 'translateX(-50%)',
         backgroundColor: 'rgba(0,0,0,0.6)',
-        padding:
-          windowWidth < 400 ? '6px 10px' : windowWidth < 600 ? '8px 16px' : '10px 20px',
-        borderRadius: 16,
+        padding: windowWidth < 400 ? '6px 10px' : windowWidth < 600 ? '8px 16px' : '10px 20px',
+        borderRadius: '16px',
         display: 'flex',
         gap: windowWidth < 400 ? '8px' : windowWidth < 600 ? '12px' : '14px',
         alignItems: 'center',
@@ -156,37 +125,34 @@ function Navbar() {
       }}
       ref={containerRef}
     >
-      {baseButtons.map(({ key, path, title, Icon }) => (
-        <button
-          key={key}
-          data-key={key}
-          data-path={path}
-          onClick={() => handleClick(key, path)}
-          style={navButtonStyle}
-          title={title}
-        >
-          <Icon size={getIconSize()} color="#fff" />
-        </button>
-      ))}
+      {buttons.map(({ key, path, title, Icon }) => {
+        const onClick =
+          key === 'logout'
+            ? async () => {
+                await signOut(auth)
+                router.push('/login')
+              }
+            : key === 'install'
+            ? async () => {
+                if (deferredPrompt) {
+                  deferredPrompt.prompt()
+                  const result = await deferredPrompt.userChoice
+                  if (result.outcome === 'accepted') {
+                    setIsInstallable(false)
+                    setDeferredPrompt(null)
+                  }
+                }
+              }
+            : () => {
+                if (path) router.push(path)
+              }
 
-      {/* Botão de Upload aparece somente se usuário estiver logado */}
-      <AnimatePresence>
-        {user && (
-          <motion.button
-            key="upload"
-            data-key="upload"
-            onClick={() => router.push('/upload')}
-            style={navButtonStyle}
-            title="Upload"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            transition={{ duration: 0.4, ease: 'easeOut' }}
-          >
-            <Upload size={getIconSize()} color="#fff" />
-          </motion.button>
-        )}
-      </AnimatePresence>
+        return (
+          <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
+            <Icon size={getIconSize()} color="#fff" />
+          </button>
+        )
+      })}
 
       {/* Underline animado */}
       <div
@@ -211,5 +177,4 @@ function Navbar() {
     </nav>
   )
 }
-
 export default Navbar
