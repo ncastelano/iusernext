@@ -43,32 +43,33 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
-  useEffect(() => {
-    let unsubscribe: () => void;
+ useEffect(() => {
+  let unsubscribe: () => void;
 
-    const checkRedirectAndAuth = async () => {
-      try {
-        await getRedirectResult(auth);
-      } catch (error) {
-        console.error('Erro ao obter resultado de redirect:', error);
+  const checkRedirectAndAuth = async () => {
+    try {
+      await getRedirectResult(auth);
+    } catch (error) {
+      console.error('Erro ao obter resultado de redirect:', error);
+    }
+
+    unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (firebaseUser) {
+        await loadUser(firebaseUser);
+      } else {
+        setUser(null);
       }
+      setLoading(false);
+    });
+  };
 
-      unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          loadUser(firebaseUser);
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      });
-    };
+  checkRedirectAndAuth();
 
-    checkRedirectAndAuth();
+  return () => {
+    if (unsubscribe) unsubscribe();
+  };
+}, []);
 
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, []);
 
   return (
     <UserContext.Provider value={{ user, loading }}>

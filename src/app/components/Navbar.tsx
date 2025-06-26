@@ -16,7 +16,7 @@ interface BeforeInstallPromptEvent extends Event {
 function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
-  const { user, loading } = useUser()
+  const { user } = useUser()
 
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isInstallable, setIsInstallable] = useState(false)
@@ -133,9 +133,6 @@ function Navbar() {
     }
   }
 
-  // Evita renderizar enquanto carrega user para não "sumir" botão de upload
-  if (loading) return null
-
   return (
     <nav
       style={{
@@ -172,7 +169,7 @@ function Navbar() {
         </button>
       ))}
 
-      {/* Botão de Upload aparece somente se usuário logado e loading false */}
+      {/* Botão de Upload aparece somente se usuário estiver logado */}
       <AnimatePresence>
         {user && (
           <motion.button
