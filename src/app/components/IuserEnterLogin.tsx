@@ -26,7 +26,7 @@ export default function IuserEnterLogin() {
       title={`Usuário: ${user?.name ?? 'Anônimo'}\nEmail: ${user?.email ?? 'Anônimo'}`}
       style={{
         position: 'fixed',
-        bottom: 10,
+        top: 20,
         left: 20,
         width: 64,
         height: 64,

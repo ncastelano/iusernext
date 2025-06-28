@@ -97,9 +97,9 @@ function Navbar() {
     <nav
       style={{
         position: 'fixed',
-        bottom: 20,
-        left: '50%',
-        transform: 'translateX(-50%)',
+       top: 20,
+left: '50%',
+transform: 'translateX(-50%)',
         backgroundColor: 'rgba(0,0,0,0.6)',
         padding: windowWidth < 400 ? '6px 10px' : windowWidth < 600 ? '8px 16px' : '10px 20px',
         borderRadius: '16px',
