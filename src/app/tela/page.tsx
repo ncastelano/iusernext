@@ -215,15 +215,15 @@ export default function TelaSimplificada() {
   const nextVideo =
     userList.length > 0 && userVideosMap.size > 0
       ? (() => {
-          const videos = userVideosMap.get(userList[currentUserIndex]) || []
-          if (currentVideoIndex < videos.length - 1) {
-            return videos[currentVideoIndex + 1]
-          } else if (currentUserIndex < userList.length - 1) {
-            const nextUserVideos = userVideosMap.get(userList[currentUserIndex + 1]) || []
-            return nextUserVideos[0] || null
-          }
-          return null
-        })()
+        const videos = userVideosMap.get(userList[currentUserIndex]) || []
+        if (currentVideoIndex < videos.length - 1) {
+          return videos[currentVideoIndex + 1]
+        } else if (currentUserIndex < userList.length - 1) {
+          const nextUserVideos = userVideosMap.get(userList[currentUserIndex + 1]) || []
+          return nextUserVideos[0] || null
+        }
+        return null
+      })()
       : null
 
   return (
@@ -241,31 +241,31 @@ export default function TelaSimplificada() {
     >
       {/* Thumbnail + loading */}
       {video && !videoLoaded && video.thumbnailUrl && (
-  <div
-    style={{
-      position: 'relative',
-      width: '100%',
-      height: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 20,
-      flexDirection: 'row',
-    }}
-  >
-    <Image
-      src={video.thumbnailUrl}
-      alt="Thumbnail"
-      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }}
-      fill
-      priority
-    />
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 20,
+            flexDirection: 'row',
+          }}
+        >
+          <Image
+            src={video.thumbnailUrl}
+            alt="Thumbnail"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }}
+            fill
+            priority
+          />
 
-    
 
-   
-  </div>
-)}
+
+
+        </div>
+      )}
 
 
       {/* Vídeo com animação */}
@@ -320,14 +320,16 @@ export default function TelaSimplificada() {
           preload="auto"
           style={{ display: 'none' }}
           muted
-          // só pré-carregar, não toca
+        // só pré-carregar, não toca
         />
       )}
 
       {/* Progresso + avatar */}
       {video && (
         <>
+        
           <div
+          
             style={{
               position: 'absolute',
               bottom: 10,
@@ -339,43 +341,48 @@ export default function TelaSimplificada() {
               alignItems: 'center',
               justifyContent: 'center',
             }}
+            
           >
-             {!videoLoaded && (
-  <div
-    style={{
-      position: 'absolute',
-      bottom: 120,
-      right: 30,
-      display: 'flex',
-      alignItems: 'center',
-      gap: 10,
-      zIndex: 10,
-    }}
-  >
-    <span
-      style={{
-        fontSize: 16,
-        color: 'white',
-        userSelect: 'none',
-        fontWeight: 'bold',
-        fontFamily: 'Arial, sans-serif',
-      }}
-    >
-      Carregando vídeo
-    </span>
-    <Image
-      src="/loading100px.svg"
-      alt="Loading"
-      width={16}
-      height={16}
-      style={{
-        opacity: 0.8,
-        pointerEvents: 'none',
-      }}
-      priority
-    />
-  </div>
-)}
+            
+            {!videoLoaded && (
+              <div
+                style={{
+                  position: 'absolute',
+                  bottom: 120,
+                  right: 200,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  zIndex: 10,
+                  whiteSpace: 'nowrap', // <- isso impede quebra de linha
+                }}
+              >
+
+                <span
+                  style={{
+                    fontSize: 30,
+                    color: 'white',
+                    userSelect: 'none',
+                    fontWeight: 'bold',
+                    fontFamily: 'Arial, sans-serif',
+                  }}
+                >
+                  Carregando vídeo
+                </span>
+                <Image
+                  src="/loading100px.svg"
+                  alt="Loading"
+                  width={80}
+                  height={80}
+                  style={{
+                    opacity: 0.8,
+                    pointerEvents: 'none',
+                  }}
+                  priority
+                />
+              </div>
+
+            )}
 
             <SegmentedProgressRing
               segments={segmentColors.length}
@@ -403,6 +410,7 @@ export default function TelaSimplificada() {
                 style={{ objectFit: 'cover', borderRadius: '50%' }}
               />
             </Link>
+
           </div>
 
           {/* Controle de tempo (slider + tempo) */}
