@@ -241,32 +241,32 @@ export default function TelaSimplificada() {
     >
       {/* Thumbnail + loading */}
       {video && !videoLoaded && video.thumbnailUrl && (
-        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-          <Image
-            src={video.thumbnailUrl}
-            alt="Thumbnail"
-            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            fill
-            priority
-          />
-          <Image
-            src="/loading100px.svg"
-            alt="Loading"
-            width={300}
-            height={300}
-            style={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              pointerEvents: 'none',
-              zIndex: 10,
-              opacity: 0.8,
-            }}
-            priority
-          />
-        </div>
-      )}
+  <div
+    style={{
+      position: 'relative',
+      width: '100%',
+      height: '100%',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 20,
+      flexDirection: 'row',
+    }}
+  >
+    <Image
+      src={video.thumbnailUrl}
+      alt="Thumbnail"
+      style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0, zIndex: 0 }}
+      fill
+      priority
+    />
+
+    
+
+   
+  </div>
+)}
+
 
       {/* Vídeo com animação */}
       <AnimatePresence mode="wait">
@@ -340,6 +340,43 @@ export default function TelaSimplificada() {
               justifyContent: 'center',
             }}
           >
+             {!videoLoaded && (
+  <div
+    style={{
+      position: 'absolute',
+      bottom: 120,
+      right: 30,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 10,
+      zIndex: 10,
+    }}
+  >
+    <span
+      style={{
+        fontSize: 16,
+        color: 'white',
+        userSelect: 'none',
+        fontWeight: 'bold',
+        fontFamily: 'Arial, sans-serif',
+      }}
+    >
+      Carregando vídeo
+    </span>
+    <Image
+      src="/loading100px.svg"
+      alt="Loading"
+      width={16}
+      height={16}
+      style={{
+        opacity: 0.8,
+        pointerEvents: 'none',
+      }}
+      priority
+    />
+  </div>
+)}
+
             <SegmentedProgressRing
               segments={segmentColors.length}
               radius={36}
