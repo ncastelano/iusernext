@@ -11,7 +11,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 export default function TelaSimplificada() {
   const [video, setVideo] = useState<Video | null>(null)
-  const [prevVideo, setPrevVideo] = useState<Video | null>(null)
+
   const [segmentColors, setSegmentColors] = useState<string[]>([])
   const [videoLoaded, setVideoLoaded] = useState(false)
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | 'up' | 'down' | null>(null)
@@ -44,7 +44,7 @@ export default function TelaSimplificada() {
       const videos = userVideosMap.get(userID) || []
       const selectedVideo = videos[videoIndex]
 
-      setPrevVideo(video)
+
       setSwipeDirection(direction)
       setCurrentUserIndex(userIndex)
       setCurrentVideoIndex(videoIndex)

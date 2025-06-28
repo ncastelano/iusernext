@@ -27,7 +27,7 @@ export default function IuserEnterLogin() {
       style={{
         position: 'fixed',
         top: 20,
-        left: 20,
+        left: 30,
         width: 64,
         height: 64,
         borderRadius: '50%',
