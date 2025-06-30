@@ -41,17 +41,17 @@ function Navbar() {
   const scale = getResponsiveScale()
 
   const getIconSize = () => {
-    if (windowWidth === 0) return 24 * scale
-    if (windowWidth < 400) return 24 * scale
-    if (windowWidth < 600) return 30 * scale
-    if (windowWidth < 900) return 40 * scale
+    if (windowWidth === 0) return 48 * scale
+    if (windowWidth < 400) return 48 * scale
+    if (windowWidth < 600) return 60 * scale
+    if (windowWidth < 900) return 80 * scale
     return 50 * scale
   }
 
   const getButtonPadding = () => {
-    if (windowWidth < 400) return `${6 * scale}px`
-    if (windowWidth < 600) return `${8 * scale}px`
-    if (windowWidth < 900) return `${10 * scale}px`
+    if (windowWidth < 400) return `${12 * scale}px`
+    if (windowWidth < 600) return `${16 * scale}px`
+    if (windowWidth < 900) return `${20 * scale}px`
     return `${12 * scale}px`
   }
 
@@ -115,18 +115,18 @@ function Navbar() {
         backgroundColor: 'rgba(0,0,0,0.6)',
         padding:
           windowWidth < 400
-            ? `${6 * scale}px ${10 * scale}px`
+            ? `${12 * scale}px ${10 * scale}px`
             : windowWidth < 600
-            ? `${8 * scale}px ${16 * scale}px`
-            : `${10 * scale}px ${20 * scale}px`,
+            ? `${16 * scale}px ${32 * scale}px`
+            : `${20 * scale}px ${40 * scale}px`,
         borderRadius: '16px',
         display: 'flex',
-        gap: windowWidth < 400 ? `${8 * scale}px` : windowWidth < 600 ? `${12 * scale}px` : `${14 * scale}px`,
+        gap: windowWidth < 400 ? `${12 * scale}px` : windowWidth < 600 ? `${24 * scale}px` : `${48 * scale}px`,
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
-        width: windowWidth < 400 ? `${95 * scale}%` : windowWidth < 600 ? `${90 * scale}%` : `${600 * scale}px`,
+        width: windowWidth < 400 ? `${190 * scale}%` : windowWidth < 600 ? `${180 * scale}%` : `${600 * scale}px`,
         maxWidth: '100%',
         boxShadow: '0 0 10px rgba(0,0,0,0.5)',
       }}
