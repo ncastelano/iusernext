@@ -4,15 +4,14 @@ import React, { useEffect, useState, useRef } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
-import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react' // <- Download removido
-
-
+import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react'
 
 function Navbar() {
   const pathname = usePathname()
   const router = useRouter()
 
   const [windowWidth, setWindowWidth] = useState<number>(0)
+  const [devicePixelRatio, setDevicePixelRatio] = useState<number>(1)
 
   const [user, setUser] = useState(() => auth.currentUser)
 
@@ -22,25 +21,38 @@ function Navbar() {
   }, [])
 
   useEffect(() => {
-    const handleResize = () => setWindowWidth(window.innerWidth)
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+      setDevicePixelRatio(window.devicePixelRatio)
+    }
     handleResize()
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  const getResponsiveScale = () => {
+    // Dobra tamanho se tela pequena e alta densidade de pixels
+    if (windowWidth <= 400 && devicePixelRatio >= 2) {
+      return 2
+    }
+    return 1
+  }
+
+  const scale = getResponsiveScale()
+
   const getIconSize = () => {
-    if (windowWidth === 0) return 24
-    if (windowWidth < 400) return 24
-    if (windowWidth < 600) return 30
-    if (windowWidth < 900) return 40
-    return 50
+    if (windowWidth === 0) return 24 * scale
+    if (windowWidth < 400) return 24 * scale
+    if (windowWidth < 600) return 30 * scale
+    if (windowWidth < 900) return 40 * scale
+    return 50 * scale
   }
 
   const getButtonPadding = () => {
-    if (windowWidth < 400) return '6px'
-    if (windowWidth < 600) return '8px'
-    if (windowWidth < 900) return '10px'
-    return '12px'
+    if (windowWidth < 400) return `${6 * scale}px`
+    if (windowWidth < 600) return `${8 * scale}px`
+    if (windowWidth < 900) return `${10 * scale}px`
+    return `${12 * scale}px`
   }
 
   const normalizePath = (path: string) => path.replace(/\/+$/, '')
@@ -89,7 +101,7 @@ function Navbar() {
     alignItems: 'center',
     justifyContent: 'center',
     transition: 'color 0.3s ease',
-    height: '50px',
+    height: `${50 * scale}px`,
     position: 'relative' as const,
   }
 
@@ -97,19 +109,24 @@ function Navbar() {
     <nav
       style={{
         position: 'fixed',
-       top: 20,
-left: '50%',
-transform: 'translateX(-50%)',
+        top: 20,
+        left: '50%',
+        transform: 'translateX(-50%)',
         backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: windowWidth < 400 ? '6px 10px' : windowWidth < 600 ? '8px 16px' : '10px 20px',
+        padding:
+          windowWidth < 400
+            ? `${6 * scale}px ${10 * scale}px`
+            : windowWidth < 600
+            ? `${8 * scale}px ${16 * scale}px`
+            : `${10 * scale}px ${20 * scale}px`,
         borderRadius: '16px',
         display: 'flex',
-        gap: windowWidth < 400 ? '8px' : windowWidth < 600 ? '12px' : '14px',
+        gap: windowWidth < 400 ? `${8 * scale}px` : windowWidth < 600 ? `${12 * scale}px` : `${14 * scale}px`,
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
-        width: windowWidth < 400 ? '95%' : windowWidth < 600 ? '90%' : '600px',
+        width: windowWidth < 400 ? `${95 * scale}%` : windowWidth < 600 ? `${90 * scale}%` : `${600 * scale}px`,
         maxWidth: '100%',
         boxShadow: '0 0 10px rgba(0,0,0,0.5)',
       }}
@@ -136,10 +153,10 @@ transform: 'translateX(-50%)',
       <div
         style={{
           position: 'absolute',
-          bottom: 8,
+          bottom: 8 * scale,
           left: underlineStyle.left,
           width: underlineStyle.width,
-          height: 3,
+          height: 3 * scale,
           borderRadius: 2,
           backgroundColor: 'rgb(255, 255, 255)',
           boxShadow: `
