@@ -1,122 +1,159 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useUser } from '@/app/components/UserContext'
+import React, { useEffect, useState, useRef } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { signOut } from 'firebase/auth'
+import { auth } from '@/lib/firebase'
+import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react'
+import IuserEnterLogin from '@/app/components/IuserEnterLogin'
 
-export default function IuserEnterLogin() {
-  const { user } = useUser()
-
-  const [showText, setShowText] = useState(false)
+function Navbar() {
+  const pathname = usePathname()
   const router = useRouter()
-
-  const fallbackImage = '/icon/icon-white-512x512.png'
+  const [user, setUser] = useState(() => auth.currentUser)
 
   useEffect(() => {
-    if (!user?.image) {
-      const interval = setInterval(() => setShowText((prev) => !prev), 2500)
-      return () => clearInterval(interval)
-    }
-  }, [user?.image])
+    const unsubscribe = auth.onAuthStateChanged(setUser)
+    return () => unsubscribe()
+  }, [])
+
+  const normalizePath = (path: string) => path.replace(/\/+$/, '')
+  const cleanPathname = normalizePath(pathname === '/' ? '/inicio' : pathname || '')
+
+  const buttons = [
+    { key: 'inicio', path: '/inicio', title: 'Início', Icon: Home },
+    { key: 'mapa', path: '/mapa', title: 'Mapa', Icon: MapPin },
+    ...(user ? [{ key: 'upload', path: '/upload', title: 'Upload', Icon: Upload }] : []),
+    { key: 'tudo', path: '/tudo', title: 'Pesquisar', Icon: Search },
+    ...(user ? [{ key: 'logout', path: '/login', title: 'Sair', Icon: LogOut }] : []),
+  ]
+
+  const activeIndex = buttons.findIndex(btn => normalizePath(btn.path) === cleanPathname)
+
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [underlineStyle, setUnderlineStyle] = useState({ left: 0, width: 0 })
+
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container || activeIndex === -1) return
+
+    const activeButton = container.children[activeIndex] as HTMLElement
+    if (!activeButton) return
+
+    setUnderlineStyle({
+      left: activeButton.offsetLeft,
+      width: activeButton.offsetWidth,
+    })
+  }, [activeIndex])
 
   return (
-    <div
-      title={`Usuário: ${user?.name ?? 'Anônimo'}\nEmail: ${user?.email ?? 'Anônimo'}`}
+    <nav
       style={{
         position: 'fixed',
         top: 20,
-        left: 30,
-        width: 64,
-        height: 64,
-        borderRadius: '50%',
-        padding: 3,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        padding: 'clamp(12px, 3vw, 20px) clamp(16px, 6vw, 40px)',
+        borderRadius: '16px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
-        zIndex: 11000,
+        justifyContent: 'space-between',
+        gap: 'clamp(16px, 5vw, 48px)',
+        zIndex: 1000,
+        userSelect: 'none',
+        width: 'clamp(320px, 90vw, 600px)',
+        boxShadow: '0 0 10px rgba(0,0,0,0.5)',
       }}
-     onClick={() => {
-  if (user?.name) {
-    router.push(`/${encodeURIComponent(user.name)}`)
-  } else {
-    router.push('/login')
-  }
-}}
-
     >
+      {/* BOTÕES */}
+      <div
+        ref={containerRef}
+        style={{
+          display: 'flex',
+          gap: 'clamp(12px, 4vw, 32px)',
+          alignItems: 'center',
+          position: 'relative',
+        }}
+      >
+        {buttons.map(({ key, path, title, Icon }) => {
+          const onClick =
+            key === 'logout'
+              ? async () => {
+                  await signOut(auth)
+                  router.push('/login')
+                }
+              : () => router.push(path)
+
+          return (
+            <button
+              key={key}
+              onClick={onClick}
+              title={title}
+              style={{
+                backgroundColor: 'transparent',
+                color: 'white',
+                border: 'none',
+                padding: 'clamp(8px, 2vw, 16px)',
+                borderRadius: '12px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: 'clamp(50px, 8vw, 70px)',
+                position: 'relative',
+              }}
+            >
+              <Icon
+                style={{
+                  width: 'clamp(40px, 6vw, 80px)',
+                  height: 'clamp(40px, 6vw, 80px)',
+                }}
+                color="#fff"
+              />
+            </button>
+          )
+        })}
+
+        {/* UNDERLINE */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '6px',
+            left: underlineStyle.left,
+            width: underlineStyle.width,
+            height: '3px',
+            borderRadius: 2,
+            backgroundColor: 'white',
+            boxShadow: `
+              0 -4px 6px rgba(255, 255, 255, 0.9),
+              0 -8px 12px rgba(255, 255, 255, 0.6),
+              0 -14px 20px rgba(255, 255, 255, 0.3)
+            `,
+            transition: 'left 0.3s ease, width 0.3s ease',
+            pointerEvents: 'none',
+            zIndex: 1100,
+          }}
+        />
+      </div>
+
+      {/* LOGIN / AVATAR */}
       <div
         style={{
-          width: 54,
-          height: 54,
+          width: 'clamp(60px, 10vw, 120px)',
+          height: 'clamp(60px, 10vw, 120px)',
           borderRadius: '50%',
-          backgroundColor: user?.image ? '#00ff00' : '#fff',
+          overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
         }}
       >
-        <div
-          style={{
-            width: 48,
-            height: 48,
-            borderRadius: '50%',
-            backgroundColor: '#121212',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
-          }}
-        >
-          <AnimatePresence mode="wait">
-            {user?.image ? (
-              <motion.div
-                key="photo"
-                initial={{ opacity: 0, rotate: -30, scale: 0.7 }}
-                animate={{ opacity: 1, rotate: 0, scale: 1 }}
-                exit={{ opacity: 0, rotate: 30, scale: 0.5 }}
-                transition={{ duration: 0.6 }}
-              >
-                <Image
-                  src={user.image}
-                  alt="Foto do Usuário"
-                  width={40}
-                  height={40}
-                  style={{ objectFit: 'cover', borderRadius: '50%' }}
-                />
-              </motion.div>
-            ) : (
-              <motion.div
-                key={showText ? 'text' : 'fallback'}
-                initial={{ opacity: 0, y: 10, scale: 0.7 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: -10, scale: 0.5 }}
-                transition={{ duration: 0.6 }}
-                style={{
-                  color: '#fff',
-                  fontSize: 12,
-                  fontWeight: 600,
-                  textAlign: 'center',
-                }}
-              >
-                {showText ? (
-                  'Entrar'
-                ) : (
-                  <Image
-                    src={fallbackImage}
-                    alt="Anônimo"
-                    width={40}
-                    height={40}
-                    style={{ objectFit: 'cover', borderRadius: '50%' }}
-                  />
-                )}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+        <IuserEnterLogin />
       </div>
-    </div>
+    </nav>
   )
 }
+
+export default Navbar
