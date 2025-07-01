@@ -38,26 +38,26 @@ export default function TelaSimplificada() {
     })
   }, [])
 
-  const updateUserByIndex = useCallback(
-    (userIndex: number, videoIndex: number = 0, direction: 'left' | 'right' | 'up' | 'down' | null = null) => {
-      const userID = userList[userIndex]
-      const videos = userVideosMap.get(userID) || []
-      const selectedVideo = videos[videoIndex]
+ const updateUserByIndex = useCallback(
+  (userIndex: number, videoIndex: number = 0, direction: 'left' | 'right' | 'up' | 'down' | null = null) => {
+    const userID = userList[userIndex]
+    const videos = userVideosMap.get(userID) || []
+    const selectedVideo = videos[videoIndex]
 
+    setSwipeDirection(direction)
+    setCurrentUserIndex(userIndex)
+    setCurrentVideoIndex(videoIndex)
+    setVideo(selectedVideo)
+    setSegmentColors(getSegmentColors(videos))
+    setVideoLoaded(false)
 
-      setSwipeDirection(direction)
-      setCurrentUserIndex(userIndex)
-      setCurrentVideoIndex(videoIndex)
-      setVideo(selectedVideo)
-      setSegmentColors(getSegmentColors(videos))
-      setVideoLoaded(false)
+    // Resetar tempo ao mudar vídeo
+    setCurrentTime(0)
+    setDuration(0)
+  },
+  [userList, userVideosMap, getSegmentColors] // <- corrigido
+)
 
-      // Resetar tempo ao mudar vídeo
-      setCurrentTime(0)
-      setDuration(0)
-    },
-    [userList, userVideosMap, getSegmentColors, video]
-  )
 
   function handleTouchStart(e: React.TouchEvent) {
     touchStart.current = {

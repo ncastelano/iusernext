@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { UserProvider } from './components/UserContext'
-import Navbar from './components/Navbar' // <-- Importa a Navbar
+//import Navbar from './components/Navbar' // <-- Importa a Navbar
 import NavigationBar from './components/NavigationBar'
 // import ConditionalUI from './components/ConditionalUI' // <-- Comentado
 
