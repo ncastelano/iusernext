@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
 import './globals.css'
-import ConditionalUI from './components/ConditionalUI'
-import { UserProvider } from './components/UserContext' // importe aqui
+import { UserProvider } from './components/UserContext'
+import Navbar from './components/Navbar' // <-- Importa a Navbar
+import NavigationBar from './components/NavigationBar'
+// import ConditionalUI from './components/ConditionalUI' // <-- Comentado
 
 export const metadata: Metadata = {
   title: 'iUser',
@@ -22,7 +24,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR">
       <body>
         <UserProvider>
-          <ConditionalUI />
+          {/* <ConditionalUI /> */}
+          {/*  <Navbar />  */}
+         <NavigationBar/>
           {children}
         </UserProvider>
       </body>

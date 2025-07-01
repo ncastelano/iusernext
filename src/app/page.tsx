@@ -8,7 +8,7 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/tela');
+    router.replace('/inicio');
   }, [router]);
 
   return null; // ou um spinner se quiser
