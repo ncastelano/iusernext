@@ -105,20 +105,39 @@ function Navbar() {
   }
 
   return (
-    <nav
+  <nav
+    style={{
+      position: 'fixed',
+      top: 20,
+      left: '50%',
+      transform: 'translateX(-50%)',
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      padding:
+        windowWidth < 400
+          ? `${12 * scale}px ${10 * scale}px`
+          : windowWidth < 600
+          ? `${16 * scale}px ${32 * scale}px`
+          : `${20 * scale}px ${40 * scale}px`,
+      borderRadius: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: `${24 * scale}px`,
+      zIndex: 1000,
+      userSelect: 'none',
+      width:
+        windowWidth < 400
+          ? `${190 * scale}%`
+          : windowWidth < 600
+          ? `${180 * scale}%`
+          : `${600 * scale}px`,
+      maxWidth: '100%',
+      boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+    }}
+  >
+    {/* GRUPO DE BOTÕES */}
+    <div
       style={{
-        position: 'fixed',
-        top: 20,
-        left: '50%',
-        transform: 'translateX(-50%)',
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        padding:
-          windowWidth < 400
-            ? `${12 * scale}px ${10 * scale}px`
-            : windowWidth < 600
-            ? `${16 * scale}px ${32 * scale}px`
-            : `${20 * scale}px ${40 * scale}px`,
-        borderRadius: '16px',
         display: 'flex',
         gap:
           windowWidth < 400
@@ -127,17 +146,7 @@ function Navbar() {
             ? `${24 * scale}px`
             : `${48 * scale}px`,
         alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        userSelect: 'none',
-        width:
-          windowWidth < 400
-            ? `${190 * scale}%`
-            : windowWidth < 600
-            ? `${180 * scale}%`
-            : `${600 * scale}px`,
-        maxWidth: '100%',
-        boxShadow: '0 0 10px rgba(0,0,0,0.5)',
+        position: 'relative',
       }}
       ref={containerRef}
     >
@@ -153,15 +162,13 @@ function Navbar() {
               }
 
         return (
-          <React.Fragment key={key}>
-            <button onClick={onClick} style={navButtonStyle} title={title}>
-              <Icon size={getIconSize()} color="#fff" />
-            </button>
-            {key === 'tudo' && <IuserEnterLogin />}
-          </React.Fragment>
+          <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
+            <Icon size={getIconSize()} color="#fff" />
+          </button>
         )
       })}
 
+      {/* Underline */}
       <div
         style={{
           position: 'absolute',
@@ -181,8 +188,15 @@ function Navbar() {
           zIndex: 1100,
         }}
       />
-    </nav>
-  )
+    </div>
+
+    {/* AVATAR OU LOGIN */}
+    <div>
+      <IuserEnterLogin />
+    </div>
+  </nav>
+)
+
 }
 
 export default Navbar
