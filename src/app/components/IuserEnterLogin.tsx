@@ -38,7 +38,14 @@ export default function IuserEnterLogin() {
         cursor: 'pointer',
         zIndex: 11000,
       }}
-      onClick={() => router.push('/login')}
+     onClick={() => {
+  if (user?.name) {
+    router.push(`/${encodeURIComponent(user.name)}`)
+  } else {
+    router.push('/login')
+  }
+}}
+
     >
       <div
         style={{
