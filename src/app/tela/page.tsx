@@ -386,7 +386,7 @@ export default function TelaSimplificada() {
 
             <SegmentedProgressRing
               segments={segmentColors.length}
-              radius={100}
+              radius={36}
               strokeWidth={4}
               colors={segmentColors}
               activeIndex={currentVideoIndex}
