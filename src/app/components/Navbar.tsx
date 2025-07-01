@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import { signOut } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { Home, MapPin, Search, LogOut, Upload } from 'lucide-react'
+import IuserEnterLogin from '@/app/components/IuserEnterLogin' // ajuste o caminho se necessário
 
 function Navbar() {
   const pathname = usePathname()
@@ -12,7 +13,6 @@ function Navbar() {
 
   const [windowWidth, setWindowWidth] = useState<number>(0)
   const [devicePixelRatio, setDevicePixelRatio] = useState<number>(1)
-
   const [user, setUser] = useState(() => auth.currentUser)
 
   useEffect(() => {
@@ -31,7 +31,6 @@ function Navbar() {
   }, [])
 
   const getResponsiveScale = () => {
-    // Dobra tamanho se tela pequena e alta densidade de pixels
     if (windowWidth <= 400 && devicePixelRatio >= 2) {
       return 2
     }
@@ -121,12 +120,22 @@ function Navbar() {
             : `${20 * scale}px ${40 * scale}px`,
         borderRadius: '16px',
         display: 'flex',
-        gap: windowWidth < 400 ? `${12 * scale}px` : windowWidth < 600 ? `${24 * scale}px` : `${48 * scale}px`,
+        gap:
+          windowWidth < 400
+            ? `${12 * scale}px`
+            : windowWidth < 600
+            ? `${24 * scale}px`
+            : `${48 * scale}px`,
         alignItems: 'center',
         justifyContent: 'center',
         zIndex: 1000,
         userSelect: 'none',
-        width: windowWidth < 400 ? `${190 * scale}%` : windowWidth < 600 ? `${180 * scale}%` : `${600 * scale}px`,
+        width:
+          windowWidth < 400
+            ? `${190 * scale}%`
+            : windowWidth < 600
+            ? `${180 * scale}%`
+            : `${600 * scale}px`,
         maxWidth: '100%',
         boxShadow: '0 0 10px rgba(0,0,0,0.5)',
       }}
@@ -144,9 +153,12 @@ function Navbar() {
               }
 
         return (
-          <button key={key} onClick={onClick} style={navButtonStyle} title={title}>
-            <Icon size={getIconSize()} color="#fff" />
-          </button>
+          <React.Fragment key={key}>
+            <button onClick={onClick} style={navButtonStyle} title={title}>
+              <Icon size={getIconSize()} color="#fff" />
+            </button>
+            {key === 'tudo' && <IuserEnterLogin />}
+          </React.Fragment>
         )
       })}
 
