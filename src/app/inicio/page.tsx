@@ -130,10 +130,13 @@ export default function InicioPage({ userId }: Anonymous) {
   }, [userId]);
 
   const toggleComments = (videoId: string) => {
-    setShowComments((prev) =>
-      prev && currentVideoId === videoId ? false : true
-    );
-    setCurrentVideoId(videoId);
+    if (showComments && currentVideoId === videoId) {
+      setShowComments(false);
+      setCurrentVideoId("");
+    } else {
+      setCurrentVideoId(videoId);
+      setShowComments(true);
+    }
   };
 
   return (
