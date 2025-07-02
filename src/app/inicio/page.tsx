@@ -23,11 +23,7 @@ import { UserAvatar } from "@/app/components/UserAvatar";
 import { CommentSection } from "@/app/components/CommentSection";
 import { MuteButton } from "@/app/components/MuteButton";
 
-export default function InicioPage({
-  userId,
-  userName = "Usuário",
-  userProfileImage = "/default-profile.png",
-}: Anonymous) {
+export default function InicioPage({ userId }: Anonymous) {
   const [videos, setVideos] = useState<Video[]>([]);
   const [videosReady, setVideosReady] = useState<Record<string, boolean>>({});
   const [playing, setPlaying] = useState<Record<string, boolean>>({});
@@ -166,7 +162,28 @@ export default function InicioPage({
               onPlayToggle={togglePlay}
             />
 
-            <UserAvatar imageUrl={video.userProfileImage} />
+            <UserAvatar
+              imageUrl={video.userProfileImage}
+              userName={video.userName}
+              artistSongName={video.artistSongName}
+            />
+
+            <div
+              style={{
+                marginTop: "0.5rem",
+                color: "#fff",
+                backgroundColor: "rgb(255, 0, 0)",
+                padding: "0.3rem 0.6rem",
+                borderRadius: "8px",
+                fontSize: "0.9rem",
+                maxWidth: "200px",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                whiteSpace: "nowrap",
+              }}
+            >
+              {video.artistSongName || "Música não informada"}
+            </div>
 
             <button
               onClick={() => toggleComments(video.videoID)}
