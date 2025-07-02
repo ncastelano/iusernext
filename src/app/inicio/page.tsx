@@ -168,23 +168,6 @@ export default function InicioPage({ userId }: Anonymous) {
               artistSongName={video.artistSongName}
             />
 
-            <div
-              style={{
-                marginTop: "0.5rem",
-                color: "#fff",
-                backgroundColor: "rgb(255, 0, 0)",
-                padding: "0.3rem 0.6rem",
-                borderRadius: "8px",
-                fontSize: "0.9rem",
-                maxWidth: "200px",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {video.artistSongName || "Música não informada"}
-            </div>
-
             <button
               onClick={() => toggleComments(video.videoID)}
               style={{
