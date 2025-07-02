@@ -4,6 +4,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
 import { User2, Zap } from "lucide-react";
+import Image from "next/image";
 
 function NavigationBar() {
   const router = useRouter();
@@ -49,9 +50,11 @@ function NavigationBar() {
       {/* USER ICON OR AVATAR */}
       <div onClick={handleUserClick} style={iconStyle}>
         {user?.image ? (
-          <img
+          <Image
             src={user.image}
             alt={user.name || "User"}
+            width={100}
+            height={100}
             style={{
               ...iconStyle,
               borderRadius: "50%",

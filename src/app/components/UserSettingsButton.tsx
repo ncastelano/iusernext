@@ -24,11 +24,6 @@ export function UserSettingsButton({ profileUid }: UserSettingsButtonProps) {
     return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    router.push("/login");
-  };
-
   if (!currentUser || currentUser.uid !== profileUid) return null;
 
   return (
