@@ -1,67 +1,96 @@
-// components/VideoPlayer.tsx
-'use client'
+"use client";
+import { useRef, useEffect } from "react";
+import Image from "next/image";
+import { Play, Pause } from "lucide-react";
+import { Video } from "types/video";
 
-import { motion } from 'framer-motion'
-import React from 'react'
+type VideoPlayerProps = {
+  video: Video;
+  isPlaying: boolean;
+  isReady: boolean;
+  muted: boolean;
+  onCanPlay: (id: string) => void;
+  onPlayToggle: (id: string) => void;
+};
 
-interface VideoPlayerProps {
-  videoUrl: string
-  videoRef: React.RefObject<HTMLVideoElement | null>
-  onEnded: () => void
-  onCanPlay: () => void
-  onTimeUpdate: () => void
-  onLoadedMetadata: () => void
-  swipeDirection: 'left' | 'right' | 'up' | 'down' | null
-  videoLoaded: boolean
-}
-
-
-export const VideoPlayer: React.FC<VideoPlayerProps> = ({
-  videoUrl,
-  videoRef,
-  onEnded,
+export function VideoPlayer({
+  video,
+  isPlaying,
+  isReady,
+  muted,
   onCanPlay,
-  onTimeUpdate,
-  onLoadedMetadata,
-  swipeDirection,
-  videoLoaded,
-}) => {
+  onPlayToggle,
+}: VideoPlayerProps) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.muted = muted;
+    }
+  }, [muted]);
+
   return (
-    <motion.video
-      key={videoUrl}
-      ref={videoRef}
-      src={videoUrl}
-      preload="auto"
-      style={{
-        width: '100%',
-        height: '100%',
-        objectFit: 'cover',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        zIndex: 1,
-        display: videoLoaded ? 'block' : 'none',
-      }}
-      muted
-      autoPlay
-      loop={false}
-      playsInline
-      onEnded={onEnded}
-      onCanPlay={onCanPlay}
-      onTimeUpdate={onTimeUpdate}
-      onLoadedMetadata={onLoadedMetadata}
-      initial={{
-        opacity: 0,
-        x: swipeDirection === 'left' ? 300 : swipeDirection === 'right' ? -300 : 0,
-        y: swipeDirection === 'up' ? 300 : swipeDirection === 'down' ? -300 : 0,
-      }}
-      animate={{ opacity: 1, x: 0, y: 0 }}
-      exit={{
-        opacity: 0,
-        x: swipeDirection === 'left' ? -300 : swipeDirection === 'right' ? 300 : 0,
-        y: swipeDirection === 'up' ? -300 : swipeDirection === 'down' ? 300 : 0,
-      }}
-      transition={{ duration: 0.3 }}
-    />
-  )
+    <>
+      {video.videoUrl && isReady ? (
+        <>
+          <video
+            ref={videoRef}
+            src={video.videoUrl}
+            playsInline
+            loop
+            autoPlay
+            className="position-absolute w-100 h-100 object-fit-cover"
+            style={{ zIndex: 0 }}
+            onCanPlay={() => onCanPlay(video.videoID)}
+          />
+          <button
+            onClick={() => onPlayToggle(video.videoID)}
+            style={{
+              backgroundColor: "rgba(0,0,0,0.6)",
+              border: "none",
+              borderRadius: "50%",
+              color: "#fff",
+              cursor: "pointer",
+              transition: "opacity 0.3s",
+              boxShadow: "0 0 10px rgba(0,0,0,0.5)",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: "clamp(40px, 8vw, 100px)",
+              height: "clamp(40px, 8vw, 100px)",
+              zIndex: 20,
+              opacity: isPlaying ? 0 : 1,
+            }}
+            aria-label={isPlaying ? "Pause video" : "Play video"}
+          >
+            {isPlaying ? <Pause size={40} /> : <Play size={40} />}
+          </button>
+        </>
+      ) : (
+        <>
+          {video.videoUrl && (
+            <video
+              src={video.videoUrl}
+              muted
+              playsInline
+              onCanPlay={() => onCanPlay(video.videoID)}
+              style={{ display: "none" }}
+            />
+          )}
+          <Image
+            src={video.thumbnailUrl}
+            alt="Thumbnail"
+            fill
+            className="object-fit-cover"
+            style={{ zIndex: 0 }}
+            sizes="100vw"
+          />
+        </>
+      )}
+    </>
+  );
 }

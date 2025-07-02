@@ -17,8 +17,8 @@ function NavigationBar() {
   };
 
   const handleUserClick = () => {
-    if (user?.username) {
-      router.push(`/${user.username}`); // Isso já leva para [name]/page.tsx
+    if (user?.name) {
+      router.push(`/${user.name}`); // username correto aqui!
     } else {
       router.push("/login");
     }
