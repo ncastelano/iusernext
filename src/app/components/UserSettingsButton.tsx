@@ -3,11 +3,7 @@
 import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
-import {
-  onAuthStateChanged,
-  signOut,
-  User as FirebaseUser,
-} from "firebase/auth";
+import { onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
 type UserSettingsButtonProps = {
   profileUid: string;
