@@ -1,133 +1,55 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  DocumentSnapshot,
-  QuerySnapshot,
-} from "firebase/firestore";
-import { db } from "@/lib/firebase";
-import { MessageCircle } from "lucide-react";
-import "bootstrap/dist/css/bootstrap.min.css";
-import { saveVideoProgress, getVideoProgress } from "./videoProgress";
-import { Video } from "types/video";
-import { Comment } from "types/comment";
-import { Anonymous } from "types/anonimous";
+import { useState, useRef } from "react";
 import { VideoPlayer } from "@/app/components/VideoPlayer";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { CommentSection } from "@/app/components/CommentSection";
 import { MuteButton } from "@/app/components/MuteButton";
 
-export default function InicioPage({ userId }: Anonymous) {
-  const [videos, setVideos] = useState<Video[]>([]);
-  const [videosReady, setVideosReady] = useState<Record<string, boolean>>({});
-  const [playing, setPlaying] = useState<Record<string, boolean>>({});
-  const [mutedGlobal, setMutedGlobal] = useState(true);
-  const [showComments, setShowComments] = useState(false);
-  const [currentVideoId, setCurrentVideoId] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
+import { MessageCircle } from "lucide-react";
+import "bootstrap/dist/css/bootstrap.min.css";
 
+import { Anonymous } from "types/anonimous";
+import { Video } from "types/video";
+import { useVideos } from "../hooks/useVideos";
+import { useVideoProgressManager } from "../hooks/useVideoProgressManager";
+import { useTouchScroll } from "../hooks/useTouchScroll";
+import { useComments } from "../hooks/useComments";
+
+export default function InicioPage({ userId }: Anonymous) {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
-  // Buscar vídeos
-  useEffect(() => {
-    const fetchVideos = async () => {
-      const q = query(
-        collection(db, "videos"),
-        where("publishedDateTime", "!=", null),
-        orderBy("publishedDateTime", "desc")
-      );
-      const snapshot = await getDocs(q);
-      setVideos(
-        snapshot.docs.map((doc) => ({
-          videoID: doc.id,
-          ...doc.data(),
-        })) as Video[]
-      );
-    };
-    fetchVideos();
-  }, []);
+  const { videos } = useVideos();
+  const [mutedGlobal, setMutedGlobal] = useState(true);
+  const [playing, setPlaying] = useState<Record<string, boolean>>({});
+  const [videosReady, setVideosReady] = useState<Record<string, boolean>>({});
+  const [showComments, setShowComments] = useState(false);
+  const [currentVideoId, setCurrentVideoId] = useState("");
 
-  // Navegação touch horizontal
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
+  const { comments } = useComments(currentVideoId, showComments);
+  useTouchScroll(containerRef);
+  useVideoProgressManager(userId, videoRefs);
 
-    const onTouchStart = (e: TouchEvent) => {
-      const startX = e.touches[0].clientX;
-      const scrollLeft = container.scrollLeft;
-
-      const onTouchMove = (e: TouchEvent) => {
-        const x = e.touches[0].clientX;
-        container.scrollLeft = scrollLeft + (startX - x);
-      };
-
-      const cleanup = () => {
-        container.removeEventListener("touchmove", onTouchMove);
-        container.removeEventListener("touchend", cleanup);
-      };
-
-      container.addEventListener("touchmove", onTouchMove);
-      container.addEventListener("touchend", cleanup);
-    };
-
-    container.addEventListener("touchstart", onTouchStart);
-    return () => container.removeEventListener("touchstart", onTouchStart);
-  }, []);
-
-  // Carregar comentários
-  useEffect(() => {
-    if (!showComments || !currentVideoId) return;
-
-    const commentsRef = collection(db, "videos", currentVideoId, "comments");
-    const q = query(commentsRef, orderBy("timestamp", "desc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot: QuerySnapshot) => {
-      setComments(
-        snapshot.docs.map((doc: DocumentSnapshot) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Comment[]
-      );
-    });
-
-    return unsubscribe;
-  }, [showComments, currentVideoId]);
-
-  const handleCanPlay = async (id: string) => {
-    setVideosReady((prev) => ({ ...prev, [id]: true }));
+  const handleCanPlay = async (videoId: string) => {
+    setVideosReady((prev) => ({ ...prev, [videoId]: true }));
     if (userId) {
-      const savedPosition = await getVideoProgress(userId, id);
-      const video = videoRefs.current[id];
-      if (video && savedPosition > 0) video.currentTime = savedPosition;
+      const video = videoRefs.current[videoId];
+      if (video) {
+        const { getVideoProgress } = await import("@/lib/videoProgress");
+        const savedPosition = await getVideoProgress(userId, videoId);
+        if (savedPosition > 0) video.currentTime = savedPosition;
+      }
     }
-    setPlaying((prev) => ({ ...prev, [id]: true }));
+    setPlaying((prev) => ({ ...prev, [videoId]: true }));
   };
 
-  const togglePlay = (id: string) => {
-    const video = videoRefs.current[id];
+  const togglePlay = (videoId: string) => {
+    const video = videoRefs.current[videoId];
     if (!video) return;
-    playing[id] ? video.pause() : video.play();
-    setPlaying((prev) => ({ ...prev, [id]: !prev[id] }));
+    playing[videoId] ? video.pause() : video.play();
+    setPlaying((prev) => ({ ...prev, [videoId]: !prev[videoId] }));
   };
-
-  // Salva progresso a cada 2s
-  useEffect(() => {
-    if (!userId) return;
-    const interval = setInterval(() => {
-      Object.entries(videoRefs.current).forEach(([id, video]) => {
-        if (video && !video.paused)
-          saveVideoProgress(userId, id, video.currentTime);
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [userId]);
 
   const toggleComments = (videoId: string) => {
     if (showComments && currentVideoId === videoId) {
@@ -150,7 +72,7 @@ export default function InicioPage({ userId }: Anonymous) {
           transition: "height 0.3s ease",
         }}
       >
-        {videos.map((video) => (
+        {videos.map((video: Video) => (
           <div
             key={video.videoID}
             className="flex-shrink-0 w-100 d-flex align-items-center justify-content-center position-relative"
@@ -163,6 +85,7 @@ export default function InicioPage({ userId }: Anonymous) {
               muted={mutedGlobal}
               onCanPlay={handleCanPlay}
               onPlayToggle={togglePlay}
+              videoRefs={videoRefs}
             />
 
             <UserAvatar
