@@ -113,7 +113,7 @@ export default function InicioPage({ userId }: Anonymous) {
   const togglePlay = (id: string) => {
     const video = videoRefs.current[id];
     if (!video) return;
-    playing[id] ? video.pause() : video.play();
+    video.paused ? video.play() : video.pause(); // Check video's paused state instead
     setPlaying((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
