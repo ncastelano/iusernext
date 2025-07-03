@@ -14,26 +14,21 @@ import {
 import { db } from "@/lib/firebase";
 import { MessageCircle } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { saveVideoProgress, getVideoProgress } from "./videoProgress";
 import { Video } from "types/video";
 import { Comment } from "types/comment";
-import { Anonymous } from "types/anonimous";
 import { VideoPlayer } from "@/app/components/VideoPlayer";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { CommentSection } from "@/app/components/CommentSection";
 import { MuteButton } from "@/app/components/MuteButton";
 
-export default function InicioPage({ userId }: Anonymous) {
+export default function InicioPage() {
   const [videos, setVideos] = useState<Video[]>([]);
-  const [videosReady, setVideosReady] = useState<Record<string, boolean>>({});
-  const [playing, setPlaying] = useState<Record<string, boolean>>({});
   const [mutedGlobal, setMutedGlobal] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
   // Buscar vídeos
   useEffect(() => {
@@ -81,7 +76,7 @@ export default function InicioPage({ userId }: Anonymous) {
     return () => container.removeEventListener("touchstart", onTouchStart);
   }, []);
 
-  // Carregar comentários
+  // Comentários
   useEffect(() => {
     if (!showComments || !currentVideoId) return;
 
@@ -99,35 +94,6 @@ export default function InicioPage({ userId }: Anonymous) {
 
     return unsubscribe;
   }, [showComments, currentVideoId]);
-
-  const handleCanPlay = async (id: string) => {
-    setVideosReady((prev) => ({ ...prev, [id]: true }));
-    if (userId) {
-      const savedPosition = await getVideoProgress(userId, id);
-      const video = videoRefs.current[id];
-      if (video && savedPosition > 0) video.currentTime = savedPosition;
-    }
-    setPlaying((prev) => ({ ...prev, [id]: true }));
-  };
-
-  const togglePlay = (id: string) => {
-    const video = videoRefs.current[id];
-    if (!video) return;
-    video.paused ? video.play() : video.pause(); // Check video's paused state instead
-    setPlaying((prev) => ({ ...prev, [id]: !prev[id] }));
-  };
-
-  // Salva progresso a cada 2s
-  useEffect(() => {
-    if (!userId) return;
-    const interval = setInterval(() => {
-      Object.entries(videoRefs.current).forEach(([id, video]) => {
-        if (video && !video.paused)
-          saveVideoProgress(userId, id, video.currentTime);
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, [userId]);
 
   const toggleComments = (videoId: string) => {
     setShowComments((prev) =>
@@ -153,14 +119,7 @@ export default function InicioPage({ userId }: Anonymous) {
             className="flex-shrink-0 w-100 d-flex align-items-center justify-content-center position-relative"
             style={{ scrollSnapAlign: "center" }}
           >
-            <VideoPlayer
-              video={video}
-              isPlaying={!!playing[video.videoID]}
-              isReady={!!videosReady[video.videoID]}
-              muted={mutedGlobal}
-              onCanPlay={handleCanPlay}
-              onPlayToggle={togglePlay}
-            />
+            <VideoPlayer video={video} muted={mutedGlobal} />
 
             <UserAvatar
               imageUrl={video.userProfileImage}

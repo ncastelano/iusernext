@@ -1,33 +1,38 @@
 "use client";
-import { useRef, useEffect } from "react";
+
+import { useRef, useEffect, useState } from "react";
 import Image from "next/image";
 import { Play, Pause } from "lucide-react";
 import { Video } from "types/video";
 
 type VideoPlayerProps = {
   video: Video;
-  isPlaying: boolean;
-  isReady: boolean;
   muted: boolean;
-  onCanPlay: (id: string) => void;
-  onPlayToggle: (id: string) => void;
 };
 
-export function VideoPlayer({
-  video,
-  isPlaying,
-  isReady,
-  muted,
-  onCanPlay,
-  onPlayToggle,
-}: VideoPlayerProps) {
+export function VideoPlayer({ video, muted }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = muted;
     }
   }, [muted]);
+
+  const togglePlay = () => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    if (videoEl.paused) {
+      videoEl.play();
+      setIsPlaying(true);
+    } else {
+      videoEl.pause();
+      setIsPlaying(false);
+    }
+  };
 
   return (
     <>
@@ -41,10 +46,10 @@ export function VideoPlayer({
             autoPlay
             className="position-absolute w-100 h-100 object-fit-cover"
             style={{ zIndex: 0 }}
-            onCanPlay={() => onCanPlay(video.videoID)}
+            onCanPlay={() => setIsReady(true)}
           />
           <button
-            onClick={() => onPlayToggle(video.videoID)}
+            onClick={togglePlay}
             style={{
               backgroundColor: "rgba(0,0,0,0.6)",
               border: "none",
@@ -77,7 +82,7 @@ export function VideoPlayer({
               src={video.videoUrl}
               muted
               playsInline
-              onCanPlay={() => onCanPlay(video.videoID)}
+              onCanPlay={() => setIsReady(true)}
               style={{ display: "none" }}
             />
           )}
