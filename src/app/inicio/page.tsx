@@ -106,8 +106,9 @@ export default function InicioPage() {
     <div className="vh-100" style={{ overflow: "hidden" }}>
       <div
         ref={containerRef}
-        className="d-flex flex-row overflow-auto"
+        className="d-flex flex-row"
         style={{
+          overflowX: showComments ? "hidden" : "auto", // 🔒 desabilita scroll horizontal
           scrollSnapType: "x mandatory",
           height: showComments ? "60vh" : "100vh",
           transition: "height 0.3s ease",
@@ -151,6 +152,25 @@ export default function InicioPage() {
             >
               <MessageCircle size={24} />
             </button>
+
+            {/* Mostra o CommentSection apenas no vídeo atual */}
+            {showComments && currentVideoId === video.videoID && (
+              <div
+                style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  zIndex: 30,
+                }}
+              >
+                <CommentSection
+                  comments={comments}
+                  currentVideoId={currentVideoId}
+                  onClose={() => setShowComments(false)}
+                />
+              </div>
+            )}
           </div>
         ))}
       </div>
