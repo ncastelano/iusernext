@@ -8,19 +8,36 @@ import { Video } from "types/video";
 type VideoPlayerProps = {
   video: Video;
   muted: boolean;
+  playing: boolean; // nova prop
 };
 
-export function VideoPlayer({ video, muted }: VideoPlayerProps) {
+export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
+  // Sincroniza mute
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = muted;
     }
   }, [muted]);
 
+  // Controla play/pause a partir da prop 'playing'
+  useEffect(() => {
+    const videoEl = videoRef.current;
+    if (!videoEl) return;
+
+    if (playing) {
+      videoEl.play().catch(() => {});
+      setIsPlaying(true);
+    } else {
+      videoEl.pause();
+      setIsPlaying(false);
+    }
+  }, [playing]);
+
+  // Toggle manual (continua funcionando)
   const togglePlay = () => {
     const videoEl = videoRef.current;
     if (!videoEl) return;

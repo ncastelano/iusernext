@@ -27,8 +27,10 @@ export default function InicioPage() {
   const [showComments, setShowComments] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
+  const [activeVideoIndex, setActiveVideoIndex] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Buscar vídeos
   useEffect(() => {
@@ -76,6 +78,55 @@ export default function InicioPage() {
     return () => container.removeEventListener("touchstart", onTouchStart);
   }, []);
 
+  // Detecta o vídeo mais centralizado no scroll horizontal e atualiza activeVideoIndex
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleScroll = () => {
+      const containerRect = container.getBoundingClientRect();
+      const containerCenterX = containerRect.left + containerRect.width / 2;
+
+      let closestIndex = 0;
+      let closestDistance = Infinity;
+
+      videoRefs.current.forEach((videoEl, index) => {
+        if (!videoEl) return;
+
+        const rect = videoEl.getBoundingClientRect();
+        const videoCenterX = rect.left + rect.width / 2;
+        const distance = Math.abs(containerCenterX - videoCenterX);
+
+        if (distance < closestDistance) {
+          closestDistance = distance;
+          closestIndex = index;
+        }
+      });
+
+      if (closestIndex !== activeVideoIndex) {
+        setActiveVideoIndex(closestIndex);
+        // Atualiza o vídeo atual para comentários também
+        setCurrentVideoId(videos[closestIndex]?.videoID || "");
+      }
+    };
+
+    // Adiciona o listener com debounce para performance
+    let timeout: number;
+    const debouncedHandleScroll = () => {
+      clearTimeout(timeout);
+      timeout = window.setTimeout(handleScroll, 50);
+    };
+
+    container.addEventListener("scroll", debouncedHandleScroll);
+    // Também chama inicialmente para setar o vídeo ativo
+    handleScroll();
+
+    return () => {
+      container.removeEventListener("scroll", debouncedHandleScroll);
+      clearTimeout(timeout);
+    };
+  }, [videos, activeVideoIndex]);
+
   // Comentários
   useEffect(() => {
     if (!showComments || !currentVideoId) return;
@@ -100,6 +151,10 @@ export default function InicioPage() {
       prev && currentVideoId === videoId ? false : true
     );
     setCurrentVideoId(videoId);
+
+    // Atualiza também o índice ativo para garantir sincronização
+    const idx = videos.findIndex((v) => v.videoID === videoId);
+    if (idx !== -1) setActiveVideoIndex(idx);
   };
 
   return (
@@ -108,19 +163,23 @@ export default function InicioPage() {
         ref={containerRef}
         className="d-flex flex-row"
         style={{
-          overflowX: showComments ? "hidden" : "auto", // 🔒 desabilita scroll horizontal
+          overflowX: showComments ? "hidden" : "auto",
           scrollSnapType: "x mandatory",
           height: showComments ? "60vh" : "100vh",
           transition: "height 0.3s ease",
         }}
       >
-        {videos.map((video) => (
+        {videos.map((video, index) => (
           <div
             key={video.videoID}
             className="flex-shrink-0 w-100 d-flex align-items-center justify-content-center position-relative"
             style={{ scrollSnapAlign: "center" }}
           >
-            <VideoPlayer video={video} muted={mutedGlobal} />
+            <VideoPlayer
+              video={video}
+              muted={mutedGlobal}
+              playing={index === activeVideoIndex} // Só o ativo toca
+            />
 
             <UserAvatar
               imageUrl={video.userProfileImage}
