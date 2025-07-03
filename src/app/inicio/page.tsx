@@ -175,14 +175,6 @@ export default function InicioPage() {
         ))}
       </div>
 
-      {showComments && (
-        <CommentSection
-          comments={comments}
-          currentVideoId={currentVideoId}
-          onClose={() => setShowComments(false)}
-        />
-      )}
-
       <MuteButton
         muted={mutedGlobal}
         onToggle={() => setMutedGlobal((prev) => !prev)}
