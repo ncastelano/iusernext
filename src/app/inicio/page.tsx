@@ -247,6 +247,10 @@ export default function InicioPage() {
           <CommentSection
             comments={comments}
             currentVideoId={currentVideoId}
+            artistSongName={
+              videos.find((v) => v.videoID === currentVideoId)
+                ?.artistSongName || ""
+            }
             onClose={() => setShowComments(false)}
           />
         </div>

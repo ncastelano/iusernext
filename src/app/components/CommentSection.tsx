@@ -12,12 +12,14 @@ import { useUser } from "@/app/components/UserContext";
 type CommentSectionProps = {
   comments: Comment[];
   currentVideoId: string;
+  artistSongName: string;
   onClose: () => void;
 };
 
 export function CommentSection({
   comments,
   currentVideoId,
+  artistSongName,
   onClose,
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
@@ -49,7 +51,6 @@ export function CommentSection({
     }
   };
 
-  // Fecha imediatamente
   const handleClose = () => {
     setRenderComments(false);
     onClose();
@@ -58,92 +59,93 @@ export function CommentSection({
   if (!renderComments) return null;
 
   return (
-    <>
-      <div
-        className="bg-dark text-white p-3 position-relative"
+    <div
+      className="bg-dark text-white p-3 position-relative"
+      style={{
+        height: "40vh",
+        overflowY: "auto",
+        borderTop: "1px solid #333",
+      }}
+    >
+      {/* Botão de fechar */}
+      <button
+        onClick={handleClose}
+        className="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-light rounded-circle"
         style={{
-          height: "40vh",
-          overflowY: "auto",
-          borderTop: "1px solid #333",
+          width: "32px",
+          height: "32px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
+        aria-label="Fechar comentários"
       >
-        {/* Botão de fechar */}
-        <button
-          onClick={handleClose}
-          className="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-light rounded-circle"
-          style={{
-            width: "32px",
-            height: "32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-          aria-label="Fechar comentários"
-        >
-          <X size={18} />
-        </button>
+        <X size={18} />
+      </button>
 
-        <h5 className="mb-3">Comentários</h5>
+      <h5 className="mb-3">
+        Comentários sobre{" "}
+        <span className="text-info">{artistSongName || "o vídeo"}</span>
+      </h5>
 
-        <div className="mb-3" style={{ maxHeight: "25vh", overflowY: "auto" }}>
-          {comments.length > 0 ? (
-            comments.map((comment) => (
-              <div key={comment.id} className="mb-2 d-flex align-items-start">
-                <Image
-                  src={comment.userProfileImage}
-                  alt={comment.userName}
-                  width={40}
-                  height={40}
-                  className="rounded-circle me-2"
-                  style={{ objectFit: "cover" }}
-                />
-                <div>
-                  <strong>{comment.userName}</strong>
-                  <p className="mb-0">{comment.text}</p>
-                  <small className="text-muted">
-                    {comment.timestamp
-                      ? new Date(comment.timestamp).toLocaleString()
-                      : "Agora"}
-                  </small>
-                </div>
+      <div className="mb-3" style={{ maxHeight: "25vh", overflowY: "auto" }}>
+        {comments.length > 0 ? (
+          comments.map((comment) => (
+            <div key={comment.id} className="mb-2 d-flex align-items-start">
+              <Image
+                src={comment.userProfileImage}
+                alt={comment.userName}
+                width={40}
+                height={40}
+                className="rounded-circle me-2"
+                style={{ objectFit: "cover" }}
+              />
+              <div>
+                <strong>{comment.userName}</strong>
+                <p className="mb-0">{comment.text}</p>
+                <small className="text-muted">
+                  {comment.timestamp
+                    ? new Date(comment.timestamp).toLocaleString()
+                    : "Agora"}
+                </small>
               </div>
-            ))
-          ) : (
-            <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
-          )}
-          <div ref={commentsEndRef} />
-        </div>
-
-        {user ? (
-          <div className="d-flex align-items-center">
-            <input
-              type="text"
-              className="form-control bg-secondary text-white border-0"
-              placeholder="Adicione um comentário..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && sendComment()}
-            />
-            <button
-              onClick={sendComment}
-              className="btn btn-primary ms-2"
-              disabled={!newComment.trim()}
-            >
-              <Send size={18} />
-            </button>
-          </div>
+            </div>
+          ))
         ) : (
-          <div className="d-flex align-items-center justify-content-center py-2 gap-2">
-            <p className="mb-0">Precisa fazer login para comentar</p>
-            <button
-              className="btn btn-primary btn-sm"
-              onClick={() => router.push("/login")}
-            >
-              Login
-            </button>
-          </div>
+          <p>Nenhum comentário ainda. Seja o primeiro a comentar!</p>
         )}
+        <div ref={commentsEndRef} />
       </div>
-    </>
+
+      {user ? (
+        <div className="d-flex align-items-center">
+          <input
+            type="text"
+            className="form-control bg-secondary text-white border-0"
+            placeholder="Adicione um comentário..."
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            onKeyPress={(e) => e.key === "Enter" && sendComment()}
+          />
+          <button
+            onClick={sendComment}
+            className="btn btn-primary ms-2"
+            disabled={!newComment.trim()}
+          >
+            <Send size={18} />
+          </button>
+        </div>
+      ) : (
+        <div className="d-flex align-items-center justify-content-center py-2 gap-2">
+          <p className="mb-0">Precisa fazer login para comentar</p>
+          <button
+            className="btn btn-primary btn-sm"
+            onClick={() => router.push("/login")}
+          >
+            Login
+          </button>
+        </div>
+      )}
+    </div>
   );
 }
