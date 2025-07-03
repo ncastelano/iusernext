@@ -1,5 +1,4 @@
 "use client";
-
 import { useRef, useEffect } from "react";
 import Image from "next/image";
 import { Play, Pause } from "lucide-react";
@@ -12,7 +11,6 @@ type VideoPlayerProps = {
   muted: boolean;
   onCanPlay: (id: string) => void;
   onPlayToggle: (id: string) => void;
-  videoRefs: React.MutableRefObject<Record<string, HTMLVideoElement | null>>;
 };
 
 export function VideoPlayer({
@@ -22,19 +20,12 @@ export function VideoPlayer({
   muted,
   onCanPlay,
   onPlayToggle,
-  videoRefs,
 }: VideoPlayerProps) {
-  const localVideoRef = useRef<HTMLVideoElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Atualiza o ref compartilhado com o componente pai
   useEffect(() => {
-    videoRefs.current[video.videoID] = localVideoRef.current;
-  }, [video.videoID, localVideoRef]);
-
-  // Atualiza o estado de mute
-  useEffect(() => {
-    if (localVideoRef.current) {
-      localVideoRef.current.muted = muted;
+    if (videoRef.current) {
+      videoRef.current.muted = muted;
     }
   }, [muted]);
 
@@ -43,7 +34,7 @@ export function VideoPlayer({
       {video.videoUrl && isReady ? (
         <>
           <video
-            ref={localVideoRef}
+            ref={videoRef}
             src={video.videoUrl}
             playsInline
             loop
