@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Send, X } from "lucide-react";
 import { Comment } from "types/comment";
@@ -21,10 +21,15 @@ export function CommentSection({
   onClose,
 }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
-  const [isClosing, setIsClosing] = useState(false);
+  const [renderComments, setRenderComments] = useState(false);
   const commentsEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { user } = useUser();
+
+  // Renderiza o painel assim que montar
+  useEffect(() => {
+    setRenderComments(true);
+  }, []);
 
   const sendComment = async () => {
     if (!newComment.trim() || !currentVideoId || !user?.uid) return;
@@ -44,21 +49,18 @@ export function CommentSection({
     }
   };
 
-  // Controla o fechamento com animação
+  // Fecha imediatamente
   const handleClose = () => {
-    setIsClosing(true);
-    setTimeout(() => {
-      onClose();
-      setIsClosing(false);
-    }, 300); // Tempo da animação
+    setRenderComments(false);
+    onClose();
   };
+
+  if (!renderComments) return null;
 
   return (
     <>
       <div
-        className={`bg-dark text-white p-3 position-relative ${
-          isClosing ? "comment-slide-down" : "comment-slide-up"
-        }`}
+        className="bg-dark text-white p-3 position-relative"
         style={{
           height: "40vh",
           overflowY: "auto",
@@ -142,39 +144,6 @@ export function CommentSection({
           </div>
         )}
       </div>
-
-      {/* Animações via CSS global */}
-      <style>{`
-        @keyframes slideUpFadeIn {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0%);
-            opacity: 1;
-          }
-        }
-
-        @keyframes slideDownFadeOut {
-          from {
-            transform: translateY(0%);
-            opacity: 1;
-          }
-          to {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-        }
-
-        .comment-slide-up {
-          animation: slideUpFadeIn 0.3s ease-out forwards;
-        }
-
-        .comment-slide-down {
-          animation: slideDownFadeOut 0.3s ease-in forwards;
-        }
-      `}</style>
     </>
   );
 }

@@ -8,7 +8,7 @@ import { Video } from "types/video";
 type VideoPlayerProps = {
   video: Video;
   muted: boolean;
-  playing: boolean; // nova prop
+  playing: boolean; // controla se deve tocar ou pausar
 };
 
 export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
@@ -37,7 +37,7 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
     }
   }, [playing]);
 
-  // Toggle manual (continua funcionando)
+  // Toggle manual do botão play/pause
   const togglePlay = () => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
@@ -60,7 +60,7 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
             src={video.videoUrl}
             playsInline
             loop
-            autoPlay
+            // AUTO PLAY REMOVIDO AQUI
             className="position-absolute w-100 h-100 object-fit-cover"
             style={{ zIndex: 0 }}
             onCanPlay={() => setIsReady(true)}

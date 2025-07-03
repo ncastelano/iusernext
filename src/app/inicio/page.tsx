@@ -30,7 +30,6 @@ export default function InicioPage() {
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
-  const videoRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   // Buscar vídeos
   useEffect(() => {
@@ -90,10 +89,10 @@ export default function InicioPage() {
       let closestIndex = 0;
       let closestDistance = Infinity;
 
-      videoRefs.current.forEach((videoEl, index) => {
-        if (!videoEl) return;
+      const children = Array.from(container.children);
 
-        const rect = videoEl.getBoundingClientRect();
+      children.forEach((child, index) => {
+        const rect = child.getBoundingClientRect();
         const videoCenterX = rect.left + rect.width / 2;
         const distance = Math.abs(containerCenterX - videoCenterX);
 
@@ -105,12 +104,10 @@ export default function InicioPage() {
 
       if (closestIndex !== activeVideoIndex) {
         setActiveVideoIndex(closestIndex);
-        // Atualiza o vídeo atual para comentários também
         setCurrentVideoId(videos[closestIndex]?.videoID || "");
       }
     };
 
-    // Adiciona o listener com debounce para performance
     let timeout: number;
     const debouncedHandleScroll = () => {
       clearTimeout(timeout);
@@ -118,7 +115,7 @@ export default function InicioPage() {
     };
 
     container.addEventListener("scroll", debouncedHandleScroll);
-    // Também chama inicialmente para setar o vídeo ativo
+    // Inicializa ativo
     handleScroll();
 
     return () => {
@@ -146,19 +143,37 @@ export default function InicioPage() {
     return unsubscribe;
   }, [showComments, currentVideoId]);
 
+  // Controle de navegação por teclado (sempre ativo, bloqueia se showComments aberto)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (showComments) return; // bloqueia navegação se comentários abertos
+
+      if (e.key === "ArrowRight") {
+        setActiveVideoIndex((prev) => Math.min(prev + 1, videos.length - 1));
+      } else if (e.key === "ArrowLeft") {
+        setActiveVideoIndex((prev) => Math.max(prev - 1, 0));
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [showComments, videos.length]);
+
   const toggleComments = (videoId: string) => {
     setShowComments((prev) =>
       prev && currentVideoId === videoId ? false : true
     );
     setCurrentVideoId(videoId);
 
-    // Atualiza também o índice ativo para garantir sincronização
     const idx = videos.findIndex((v) => v.videoID === videoId);
     if (idx !== -1) setActiveVideoIndex(idx);
   };
 
   return (
-    <div className="vh-100" style={{ overflow: "hidden" }}>
+    <div
+      className="vh-100"
+      style={{ overflow: "hidden", position: "relative" }}
+    >
       <div
         ref={containerRef}
         className="d-flex flex-row"
@@ -178,7 +193,7 @@ export default function InicioPage() {
             <VideoPlayer
               video={video}
               muted={mutedGlobal}
-              playing={index === activeVideoIndex} // Só o ativo toca
+              playing={index === activeVideoIndex}
             />
 
             <UserAvatar
@@ -211,28 +226,31 @@ export default function InicioPage() {
             >
               <MessageCircle size={24} />
             </button>
-
-            {/* Mostra o CommentSection apenas no vídeo atual */}
-            {showComments && currentVideoId === video.videoID && (
-              <div
-                style={{
-                  position: "absolute",
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  zIndex: 30,
-                }}
-              >
-                <CommentSection
-                  comments={comments}
-                  currentVideoId={currentVideoId}
-                  onClose={() => setShowComments(false)}
-                />
-              </div>
-            )}
           </div>
         ))}
       </div>
+
+      {showComments && (
+        <div
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: "40vh",
+            backgroundColor: "#121212",
+            borderTop: "1px solid #333",
+            boxShadow: "0 -3px 10px rgba(0,0,0,0.7)",
+            zIndex: 50,
+          }}
+        >
+          <CommentSection
+            comments={comments}
+            currentVideoId={currentVideoId}
+            onClose={() => setShowComments(false)}
+          />
+        </div>
+      )}
 
       <MuteButton
         muted={mutedGlobal}
