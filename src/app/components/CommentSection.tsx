@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import Image from "next/image";
 import { Send, X } from "lucide-react";
 import { Comment } from "types/comment";
@@ -144,39 +144,37 @@ export function CommentSection({
       </div>
 
       {/* Animações via CSS global */}
-      <style>
-        {`
-    @keyframes slideUpFadeIn {
-      from {
-        transform: translateY(100%);
-        opacity: 0;
-      }
-      to {
-        transform: translateY(0%);
-        opacity: 1;
-      }
-    }
+      <style>{`
+        @keyframes slideUpFadeIn {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0%);
+            opacity: 1;
+          }
+        }
 
-    @keyframes slideDownFadeOut {
-      from {
-        transform: translateY(0%);
-        opacity: 1;
-      }
-      to {
-        transform: translateY(100%);
-        opacity: 0;
-      }
-    }
+        @keyframes slideDownFadeOut {
+          from {
+            transform: translateY(0%);
+            opacity: 1;
+          }
+          to {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+        }
 
-    .comment-slide-up {
-      animation: slideUpFadeIn 0.3s ease-out forwards;
-    }
+        .comment-slide-up {
+          animation: slideUpFadeIn 0.3s ease-out forwards;
+        }
 
-    .comment-slide-down {
-      animation: slideDownFadeOut 0.3s ease-in forwards;
-    }
-  `}
-      </style>
+        .comment-slide-down {
+          animation: slideDownFadeOut 0.3s ease-in forwards;
+        }
+      `}</style>
     </>
   );
 }
