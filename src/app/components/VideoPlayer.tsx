@@ -14,7 +14,6 @@ type VideoPlayerProps = {
 export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [isReady, setIsReady] = useState(false);
 
   // Sincroniza mute
   useEffect(() => {
@@ -68,7 +67,6 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
             loop
             className="position-absolute w-100 h-100 object-fit-cover"
             style={{ zIndex: 0 }}
-            onCanPlay={() => setIsReady(true)}
           />
 
           {/* Botão central de play/pause (opcional) */}
