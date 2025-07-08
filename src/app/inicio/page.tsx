@@ -180,8 +180,6 @@ export default function InicioPage() {
         style={{
           overflowX: showComments ? "hidden" : "auto",
           scrollSnapType: "x mandatory",
-          WebkitOverflowScrolling: "touch",
-          ["-webkit-scroll-snap-type" as any]: "x mandatory",
           height: showComments ? "60vh" : "100vh",
           transition: "height 0.3s ease",
         }}
@@ -190,10 +188,7 @@ export default function InicioPage() {
           <div
             key={video.videoID}
             className="flex-shrink-0 w-100 d-flex align-items-center justify-content-center position-relative"
-            style={{
-              scrollSnapAlign: "center",
-              ["-webkit-scroll-snap-align" as any]: "center",
-            }}
+            style={{ scrollSnapAlign: "center" }}
           >
             <VideoPlayer
               video={video}

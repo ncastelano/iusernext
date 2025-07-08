@@ -8,7 +8,7 @@ import { Video } from "types/video";
 type VideoPlayerProps = {
   video: Video;
   muted: boolean;
-  playing: boolean; // controla se deve tocar ou pausar
+  playing: boolean;
 };
 
 export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
@@ -16,7 +16,7 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  // Sincroniza mute (muito importante para Safari autoplay)
+  // Sincroniza mute
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = muted;
@@ -28,25 +28,27 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
     const videoEl = videoRef.current;
     if (!videoEl) return;
 
-    if (playing && isReady) {
-      videoEl.play().catch(() => {
-        // Erro no autoplay (ex: bloqueio do navegador)
+    if (playing) {
+      videoEl.play().catch((err) => {
+        console.warn("Erro ao dar play:", err);
       });
       setIsPlaying(true);
     } else {
       videoEl.pause();
       setIsPlaying(false);
     }
-  }, [playing, isReady]);
+  }, [playing]);
 
-  // Toggle manual do botão play/pause
+  // Botão manual play/pause
   const togglePlay = () => {
     const videoEl = videoRef.current;
     if (!videoEl) return;
 
     if (videoEl.paused) {
-      videoEl.play().catch(() => {});
-      setIsPlaying(true);
+      videoEl
+        .play()
+        .then(() => setIsPlaying(true))
+        .catch(console.warn);
     } else {
       videoEl.pause();
       setIsPlaying(false);
@@ -60,21 +62,16 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
           <video
             ref={videoRef}
             src={video.videoUrl}
+            autoPlay
+            muted
             playsInline
             loop
-            muted={muted} // garantir muted também no elemento
-            style={{
-              zIndex: 0,
-              position: "absolute",
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              visibility: isReady ? "visible" : "hidden", // esconde até carregar
-              backgroundColor: "black", // evita flash branco
-            }}
+            className="position-absolute w-100 h-100 object-fit-cover"
+            style={{ zIndex: 0 }}
             onCanPlay={() => setIsReady(true)}
-            onLoadedData={() => setIsReady(true)}
           />
+
+          {/* Botão central de play/pause (opcional) */}
           <button
             onClick={togglePlay}
             style={{
