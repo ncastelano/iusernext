@@ -16,7 +16,7 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isReady, setIsReady] = useState(false);
 
-  // Sincroniza mute
+  // Sincroniza mute (muito importante para Safari autoplay)
   useEffect(() => {
     if (videoRef.current) {
       videoRef.current.muted = muted;
@@ -28,14 +28,16 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
     const videoEl = videoRef.current;
     if (!videoEl) return;
 
-    if (playing) {
-      videoEl.play().catch(() => {});
+    if (playing && isReady) {
+      videoEl.play().catch(() => {
+        // Erro no autoplay (ex: bloqueio do navegador)
+      });
       setIsPlaying(true);
     } else {
       videoEl.pause();
       setIsPlaying(false);
     }
-  }, [playing]);
+  }, [playing, isReady]);
 
   // Toggle manual do botão play/pause
   const togglePlay = () => {
@@ -43,7 +45,7 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
     if (!videoEl) return;
 
     if (videoEl.paused) {
-      videoEl.play();
+      videoEl.play().catch(() => {});
       setIsPlaying(true);
     } else {
       videoEl.pause();
@@ -53,17 +55,25 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
 
   return (
     <>
-      {video.videoUrl && isReady ? (
+      {video.videoUrl ? (
         <>
           <video
             ref={videoRef}
             src={video.videoUrl}
             playsInline
             loop
-            // AUTO PLAY REMOVIDO AQUI
-            className="position-absolute w-100 h-100 object-fit-cover"
-            style={{ zIndex: 0 }}
+            muted={muted} // garantir muted também no elemento
+            style={{
+              zIndex: 0,
+              position: "absolute",
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              visibility: isReady ? "visible" : "hidden", // esconde até carregar
+              backgroundColor: "black", // evita flash branco
+            }}
             onCanPlay={() => setIsReady(true)}
+            onLoadedData={() => setIsReady(true)}
           />
           <button
             onClick={togglePlay}
@@ -93,25 +103,14 @@ export function VideoPlayer({ video, muted, playing }: VideoPlayerProps) {
           </button>
         </>
       ) : (
-        <>
-          {video.videoUrl && (
-            <video
-              src={video.videoUrl}
-              muted
-              playsInline
-              onCanPlay={() => setIsReady(true)}
-              style={{ display: "none" }}
-            />
-          )}
-          <Image
-            src={video.thumbnailUrl}
-            alt="Thumbnail"
-            fill
-            className="object-fit-cover"
-            style={{ zIndex: 0 }}
-            sizes="100vw"
-          />
-        </>
+        <Image
+          src={video.thumbnailUrl}
+          alt="Thumbnail"
+          fill
+          className="object-fit-cover"
+          style={{ zIndex: 0 }}
+          sizes="100vw"
+        />
       )}
     </>
   );

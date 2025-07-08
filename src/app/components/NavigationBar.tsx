@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
-import { User2, Zap } from "lucide-react";
+import { User2, MapPinHouse } from "lucide-react";
 import Image from "next/image";
 
 function NavigationBar() {
@@ -25,8 +25,8 @@ function NavigationBar() {
     }
   };
 
-  const handleFlashClick = () => {
-    router.push("/flash");
+  const handleMapaClick = () => {
+    router.push("/mapa");
   };
 
   return (
@@ -67,9 +67,9 @@ function NavigationBar() {
         )}
       </div>
 
-      {/* FLASH ICON */}
-      <div onClick={handleFlashClick} style={iconStyle}>
-        <Zap color="#fff" style={iconStyle} />
+      {/* Map ICON */}
+      <div onClick={handleMapaClick} style={iconStyle}>
+        <MapPinHouse color="#fff" style={iconStyle} />
       </div>
     </nav>
   );
