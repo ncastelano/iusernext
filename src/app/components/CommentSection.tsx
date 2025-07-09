@@ -114,13 +114,12 @@ export function CommentSection({
                 <p className="mb-0">{comment.text}</p>
                 <small className="text-muted">
                   {comment.timestamp
-                    ? comment.timestamp instanceof Timestamp
+                    ? typeof comment.timestamp.toDate === "function"
                       ? formatDistanceToNow(comment.timestamp.toDate(), {
                           addSuffix: true,
                           locale: ptBR,
                         })
-                      : // Caso seu timestamp esteja como número ou string
-                        formatDistanceToNow(new Date(comment.timestamp), {
+                      : formatDistanceToNow(new Date(comment.timestamp), {
                           addSuffix: true,
                           locale: ptBR,
                         })
