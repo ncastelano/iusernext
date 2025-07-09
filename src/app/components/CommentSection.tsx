@@ -81,11 +81,13 @@ export function CommentSection({
           justifyContent: "center",
           backgroundColor: "#000",
           color: "#fff",
-          border: "1px solid #000", // borda preta
+          border: "1px solid #000",
           padding: 0,
         }}
         aria-label="Fechar comentários"
-      ></button>
+      >
+        ×
+      </button>
 
       <h5 className="mb-3">
         Comentários sobre{" "}
@@ -102,23 +104,16 @@ export function CommentSection({
                 width={40}
                 height={40}
                 className="rounded-circle me-2"
-                style={{ objectFit: "cover", border: "1px solid #000" }} // borda preta na imagem
+                style={{ objectFit: "cover", border: "1px solid #000" }}
               />
               <div>
                 <strong>{comment.userName}</strong>
                 <p className="mb-0">{comment.text}</p>
                 <small className="text-muted">
-                  {comment.timestamp
-                    ? typeof comment.timestamp.toDate === "function"
-                      ? formatDistanceToNow(comment.timestamp.toDate(), {
-                          addSuffix: true,
-                          locale: ptBR,
-                        })
-                      : formatDistanceToNow(new Date(comment.timestamp), {
-                          addSuffix: true,
-                          locale: ptBR,
-                        })
-                    : "Agora"}
+                  {formatDistanceToNow(comment.timestamp.toDate(), {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
                 </small>
               </div>
             </div>
@@ -139,7 +134,7 @@ export function CommentSection({
               border: "1px solid white",
               outline: "none",
               boxShadow: "none",
-              borderRadius: "9999px", // borda bem arredondada
+              borderRadius: "9999px",
             }}
             placeholder="Adicione um comentário..."
             value={newComment}
@@ -150,7 +145,7 @@ export function CommentSection({
             onClick={sendComment}
             className="btn btn-primary ms-2"
             style={{
-              border: "1px solid #000", // borda preta
+              border: "1px solid #000",
               boxShadow: "none",
             }}
             disabled={!newComment.trim()}
