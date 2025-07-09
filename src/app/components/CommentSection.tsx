@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
-import { Send, X } from "lucide-react";
 import { Comment } from "types/comment";
 import {
   collection,
