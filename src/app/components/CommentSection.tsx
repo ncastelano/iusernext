@@ -4,12 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Send } from "lucide-react";
 import { Comment } from "types/comment";
-import {
-  collection,
-  addDoc,
-  serverTimestamp,
-  Timestamp,
-} from "firebase/firestore";
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
