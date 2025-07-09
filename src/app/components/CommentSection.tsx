@@ -4,10 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Send, X } from "lucide-react";
 import { Comment } from "types/comment";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  Timestamp,
+} from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
+import { formatDistanceToNow } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 type CommentSectionProps = {
   comments: Comment[];
@@ -28,7 +35,6 @@ export function CommentSection({
   const router = useRouter();
   const { user } = useUser();
 
-  // Renderiza o painel assim que montar
   useEffect(() => {
     setRenderComments(true);
   }, []);
@@ -60,28 +66,31 @@ export function CommentSection({
 
   return (
     <div
-      className="bg-dark text-white p-3 position-relative"
+      className="p-3 position-relative"
       style={{
         height: "40vh",
         overflowY: "auto",
-        borderTop: "1px solid #333",
+        backgroundColor: "#000",
+        color: "#fff",
       }}
     >
       {/* Botão de fechar */}
       <button
         onClick={handleClose}
-        className="position-absolute top-0 end-0 m-2 btn btn-sm btn-outline-light rounded-circle"
+        className="position-absolute top-0 end-0 m-2 btn btn-sm rounded-circle"
         style={{
           width: "32px",
           height: "32px",
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "#000",
+          color: "#fff",
+          border: "1px solid #000", // borda preta
+          padding: 0,
         }}
         aria-label="Fechar comentários"
-      >
-        <X size={18} />
-      </button>
+      ></button>
 
       <h5 className="mb-3">
         Comentários sobre{" "}
@@ -98,14 +107,23 @@ export function CommentSection({
                 width={40}
                 height={40}
                 className="rounded-circle me-2"
-                style={{ objectFit: "cover" }}
+                style={{ objectFit: "cover", border: "1px solid #000" }} // borda preta na imagem
               />
               <div>
                 <strong>{comment.userName}</strong>
                 <p className="mb-0">{comment.text}</p>
                 <small className="text-muted">
                   {comment.timestamp
-                    ? new Date(comment.timestamp).toLocaleString()
+                    ? comment.timestamp instanceof Timestamp
+                      ? formatDistanceToNow(comment.timestamp.toDate(), {
+                          addSuffix: true,
+                          locale: ptBR,
+                        })
+                      : // Caso seu timestamp esteja como número ou string
+                        formatDistanceToNow(new Date(comment.timestamp), {
+                          addSuffix: true,
+                          locale: ptBR,
+                        })
                     : "Agora"}
                 </small>
               </div>
@@ -121,7 +139,14 @@ export function CommentSection({
         <div className="d-flex align-items-center">
           <input
             type="text"
-            className="form-control bg-secondary text-white border-0"
+            className="form-control text-white"
+            style={{
+              backgroundColor: "#000",
+              border: "1px solid white",
+              outline: "none",
+              boxShadow: "none",
+              borderRadius: "9999px", // borda bem arredondada
+            }}
             placeholder="Adicione um comentário..."
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
@@ -130,16 +155,24 @@ export function CommentSection({
           <button
             onClick={sendComment}
             className="btn btn-primary ms-2"
+            style={{
+              border: "1px solid #000", // borda preta
+              boxShadow: "none",
+            }}
             disabled={!newComment.trim()}
           >
             <Send size={18} />
           </button>
         </div>
       ) : (
-        <div className="d-flex align-items-center justify-content-center py-2 gap-2">
+        <div
+          className="d-flex align-items-center justify-content-center py-2 gap-2"
+          style={{ backgroundColor: "#000", color: "#fff" }}
+        >
           <p className="mb-0">Precisa fazer login para comentar</p>
           <button
             className="btn btn-primary btn-sm"
+            style={{ border: "1px solid #000", boxShadow: "none" }}
             onClick={() => router.push("/login")}
           >
             Login

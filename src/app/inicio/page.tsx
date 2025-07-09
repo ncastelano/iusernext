@@ -20,6 +20,9 @@ import { VideoPlayer } from "@/app/components/VideoPlayer";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { CommentSection } from "@/app/components/CommentSection";
 import { MuteButton } from "@/app/components/MuteButton";
+import { IamHere } from "../components/IamHere";
+import { Description } from "../components/Description";
+import { TopLeftContainer } from "../components/TopLeftContainer";
 
 export default function InicioPage() {
   const [videos, setVideos] = useState<Video[]>([]);
@@ -195,36 +198,37 @@ export default function InicioPage() {
               muted={mutedGlobal}
               playing={index === activeVideoIndex}
             />
-
-            <UserAvatar
-              imageUrl={video.userProfileImage}
-              userName={video.userName}
-              artistSongName={video.artistSongName}
-            />
+            <TopLeftContainer>
+              <UserAvatar
+                imageUrl={video.userProfileImage}
+                userName={video.userName}
+              />
+              <IamHere latitude={video.latitude} longitude={video.longitude} />
+              <Description artistSongName={video.artistSongName} />
+            </TopLeftContainer>
 
             <button
-              onClick={() => toggleComments(video.videoID)}
+              onClick={() => toggleComments(video.videoID || "")}
               style={{
-                backgroundColor: "rgba(0,0,0,0.6)",
-                border: "none",
-                borderRadius: "50%",
+                backgroundColor: "#000",
                 color: "#fff",
-                cursor: "pointer",
-                transition: "opacity 0.3s",
-                boxShadow: "0 0 10px rgba(0,0,0,0.5)",
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
+                border: "none",
+                borderTopLeftRadius: "40px",
+                borderTopRightRadius: "40px",
+
                 position: "absolute",
-                bottom: 20,
+                bottom: 0,
                 right: 20,
                 width: "clamp(40px, 6vw, 60px)",
                 height: "clamp(40px, 6vw, 60px)",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
                 zIndex: 20,
               }}
               aria-label="Mostrar comentários"
             >
-              <MessageCircle size={24} />
+              <MessageCircle size={24} color="white" />
             </button>
           </div>
         ))}
@@ -237,11 +241,12 @@ export default function InicioPage() {
             bottom: 0,
             left: 0,
             right: 0,
-            height: "40vh",
+            height: showComments ? "40vh" : "0",
             backgroundColor: "#121212",
-            borderTop: "1px solid #333",
             boxShadow: "0 -3px 10px rgba(0,0,0,0.7)",
             zIndex: 50,
+            overflow: "hidden",
+            transition: "height 0.3s ease",
           }}
         >
           <CommentSection

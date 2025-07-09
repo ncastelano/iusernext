@@ -5,8 +5,8 @@ export type Video = {
   userID: string;
   thumbnailUrl: string;
   publishedDateTime?: number;
-  latitude: number;
-  longitude: number;
+  latitude?: number;
+  longitude?: number;
   artistSongName?: string;
   isFlash: boolean;
   isPlace: boolean;

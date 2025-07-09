@@ -1,26 +1,15 @@
+// app/components/UserAvatar.tsx
 "use client";
 import Image from "next/image";
 
 interface UserAvatarProps {
   imageUrl: string;
   userName: string;
-  artistSongName?: string;
 }
 
-export function UserAvatar({
-  imageUrl,
-  userName,
-  artistSongName,
-}: UserAvatarProps) {
+export function UserAvatar({ imageUrl, userName }: UserAvatarProps) {
   return (
-    <div
-      className="position-absolute d-flex flex-column align-items-start"
-      style={{
-        top: 20,
-        left: 20,
-        zIndex: 10,
-      }}
-    >
+    <div className="d-flex flex-column align-items-start">
       {/* Avatar + Username */}
       <div className="d-flex align-items-center">
         <div
@@ -56,26 +45,6 @@ export function UserAvatar({
           {userName}
         </span>
       </div>
-
-      {/* artistSongName */}
-      {artistSongName?.trim() && (
-        <div
-          className="mt-2"
-          style={{
-            color: "#fff",
-            backgroundColor: "rgba(0,0,0,0.5)",
-            padding: "0.3rem 0.6rem",
-            borderRadius: "8px",
-            fontSize: "0.9rem",
-            maxWidth: "260px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-          }}
-        >
-          {artistSongName}
-        </div>
-      )}
     </div>
   );
 }
