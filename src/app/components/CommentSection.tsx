@@ -29,7 +29,6 @@ type CommentSectionProps = {
   currentVideoId: string;
   artistSongName: string;
   onClose: () => void;
-  comments: Comment[];
 };
 
 function useCommentsWithReplies(videoId: string) {

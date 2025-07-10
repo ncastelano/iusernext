@@ -6,6 +6,6 @@ export type Comment = {
   userName: string;
   userProfileImage: string;
   text: string;
-  timestamp: Timestamp;
+  timestamp: Timestamp | null;
   replies?: Comment[];
 };
