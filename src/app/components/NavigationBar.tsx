@@ -12,8 +12,10 @@ function NavigationBar() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   const iconBaseStyle: React.CSSProperties = {
-    width: "clamp(40px, 6vw, 80px)",
-    height: "clamp(40px, 6vw, 80px)",
+    // Ícone maior em telas grandes, menor em pequenas
+    width: "clamp(60px, 8vw, 120px)",
+    height: "clamp(60px, 8vw, 120px)",
+    padding: "clamp(8px, 1vw, 20px)", // Padding que escala
     cursor: "pointer",
     transition: "all 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
     userSelect: "none",
@@ -24,6 +26,7 @@ function NavigationBar() {
     color: "#fff",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
     boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+    boxSizing: "border-box",
   };
 
   const activeIconStyle: React.CSSProperties = {
@@ -59,7 +62,7 @@ function NavigationBar() {
       style={{
         position: "fixed",
         bottom: 30,
-        left: "50%",
+        left: "35%",
         transform: "translateX(-50%)",
         display: "flex",
         alignItems: "center",
@@ -68,7 +71,7 @@ function NavigationBar() {
         zIndex: 1000,
         userSelect: "none",
         padding: menuOpen ? "12px 24px" : "12px",
-        width: menuOpen ? "auto" : "clamp(40px, 6vw, 80px)",
+        width: menuOpen ? "auto" : "clamp(60px, 8vw, 120px)",
         transition: "width 0.4s ease, padding 0.4s ease, gap 0.4s ease",
       }}
       aria-label="Navigation menu"
@@ -79,8 +82,8 @@ function NavigationBar() {
         style={{
           ...iconBaseStyle,
           ...(menuOpen ? activeIconStyle : {}),
-          minWidth: "clamp(40px, 6vw, 80px)",
-          minHeight: "clamp(40px, 6vw, 80px)",
+          minWidth: "clamp(60px, 8vw, 120px)",
+          minHeight: "clamp(60px, 8vw, 120px)",
           padding: 0,
           boxSizing: "border-box",
         }}
@@ -95,7 +98,7 @@ function NavigationBar() {
         }}
         title="Menu"
       >
-        <Menu size={28} />
+        <Menu size={32} />
       </div>
 
       {/* Ícones que aparecem quando menu aberto */}
@@ -137,8 +140,8 @@ function NavigationBar() {
             <Image
               src={user.image}
               alt={user.name || "User"}
-              width={80}
-              height={80}
+              width={120}
+              height={120}
               style={{
                 width: "100%",
                 height: "100%",
@@ -148,7 +151,7 @@ function NavigationBar() {
               }}
             />
           ) : (
-            <UserRoundPen size={28} />
+            <UserRoundPen size={32} />
           )}
         </div>
 
@@ -169,7 +172,7 @@ function NavigationBar() {
             }
           }}
         >
-          <MapPinHouse size={28} />
+          <MapPinHouse size={32} />
         </div>
 
         {/* UPLOAD ICON */}
@@ -189,7 +192,7 @@ function NavigationBar() {
             }
           }}
         >
-          <ImageUp size={28} />
+          <ImageUp size={32} />
         </div>
       </div>
     </nav>

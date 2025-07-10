@@ -4,9 +4,10 @@ import { useEffect, useState, useRef } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
+import { Play } from "lucide-react";
 
 interface Video {
-  videoID?: string;
+  videoID?: string; // usado para indicar vídeo pronto
   publishedDateTime?: number;
   artistSongName?: string;
   latitude?: number;
@@ -14,6 +15,7 @@ interface Video {
   userProfileImage?: string;
   userName?: string;
   thumbnailUrl: string;
+  videoUrl?: string; // vou supor que exista a url do vídeo para tocar (adicione no firestore)
 }
 
 export default function Home() {
@@ -21,17 +23,18 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Estados para animação
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<
     "left" | "right" | null
   >(null);
   const [nextIndex, setNextIndex] = useState<number | null>(null);
 
-  // Referências para swipe
+  // Para controlar se o vídeo está tocando (true = mostrar vídeo HTML5)
+  const [isPlaying, setIsPlaying] = useState(false);
+
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
-  const minSwipeDistance = 50; // px mínimo para considerar swipe
+  const minSwipeDistance = 50;
 
   useEffect(() => {
     async function fetchVideos() {
@@ -54,6 +57,7 @@ export default function Home() {
             userName: data.userName || undefined,
             thumbnailUrl: data.thumbnailUrl || "",
             publishedDateTime: data.publishedDateTime || undefined,
+            videoUrl: data.videoUrl || undefined, // supondo que tenha
           };
         });
         setVideos(vids);
@@ -65,12 +69,12 @@ export default function Home() {
     fetchVideos();
   }, []);
 
-  // Funções para trocar vídeo com animação
   const nextVideo = () => {
     if (isAnimating || videos.length <= 1) return;
     setAnimationDirection("left");
     setNextIndex((activeIndex + 1) % videos.length);
     setIsAnimating(true);
+    setIsPlaying(false); // parar vídeo ao trocar
   };
 
   const prevVideo = () => {
@@ -78,9 +82,9 @@ export default function Home() {
     setAnimationDirection("right");
     setNextIndex((activeIndex - 1 + videos.length) % videos.length);
     setIsAnimating(true);
+    setIsPlaying(false); // parar vídeo ao trocar
   };
 
-  // Handlers do swipe
   const onTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.changedTouches[0].clientX;
   };
@@ -96,19 +100,15 @@ export default function Home() {
       Math.abs(touchStartX.current - touchEndX.current) > minSwipeDistance
     ) {
       if (touchStartX.current > touchEndX.current) {
-        // Swipe para esquerda -> próximo
         nextVideo();
       } else {
-        // Swipe para direita -> anterior
         prevVideo();
       }
     }
-    // Resetar
     touchStartX.current = null;
     touchEndX.current = null;
   };
 
-  // Final da animação
   const onTransitionEnd = () => {
     if (nextIndex !== null) {
       setActiveIndex(nextIndex);
@@ -155,9 +155,14 @@ export default function Home() {
     );
   }
 
-  // Índices para exibir
   const currentVideo = videos[activeIndex];
   const upcomingVideo = nextIndex !== null ? videos[nextIndex] : null;
+
+  // Botão Play aparece se videoID existe e videoUrl existe (pronto para vídeo)
+  const canPlayVideo = !!(currentVideo.videoID && currentVideo.videoUrl);
+
+  // Quando troca de vídeo, parar vídeo tocando
+  // (se preferir, pode pausar o vídeo no evento onEnded do <video>)
 
   return (
     <div
@@ -170,10 +175,11 @@ export default function Home() {
         overflow: "hidden",
         position: "relative",
         userSelect: "none",
-        touchAction: "pan-y", // evita conflito com scroll vertical
+        touchAction: "pan-y",
+        backgroundColor: "#000",
       }}
     >
-      {/* Container dos dois vídeos para animar o deslizar */}
+      {/* Container animação deslize */}
       <div
         style={{
           display: "flex",
@@ -195,43 +201,33 @@ export default function Home() {
             height: "100vh",
             position: "relative",
             flexShrink: 0,
+            backgroundColor: "#000",
           }}
         >
-          <img
-            src={currentVideo.thumbnailUrl}
-            alt={currentVideo.artistSongName || "Thumbnail do vídeo"}
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              filter: "brightness(0.6)",
-              position: "absolute",
-              top: 0,
-              left: 0,
-              zIndex: 0,
-            }}
-          />
-
-          {/* Overlay dados */}
-          <Overlay video={currentVideo} />
-        </div>
-
-        {/* Próximo vídeo (se houver) */}
-        {upcomingVideo && (
-          <div
-            style={{
-              width: "100vw",
-              height: "100vh",
-              position: "relative",
-              flexShrink: 0,
-            }}
-          >
-            <img
-              src={upcomingVideo.thumbnailUrl}
-              alt={upcomingVideo.artistSongName || "Thumbnail do vídeo"}
+          {/* Troca img por video se isPlaying */}
+          {isPlaying && canPlayVideo ? (
+            <video
+              src={currentVideo.videoUrl}
+              controls
+              autoPlay
               style={{
                 width: "100%",
                 height: "100%",
+                objectFit: "cover",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 0,
+                backgroundColor: "#000",
+              }}
+              onEnded={() => setIsPlaying(false)}
+            />
+          ) : (
+            <Image
+              src={currentVideo.thumbnailUrl}
+              alt={currentVideo.artistSongName || "Thumbnail do vídeo"}
+              fill
+              style={{
                 objectFit: "cover",
                 filter: "brightness(0.6)",
                 position: "absolute",
@@ -239,18 +235,95 @@ export default function Home() {
                 left: 0,
                 zIndex: 0,
               }}
+              sizes="100vw"
+              priority
             />
+          )}
 
-            {/* Overlay dados */}
+          <Overlay video={currentVideo} />
+        </div>
+
+        {/* Próximo vídeo */}
+        {upcomingVideo && (
+          <div
+            style={{
+              width: "100vw",
+              height: "100vh",
+              position: "relative",
+              flexShrink: 0,
+              backgroundColor: "#000",
+            }}
+          >
+            <Image
+              src={upcomingVideo.thumbnailUrl}
+              alt={upcomingVideo.artistSongName || "Thumbnail do vídeo"}
+              fill
+              style={{
+                objectFit: "cover",
+                filter: "brightness(0.6)",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 0,
+              }}
+              sizes="100vw"
+              priority
+            />
             <Overlay video={upcomingVideo} />
           </div>
         )}
       </div>
+
+      {/* Botão Play (canto inferior direito) */}
+      {canPlayVideo && !isPlaying && (
+        <button
+          onClick={() => setIsPlaying(true)}
+          aria-label="Play vídeo"
+          style={{
+            position: "fixed",
+            bottom: 90, // semelhante altura NavigationBar (ajuste se quiser)
+            right: 30,
+            backgroundColor: "#064e3b", // verde escuro
+            border: "none",
+            borderRadius: "9999px", // pílula
+            padding: "12px 24px",
+            color: "#fff",
+            fontWeight: "600",
+            fontSize: "1.25rem",
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(6, 78, 59, 0.6)",
+            userSelect: "none",
+            transition: "background-color 0.3s ease",
+            zIndex: 9999,
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.backgroundColor = "#07543f";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.backgroundColor = "#064e3b";
+          }}
+          type="button"
+        >
+          Play
+          <span
+            style={{
+              display: "flex",
+              backgroundColor: "#10b981", // verde claro
+              borderRadius: "50%",
+              padding: 6,
+            }}
+          >
+            <Play size={24} color="#fff" />
+          </span>
+        </button>
+      )}
     </div>
   );
 }
 
-// Componente para exibir os dados sobre o vídeo
 function Overlay({ video }: { video: Video }) {
   return (
     <div
@@ -329,6 +402,7 @@ function Overlay({ video }: { video: Video }) {
           {video.longitude.toFixed(5)}
         </p>
       )}
+
       {video.artistSongName && (
         <h1
           style={{
