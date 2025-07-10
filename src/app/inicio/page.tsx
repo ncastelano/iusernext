@@ -16,6 +16,7 @@ import { TopLeftContainer } from "../components/TopLeftContainer";
 
 export default function InicioPage() {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
   const [mutedGlobal, setMutedGlobal] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState("");
@@ -26,6 +27,7 @@ export default function InicioPage() {
   // Buscar vídeos
   useEffect(() => {
     const fetchVideos = async () => {
+      setLoading(true);
       const q = query(
         collection(db, "videos"),
         where("publishedDateTime", "!=", null),
@@ -38,6 +40,7 @@ export default function InicioPage() {
           ...doc.data(),
         })) as Video[]
       );
+      setLoading(false);
     };
     fetchVideos();
   }, []);
@@ -142,10 +145,33 @@ export default function InicioPage() {
     if (idx !== -1) setActiveVideoIndex(idx);
   };
 
+  // Skeleton/loading antes do carregamento dos vídeos
+  if (loading) {
+    return (
+      <div
+        className="vh-100 d-flex justify-content-center align-items-center"
+        style={{ backgroundColor: "#121212", color: "white" }}
+      >
+        <div className="text-center">
+          <div
+            className="spinner-border text-light mb-3"
+            role="status"
+            aria-hidden="true"
+          ></div>
+          <div>Carregando vídeos...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="vh-100"
-      style={{ overflow: "hidden", position: "relative" }}
+      style={{
+        overflow: "hidden",
+        position: "relative",
+        backgroundColor: "#121212",
+      }}
     >
       <div
         ref={containerRef}
