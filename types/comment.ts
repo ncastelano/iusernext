@@ -7,4 +7,5 @@ export type Comment = {
   userProfileImage: string;
   text: string;
   timestamp: Timestamp;
+  replies?: Comment[];
 };
