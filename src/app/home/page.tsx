@@ -281,17 +281,20 @@ export default function Home() {
           aria-label="Play vídeo"
           style={{
             position: "fixed",
-            bottom: 90, // semelhante altura NavigationBar (ajuste se quiser)
-            right: 30,
+            bottom: 30, // mesma altura do NavigationBar
+            right: 30, // distância da direita igual ao navbar (pode ajustar)
+            width: "clamp(60px, 8vw, 120px)", // mesmo tamanho que o ícone do navbar
+            height: "clamp(60px, 8vw, 120px)",
             backgroundColor: "#064e3b", // verde escuro
             border: "none",
             borderRadius: "9999px", // pílula
-            padding: "12px 24px",
+            padding: 0, // sem padding pra manter tamanho fixo
             color: "#fff",
             fontWeight: "600",
             fontSize: "1.25rem",
             display: "flex",
             alignItems: "center",
+            justifyContent: "center",
             gap: 12,
             cursor: "pointer",
             boxShadow: "0 4px 12px rgba(6, 78, 59, 0.6)",
@@ -307,13 +310,26 @@ export default function Home() {
           }}
           type="button"
         >
-          Play
+          {/* Texto "Play" */}
+          <span
+            style={{
+              userSelect: "none",
+              fontWeight: 600,
+              fontSize: "1.25rem",
+            }}
+          >
+            Play
+          </span>
+
+          {/* Ícone dentro da bolinha verde clara */}
           <span
             style={{
               display: "flex",
               backgroundColor: "#10b981", // verde claro
               borderRadius: "50%",
               padding: 6,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
             <Play size={24} color="#fff" />
