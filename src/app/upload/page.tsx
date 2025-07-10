@@ -14,6 +14,17 @@ import {
 } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { useUser } from "src/app/components/UserContext";
+import Image from "next/image";
+
+// Interface para evitar uso de any
+interface Store {
+  id: string;
+  artistSongName: string;
+  thumbnailUrl: string;
+  latitude: number;
+  longitude: number;
+  distance: number;
+}
 
 export default function UploadPage() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
@@ -22,7 +33,7 @@ export default function UploadPage() {
   const [descriptionTags, setDescriptionTags] = useState("");
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-  const [storeList, setStoreList] = useState<any[]>([]);
+  const [storeList, setStoreList] = useState<Store[]>([]);
   const [selectedStoreID, setSelectedStoreID] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
 
@@ -92,7 +103,7 @@ export default function UploadPage() {
         const q = query(collection(db, "videos"), where("isStore", "==", true));
         const querySnapshot = await getDocs(q);
 
-        const nearbyStores = querySnapshot.docs
+        const nearbyStores: Store[] = querySnapshot.docs
           .map((doc) => {
             const data = doc.data();
             const distance = getDistanceFromLatLonInKm(
@@ -101,7 +112,14 @@ export default function UploadPage() {
               data.latitude,
               data.longitude
             );
-            return { id: doc.id, ...data, distance };
+            return {
+              id: doc.id,
+              artistSongName: data.artistSongName,
+              thumbnailUrl: data.thumbnailUrl,
+              latitude: data.latitude,
+              longitude: data.longitude,
+              distance,
+            };
           })
           .filter((store) => store.distance < 5)
           .sort((a, b) => a.distance - b.distance);
@@ -334,10 +352,13 @@ export default function UploadPage() {
                 textAlign: "center",
               }}
             >
-              <img
+              <Image
                 src={store.thumbnailUrl}
                 alt={store.artistSongName}
-                style={{ width: "100%", borderRadius: 4 }}
+                width={200}
+                height={150}
+                style={{ width: "100%", borderRadius: 4, height: "auto" }}
+                unoptimized
               />
               <p style={{ marginTop: 4, fontSize: 12 }}>
                 {store.artistSongName}

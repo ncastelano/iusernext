@@ -14,16 +14,7 @@ import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR } from "date-fns/locale";
-
-type Comment = {
-  id: string;
-  userID: string;
-  userName: string;
-  userProfileImage: string;
-  text: string;
-  timestamp: any;
-  replies?: Comment[]; // <- agora é opcional
-};
+import { Comment } from "types/comment";
 
 type CommentSectionProps = {
   currentVideoId: string;
