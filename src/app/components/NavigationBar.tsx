@@ -59,8 +59,8 @@ function NavigationBar() {
       style={{
         position: "fixed",
         bottom: 30,
-        left: 30, // Mudei aqui para posicionar no canto esquerdo
-        // Removi left: "50%" e transform translateX(-50%)
+        left: "50%",
+        transform: "translateX(-50%)",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
