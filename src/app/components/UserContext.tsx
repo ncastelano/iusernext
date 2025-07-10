@@ -1,10 +1,14 @@
-'use client'
+"use client";
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '@/lib/firebase';
-import { onAuthStateChanged, getRedirectResult, User as FirebaseUser } from 'firebase/auth';
-import { User } from 'types/user';
-import { getUserFromFirestore } from 'src/app/components/GetUserFromFirestore';
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "@/lib/firebase";
+import {
+  onAuthStateChanged,
+  getRedirectResult,
+  User as FirebaseUser,
+} from "firebase/auth";
+import { User } from "types/user";
+import { getUserFromFirestore } from "src/app/components/GetUserFromFirestore";
 
 interface UserContextType {
   user: User | null;
@@ -26,9 +30,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (data) {
         setUser({
           uid: firebaseUser.uid,
-          email: firebaseUser.email ?? '',
+          email: firebaseUser.email ?? "",
           name: data.name,
-          username: data.username ?? '',
+          username: data.username ?? "",
           image: data.image,
           latitude: data.latitude,
           longitude: data.longitude,
@@ -38,36 +42,26 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         setUser(null);
       }
     } catch (err) {
-      console.error('Erro ao buscar perfil do usuário:', err);
+      console.error("Erro ao buscar perfil do usuário:", err);
       setUser(null);
     }
   }
 
   useEffect(() => {
-    let unsubscribe: () => void;
-
-    const checkRedirectAndAuth = async () => {
-      try {
-        await getRedirectResult(auth);
-      } catch (error) {
-        console.error('Erro ao obter resultado de redirect:', error);
-      }
-
-      unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
-        if (firebaseUser) {
-          loadUser(firebaseUser);
-        } else {
-          setUser(null);
-        }
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        loadUser(firebaseUser).finally(() => setLoading(false));
+      } else {
+        setUser(null);
         setLoading(false);
-      });
-    };
+      }
+    });
 
-    checkRedirectAndAuth();
+    getRedirectResult(auth).catch((error) =>
+      console.error("Erro ao obter resultado de redirect:", error)
+    );
 
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
+    return () => unsubscribe();
   }, []);
 
   return (

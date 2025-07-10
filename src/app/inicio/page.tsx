@@ -1,21 +1,11 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import {
-  collection,
-  getDocs,
-  query,
-  where,
-  orderBy,
-  onSnapshot,
-  DocumentSnapshot,
-  QuerySnapshot,
-} from "firebase/firestore";
+import { collection, getDocs, query, where, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { MessageCircle } from "lucide-react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Video } from "types/video";
-import { Comment } from "types/comment";
 import { VideoPlayer } from "@/app/components/VideoPlayer";
 import { UserAvatar } from "@/app/components/UserAvatar";
 import { CommentSection } from "@/app/components/CommentSection";
@@ -29,7 +19,6 @@ export default function InicioPage() {
   const [mutedGlobal, setMutedGlobal] = useState(true);
   const [showComments, setShowComments] = useState(false);
   const [currentVideoId, setCurrentVideoId] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
   const [activeVideoIndex, setActiveVideoIndex] = useState(0);
 
   const containerRef = useRef<HTMLDivElement>(null);
@@ -126,25 +115,6 @@ export default function InicioPage() {
       clearTimeout(timeout);
     };
   }, [videos, activeVideoIndex]);
-
-  // Comentários
-  useEffect(() => {
-    if (!showComments || !currentVideoId) return;
-
-    const commentsRef = collection(db, "videos", currentVideoId, "comments");
-    const q = query(commentsRef, orderBy("timestamp", "desc"));
-
-    const unsubscribe = onSnapshot(q, (snapshot: QuerySnapshot) => {
-      setComments(
-        snapshot.docs.map((doc: DocumentSnapshot) => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as Comment[]
-      );
-    });
-
-    return unsubscribe;
-  }, [showComments, currentVideoId]);
 
   // Controle de navegação por teclado (sempre ativo, bloqueia se showComments aberto)
   useEffect(() => {

@@ -1,4 +1,3 @@
-// app/components/UserAvatar.tsx
 "use client";
 import Image from "next/image";
 
@@ -9,9 +8,10 @@ interface UserAvatarProps {
 
 export function UserAvatar({ imageUrl, userName }: UserAvatarProps) {
   return (
-    <div className="d-flex flex-column align-items-start">
-      {/* Avatar + Username */}
+    <div className="d-flex align-items-end">
+      {/* Avatar + Username Container */}
       <div className="d-flex align-items-center">
+        {/* Avatar */}
         <div
           className="rounded-circle border border-light overflow-hidden"
           style={{
@@ -29,21 +29,30 @@ export function UserAvatar({ imageUrl, userName }: UserAvatarProps) {
             style={{ objectFit: "cover", width: "100%", height: "100%" }}
           />
         </div>
-        <span
-          className="ms-2"
+
+        {/* Vertical space between top container and username */}
+        <div
+          className="ms-2 d-flex flex-column justify-content-between"
           style={{
-            color: "#fff",
-            fontWeight: "bold",
-            fontSize: "1rem",
-            textShadow: "0 0 5px rgba(0,0,0,0.7)",
-            maxWidth: "200px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            height: "clamp(60px, 10vw, 120px)", // match avatar height
           }}
         >
-          {userName}
-        </span>
+          <div>{/* Espaço superior (vazio) */}</div>
+          <span
+            style={{
+              color: "#fff",
+              fontWeight: "bold",
+              fontSize: "1rem",
+              textShadow: "0 0 5px rgba(0,0,0,0.7)",
+              maxWidth: "200px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {userName}
+          </span>
+        </div>
       </div>
     </div>
   );

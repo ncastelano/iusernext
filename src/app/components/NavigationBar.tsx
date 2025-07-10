@@ -3,7 +3,7 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
-import { User2, MapPinHouse } from "lucide-react";
+import { UserRoundPen, MapPinHouse, ImageUp } from "lucide-react"; // <- importamos UploadCloud
 import Image from "next/image";
 
 function NavigationBar() {
@@ -19,7 +19,7 @@ function NavigationBar() {
 
   const handleUserClick = () => {
     if (user?.name) {
-      router.push(`/${user.name}`); // username correto aqui!
+      router.push(`/${user.name}`);
     } else {
       router.push("/login");
     }
@@ -27,6 +27,10 @@ function NavigationBar() {
 
   const handleMapaClick = () => {
     router.push("/mapa");
+  };
+
+  const handleUploadClick = () => {
+    router.push("/upload");
   };
 
   return (
@@ -63,13 +67,18 @@ function NavigationBar() {
             }}
           />
         ) : (
-          <User2 color="#fff" style={iconStyle} />
+          <UserRoundPen color="#fff" style={iconStyle} />
         )}
       </div>
 
       {/* Map ICON */}
       <div onClick={handleMapaClick} style={iconStyle}>
         <MapPinHouse color="#fff" style={iconStyle} />
+      </div>
+
+      {/* Upload ICON */}
+      <div onClick={handleUploadClick} style={iconStyle}>
+        <ImageUp color="#fff" style={iconStyle} />
       </div>
     </nav>
   );
