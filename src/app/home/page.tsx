@@ -21,7 +21,14 @@ export default function Home() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
 
-  // Referências para controlar o swipe
+  // Estados para animação
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<
+    "left" | "right" | null
+  >(null);
+  const [nextIndex, setNextIndex] = useState<number | null>(null);
+
+  // Referências para swipe
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
   const minSwipeDistance = 50; // px mínimo para considerar swipe
@@ -58,13 +65,19 @@ export default function Home() {
     fetchVideos();
   }, []);
 
-  // Funções para mudar de vídeo
+  // Funções para trocar vídeo com animação
   const nextVideo = () => {
-    setActiveIndex((prev) => (prev + 1) % videos.length);
+    if (isAnimating || videos.length <= 1) return;
+    setAnimationDirection("left");
+    setNextIndex((activeIndex + 1) % videos.length);
+    setIsAnimating(true);
   };
 
   const prevVideo = () => {
-    setActiveIndex((prev) => (prev - 1 + videos.length) % videos.length);
+    if (isAnimating || videos.length <= 1) return;
+    setAnimationDirection("right");
+    setNextIndex((activeIndex - 1 + videos.length) % videos.length);
+    setIsAnimating(true);
   };
 
   // Handlers do swipe
@@ -83,16 +96,26 @@ export default function Home() {
       Math.abs(touchStartX.current - touchEndX.current) > minSwipeDistance
     ) {
       if (touchStartX.current > touchEndX.current) {
-        // Swipe para esquerda
+        // Swipe para esquerda -> próximo
         nextVideo();
       } else {
-        // Swipe para direita
+        // Swipe para direita -> anterior
         prevVideo();
       }
     }
-    // Reset
+    // Resetar
     touchStartX.current = null;
     touchEndX.current = null;
+  };
+
+  // Final da animação
+  const onTransitionEnd = () => {
+    if (nextIndex !== null) {
+      setActiveIndex(nextIndex);
+      setNextIndex(null);
+    }
+    setIsAnimating(false);
+    setAnimationDirection(null);
   };
 
   if (loading) {
@@ -132,7 +155,9 @@ export default function Home() {
     );
   }
 
-  const video = videos[activeIndex];
+  // Índices para exibir
+  const currentVideo = videos[activeIndex];
+  const upcomingVideo = nextIndex !== null ? videos[nextIndex] : null;
 
   return (
     <div
@@ -142,120 +167,181 @@ export default function Home() {
       style={{
         width: "100vw",
         height: "100vh",
-        position: "relative",
         overflow: "hidden",
+        position: "relative",
         userSelect: "none",
-        touchAction: "pan-y", // para evitar conflito com scroll vertical
+        touchAction: "pan-y", // evita conflito com scroll vertical
       }}
     >
-      {/* Thumbnail ocupa toda tela */}
-      <img
-        src={video.thumbnailUrl}
-        alt={video.artistSongName || "Thumbnail do vídeo"}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-          filter: "brightness(0.6)",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          zIndex: 0,
-          transition: "transform 0.3s ease",
-        }}
-      />
-
-      {/* Overlay dos dados */}
+      {/* Container dos dois vídeos para animar o deslizar */}
       <div
         style={{
-          position: "absolute",
-          top: 20,
-          left: 20,
-          right: 20,
-          zIndex: 10,
-          color: "#fff",
-          textShadow: "0 0 5px rgba(0,0,0,0.8)",
           display: "flex",
-          flexDirection: "column",
-          gap: 12,
-          fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+          width: "200vw",
+          height: "100vh",
+          transform: isAnimating
+            ? animationDirection === "left"
+              ? "translateX(-100vw)"
+              : "translateX(100vw)"
+            : "translateX(0)",
+          transition: isAnimating ? "transform 0.5s ease" : "none",
         }}
+        onTransitionEnd={onTransitionEnd}
       >
-        {(video.userProfileImage || video.userName) && (
+        {/* Vídeo atual */}
+        <div
+          style={{
+            width: "100vw",
+            height: "100vh",
+            position: "relative",
+            flexShrink: 0,
+          }}
+        >
+          <img
+            src={currentVideo.thumbnailUrl}
+            alt={currentVideo.artistSongName || "Thumbnail do vídeo"}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              filter: "brightness(0.6)",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              zIndex: 0,
+            }}
+          />
+
+          {/* Overlay dados */}
+          <Overlay video={currentVideo} />
+        </div>
+
+        {/* Próximo vídeo (se houver) */}
+        {upcomingVideo && (
           <div
             style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              marginTop: 10,
+              width: "100vw",
+              height: "100vh",
+              position: "relative",
+              flexShrink: 0,
             }}
           >
-            {video.userProfileImage ? (
-              <Image
-                src={video.userProfileImage}
-                alt={video.userName || "Avatar do usuário"}
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                  border: "2px solid white",
-                  boxShadow: "0 0 6px rgba(255,255,255,0.7)",
-                }}
-              />
-            ) : (
-              <div
-                style={{
-                  width: 60,
-                  height: 60,
-                  borderRadius: "50%",
-                  backgroundColor: "#555",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  color: "#ccc",
-                  fontSize: "1.5rem",
-                }}
-              >
-                ?
-              </div>
-            )}
+            <img
+              src={upcomingVideo.thumbnailUrl}
+              alt={upcomingVideo.artistSongName || "Thumbnail do vídeo"}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                filter: "brightness(0.6)",
+                position: "absolute",
+                top: 0,
+                left: 0,
+                zIndex: 0,
+              }}
+            />
 
-            {video.userName && (
-              <span
-                style={{
-                  fontWeight: "600",
-                  fontSize: "1.3rem",
-                  textShadow: "0 0 3px rgba(0,0,0,0.7)",
-                  userSelect: "text",
-                }}
-              >
-                {video.userName}
-              </span>
-            )}
+            {/* Overlay dados */}
+            <Overlay video={upcomingVideo} />
           </div>
         )}
-
-        {video.latitude !== undefined && video.longitude !== undefined && (
-          <p style={{ margin: 0, fontSize: "1.1rem", opacity: 0.8 }}>
-            Latitude: {video.latitude.toFixed(5)} | Longitude:{" "}
-            {video.longitude.toFixed(5)}
-          </p>
-        )}
-        {video.artistSongName && (
-          <h1
-            style={{
-              margin: 0,
-              fontSize: "2.5rem",
-              fontWeight: "bold",
-              maxWidth: "90vw",
-              overflowWrap: "break-word",
-            }}
-          >
-            {video.artistSongName}
-          </h1>
-        )}
       </div>
+    </div>
+  );
+}
+
+// Componente para exibir os dados sobre o vídeo
+function Overlay({ video }: { video: Video }) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: 20,
+        left: 20,
+        right: 20,
+        zIndex: 10,
+        color: "#fff",
+        textShadow: "0 0 5px rgba(0,0,0,0.8)",
+        display: "flex",
+        flexDirection: "column",
+        gap: 12,
+        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+      }}
+    >
+      {(video.userProfileImage || video.userName) && (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 12,
+            marginTop: 10,
+          }}
+        >
+          {video.userProfileImage ? (
+            <Image
+              src={video.userProfileImage}
+              alt={video.userName || "Avatar do usuário"}
+              width={60}
+              height={60}
+              style={{
+                borderRadius: "50%",
+                objectFit: "cover",
+                border: "2px solid white",
+                boxShadow: "0 0 6px rgba(255,255,255,0.7)",
+              }}
+            />
+          ) : (
+            <div
+              style={{
+                width: 60,
+                height: 60,
+                borderRadius: "50%",
+                backgroundColor: "#555",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "#ccc",
+                fontSize: "1.5rem",
+              }}
+            >
+              ?
+            </div>
+          )}
+
+          {video.userName && (
+            <span
+              style={{
+                fontWeight: "600",
+                fontSize: "1.3rem",
+                textShadow: "0 0 3px rgba(0,0,0,0.7)",
+                userSelect: "text",
+              }}
+            >
+              {video.userName}
+            </span>
+          )}
+        </div>
+      )}
+
+      {video.latitude !== undefined && video.longitude !== undefined && (
+        <p style={{ margin: 0, fontSize: "1.1rem", opacity: 0.8 }}>
+          Latitude: {video.latitude.toFixed(5)} | Longitude:{" "}
+          {video.longitude.toFixed(5)}
+        </p>
+      )}
+      {video.artistSongName && (
+        <h1
+          style={{
+            margin: 0,
+            fontSize: "2.5rem",
+            fontWeight: "bold",
+            maxWidth: "90vw",
+            overflowWrap: "break-word",
+          }}
+        >
+          {video.artistSongName}
+        </h1>
+      )}
     </div>
   );
 }
