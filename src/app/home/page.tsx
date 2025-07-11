@@ -4,7 +4,6 @@ import { useEffect, useState, useRef } from "react";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-import { Play } from "lucide-react";
 
 interface Video {
   videoID?: string;
