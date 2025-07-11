@@ -7,7 +7,7 @@ import Image from "next/image";
 import { Play } from "lucide-react";
 
 interface Video {
-  videoID?: string; // usado para indicar vídeo pronto
+  videoID?: string;
   publishedDateTime?: number;
   artistSongName?: string;
   latitude?: number;
@@ -15,21 +15,18 @@ interface Video {
   userProfileImage?: string;
   userName?: string;
   thumbnailUrl: string;
-  videoUrl?: string; // vou supor que exista a url do vídeo para tocar (adicione no firestore)
+  videoUrl?: string;
 }
 
 export default function Home() {
   const [videos, setVideos] = useState<Video[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
-
   const [isAnimating, setIsAnimating] = useState(false);
   const [animationDirection, setAnimationDirection] = useState<
     "left" | "right" | null
   >(null);
   const [nextIndex, setNextIndex] = useState<number | null>(null);
-
-  // Para controlar se o vídeo está tocando (true = mostrar vídeo HTML5)
   const [isPlaying, setIsPlaying] = useState(false);
 
   const touchStartX = useRef<number | null>(null);
@@ -45,7 +42,6 @@ export default function Home() {
           orderBy("publishedDateTime", "desc")
         );
         const snapshot = await getDocs(q);
-
         const vids: Video[] = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
@@ -57,7 +53,7 @@ export default function Home() {
             userName: data.userName || undefined,
             thumbnailUrl: data.thumbnailUrl || "",
             publishedDateTime: data.publishedDateTime || undefined,
-            videoUrl: data.videoUrl || undefined, // supondo que tenha
+            videoUrl: data.videoUrl || undefined,
           };
         });
         setVideos(vids);
@@ -74,7 +70,7 @@ export default function Home() {
     setAnimationDirection("left");
     setNextIndex((activeIndex + 1) % videos.length);
     setIsAnimating(true);
-    setIsPlaying(false); // parar vídeo ao trocar
+    setIsPlaying(false);
   };
 
   const prevVideo = () => {
@@ -82,7 +78,7 @@ export default function Home() {
     setAnimationDirection("right");
     setNextIndex((activeIndex - 1 + videos.length) % videos.length);
     setIsAnimating(true);
-    setIsPlaying(false); // parar vídeo ao trocar
+    setIsPlaying(false);
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -117,6 +113,17 @@ export default function Home() {
     setIsAnimating(false);
     setAnimationDirection(null);
   };
+
+  const currentVideo = videos[activeIndex];
+  const upcomingVideo = nextIndex !== null ? videos[nextIndex] : null;
+  const canPlayVideo = !!(currentVideo?.videoID && currentVideo?.videoUrl);
+
+  // Autoplay assim que estiver pronto
+  useEffect(() => {
+    if (canPlayVideo && !isPlaying) {
+      setIsPlaying(true);
+    }
+  }, [canPlayVideo, isPlaying]);
 
   if (loading) {
     return (
@@ -155,15 +162,6 @@ export default function Home() {
     );
   }
 
-  const currentVideo = videos[activeIndex];
-  const upcomingVideo = nextIndex !== null ? videos[nextIndex] : null;
-
-  // Botão Play aparece se videoID existe e videoUrl existe (pronto para vídeo)
-  const canPlayVideo = !!(currentVideo.videoID && currentVideo.videoUrl);
-
-  // Quando troca de vídeo, parar vídeo tocando
-  // (se preferir, pode pausar o vídeo no evento onEnded do <video>)
-
   return (
     <div
       onTouchStart={onTouchStart}
@@ -179,7 +177,6 @@ export default function Home() {
         backgroundColor: "#000",
       }}
     >
-      {/* Container animação deslize */}
       <div
         style={{
           display: "flex",
@@ -194,7 +191,6 @@ export default function Home() {
         }}
         onTransitionEnd={onTransitionEnd}
       >
-        {/* Vídeo atual */}
         <div
           style={{
             width: "100vw",
@@ -204,7 +200,6 @@ export default function Home() {
             backgroundColor: "#000",
           }}
         >
-          {/* Troca img por video se isPlaying */}
           {isPlaying && canPlayVideo ? (
             <video
               src={currentVideo.videoUrl}
@@ -243,7 +238,6 @@ export default function Home() {
           <Overlay video={currentVideo} />
         </div>
 
-        {/* Próximo vídeo */}
         {upcomingVideo && (
           <div
             style={{
@@ -273,69 +267,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      {/* Botão Play (canto inferior direito) */}
-      {canPlayVideo && !isPlaying && (
-        <button
-          onClick={() => setIsPlaying(true)}
-          aria-label="Play vídeo"
-          style={{
-            position: "fixed",
-            bottom: 30, // mesma altura do NavigationBar
-            right: 30, // distância da direita igual ao navbar (pode ajustar)
-            width: "clamp(60px, 8vw, 120px)", // mesmo tamanho que o ícone do navbar
-            height: "clamp(60px, 8vw, 120px)",
-            backgroundColor: "#064e3b", // verde escuro
-            border: "none",
-            borderRadius: "9999px", // pílula
-            padding: 0, // sem padding pra manter tamanho fixo
-            color: "#fff",
-            fontWeight: "600",
-            fontSize: "1.25rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 12,
-            cursor: "pointer",
-            boxShadow: "0 4px 12px rgba(6, 78, 59, 0.6)",
-            userSelect: "none",
-            transition: "background-color 0.3s ease",
-            zIndex: 9999,
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = "#07543f";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = "#064e3b";
-          }}
-          type="button"
-        >
-          {/* Texto "Play" */}
-          <span
-            style={{
-              userSelect: "none",
-              fontWeight: 600,
-              fontSize: "1.25rem",
-            }}
-          >
-            Play
-          </span>
-
-          {/* Ícone dentro da bolinha verde clara */}
-          <span
-            style={{
-              display: "flex",
-              backgroundColor: "#10b981", // verde claro
-              borderRadius: "50%",
-              padding: 6,
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <Play size={24} color="#fff" />
-          </span>
-        </button>
-      )}
     </div>
   );
 }
