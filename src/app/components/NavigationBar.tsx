@@ -60,7 +60,7 @@ function NavigationBar() {
     <nav
       style={{
         position: "fixed",
-        bottom: 24,
+        bottom: 70,
         left: "50%",
         transform: "translateX(-50%)",
         display: "flex",
