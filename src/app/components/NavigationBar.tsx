@@ -66,14 +66,14 @@ function NavigationBar() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        gap: menuOpen ? 20 : 0,
         zIndex: 1000,
-        padding: menuOpen ? "12px 24px" : "0",
-        transition: "all 0.3s ease",
         userSelect: "none",
+        padding: menuOpen ? "12px 24px" : "0",
         backgroundColor: menuOpen ? "rgba(0,0,0,0.4)" : "transparent",
         borderRadius: menuOpen ? 60 : 0,
         boxShadow: menuOpen ? "0 0 15px rgba(255,255,255,0.2)" : "none",
+        gap: menuOpen ? 20 : 0,
+        width: menuOpen ? "auto" : "clamp(60px, 8vw, 90px)", // ESSA LINHA limita a largura quando fechado
       }}
       aria-label="Navigation menu"
     >
