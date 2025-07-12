@@ -6,7 +6,6 @@ import {
   getDocs,
   orderBy,
   query,
-  addDoc,
   Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -16,7 +15,6 @@ import { getAuth } from "firebase/auth";
 import Overlay from "src/app/components/Overlay";
 
 const auth = getAuth();
-const user = auth.currentUser;
 
 export interface Video {
   videoID?: string;
@@ -177,7 +175,6 @@ export default function Home() {
   };
 
   const currentVideo = videos[activeIndex];
-  const upcomingVideo = nextIndex !== null ? videos[nextIndex] : null;
   const canPlayVideo = !!(currentVideo?.videoID && currentVideo?.videoUrl);
 
   useEffect(() => {

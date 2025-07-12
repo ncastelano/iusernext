@@ -16,21 +16,27 @@ export const useVideos = () => {
           orderBy("publishedDateTime", "desc")
         );
         const snapshot = await getDocs(q);
-        const vids = snapshot.docs.map((doc) => {
+        const vids: Video[] = snapshot.docs.map((doc) => {
           const data = doc.data();
           return {
             videoID: doc.id,
-            artistSongName: data.artistSongName || undefined,
-            latitude: data.latitude || undefined,
-            longitude: data.longitude || undefined,
-            userProfileImage: data.userProfileImage || undefined,
-            userName: data.userName || undefined,
-            thumbnailUrl: data.thumbnailUrl || "",
-            publishedDateTime: data.publishedDateTime || undefined,
-            videoUrl: data.videoUrl || undefined,
+            artistSongName: data.artistSongName ?? "",
+            latitude: data.latitude ?? 0,
+            longitude: data.longitude ?? 0,
+            userProfileImage: data.userProfileImage ?? "",
+            userName: data.userName ?? "",
+            thumbnailUrl: data.thumbnailUrl ?? "",
+            publishedDateTime: data.publishedDateTime ?? null,
+            videoUrl: data.videoUrl ?? "",
+            userID: data.userID ?? "",
+            isFlash: data.isFlash ?? false,
+            isPlace: data.isPlace ?? false,
+            isStore: data.isStore ?? false,
+            isProduct: data.isProduct ?? false,
           };
         });
-        setVideos(videos);
+
+        setVideos(vids);
       } catch (error) {
         console.error("Erro ao buscar vídeos:", error);
       }
