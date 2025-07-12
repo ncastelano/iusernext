@@ -7,11 +7,13 @@ import {
   orderBy,
   query,
   Timestamp,
+  addDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-
 import Overlay from "src/app/components/Overlay";
+import { useUser } from "src/app/components/UserContext";
+import { useRouter } from "next/navigation";
 
 export interface Video {
   videoID?: string;
@@ -36,6 +38,9 @@ export type Comment = {
 };
 
 export default function Home() {
+  const { user } = useUser();
+  const router = useRouter();
+
   const [videos, setVideos] = useState<Video[]>([]);
   const [activeIndex, setActiveIndex] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -48,6 +53,7 @@ export default function Home() {
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
 
   const touchStartX = useRef<number | null>(null);
   const touchEndX = useRef<number | null>(null);
@@ -85,13 +91,12 @@ export default function Home() {
     fetchVideos();
   }, []);
 
-  // *** NOVO: carrega comentários sempre que o vídeo ativo mudar ***
   useEffect(() => {
     const currentVideoID = videos[activeIndex]?.videoID;
     if (currentVideoID) {
       loadComments(currentVideoID);
     } else {
-      setComments([]); // limpa comentários se não tiver vídeo
+      setComments([]);
     }
   }, [activeIndex, videos]);
 
@@ -100,7 +105,6 @@ export default function Home() {
     try {
       const ref = collection(db, "videos", videoID, "comments");
       const snapshot = await getDocs(ref);
-
       const loaded: Comment[] = snapshot.docs.map((doc) => {
         const data = doc.data();
         return {
@@ -119,6 +123,28 @@ export default function Home() {
     }
     setLoadingComments(false);
   }
+
+  const handleCommentSubmit = async () => {
+    if (!user || !newComment.trim() || !currentVideo?.videoID) return;
+    try {
+      const commentData = {
+        userID: user.uid,
+        userName: user.name,
+        userProfileImage: user.image || "",
+        text: newComment.trim(),
+        timestamp: Timestamp.now(),
+        replies: [],
+      };
+      await addDoc(
+        collection(db, "videos", currentVideo.videoID, "comments"),
+        commentData
+      );
+      setNewComment("");
+      loadComments(currentVideo.videoID);
+    } catch (error) {
+      console.error("Erro ao enviar comentário:", error);
+    }
+  };
 
   const nextVideo = () => {
     if (isAnimating || videos.length <= 1) return;
@@ -180,13 +206,9 @@ export default function Home() {
     }
   }, [canPlayVideo, isPlaying]);
 
-  if (loading) {
-    return <div style={styles.loading}>Carregando vídeos...</div>;
-  }
-
-  if (videos.length === 0) {
+  if (loading) return <div style={styles.loading}>Carregando vídeos...</div>;
+  if (videos.length === 0)
     return <div style={styles.loading}>Nenhum vídeo disponível.</div>;
-  }
 
   return (
     <main
@@ -239,12 +261,48 @@ export default function Home() {
 
       {isCommentsOpen && (
         <section style={styles.commentsSection}>
-          <button
-            onClick={() => setIsCommentsOpen(false)}
-            style={styles.closeCommentsButton}
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
           >
-            Fechar comentários
-          </button>
+            {user ? (
+              <>
+                <input
+                  type="text"
+                  placeholder="Adicione um comentário..."
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCommentSubmit()}
+                  style={{ flex: 1, marginRight: "1rem", padding: "0.5rem" }}
+                />
+              </>
+            ) : (
+              <p style={{ flex: 1 }}>
+                Você não está conectado.{" "}
+                <span
+                  style={{
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    color: "#4af",
+                  }}
+                  onClick={() => router.push("/login")}
+                >
+                  Faça login
+                </span>
+              </p>
+            )}
+            <button
+              onClick={() => setIsCommentsOpen(false)}
+              style={{ ...styles.closeCommentsButton, fontSize: "1.5rem" }}
+              aria-label="Fechar comentários"
+            >
+              ✕
+            </button>
+          </div>
+
           {loadingComments ? (
             <p>Carregando comentários...</p>
           ) : comments.length === 0 ? (
@@ -308,11 +366,9 @@ const styles = {
     padding: "1rem",
   },
   closeCommentsButton: {
-    marginBottom: "1rem",
-    backgroundColor: "#222",
+    backgroundColor: "transparent",
     border: "none",
     color: "#fff",
-    padding: "0.5rem 1rem",
     cursor: "pointer",
   },
   comment: {
