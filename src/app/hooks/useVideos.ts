@@ -1,28 +1,44 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs, orderBy, query, where } from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Video } from "types/video";
 
-export function useVideos() {
+export const useVideos = () => {
   const [videos, setVideos] = useState<Video[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchVideos = async () => {
-      const q = query(
-        collection(db, "videos"),
-        where("publishedDateTime", "!=", null),
-        orderBy("publishedDateTime", "desc")
-      );
-      const snapshot = await getDocs(q);
-      setVideos(
-        snapshot.docs.map((doc) => ({
-          videoID: doc.id,
-          ...doc.data(),
-        })) as Video[]
-      );
-    };
+    async function fetchVideos() {
+      setLoading(true);
+      try {
+        const q = query(
+          collection(db, "videos"),
+          orderBy("publishedDateTime", "desc")
+        );
+        const snapshot = await getDocs(q);
+        const vids = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            videoID: doc.id,
+            artistSongName: data.artistSongName || undefined,
+            latitude: data.latitude || undefined,
+            longitude: data.longitude || undefined,
+            userProfileImage: data.userProfileImage || undefined,
+            userName: data.userName || undefined,
+            thumbnailUrl: data.thumbnailUrl || "",
+            publishedDateTime: data.publishedDateTime || undefined,
+            videoUrl: data.videoUrl || undefined,
+          };
+        });
+        setVideos(videos);
+      } catch (error) {
+        console.error("Erro ao buscar vídeos:", error);
+      }
+      setLoading(false);
+    }
+
     fetchVideos();
   }, []);
 
-  return { videos };
-}
+  return { videos, loading };
+};

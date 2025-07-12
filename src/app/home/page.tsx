@@ -7,12 +7,18 @@ import {
   orderBy,
   query,
   addDoc,
+  Timestamp,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-import { Timestamp } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
 
-interface Video {
+import Overlay from "src/app/components/Overlay";
+
+const auth = getAuth();
+const user = auth.currentUser;
+
+export interface Video {
   videoID?: string;
   publishedDateTime?: number;
   artistSongName?: string;
@@ -26,7 +32,7 @@ interface Video {
 
 export type Comment = {
   id: string;
-  userId: string;
+  userID: string;
   userName: string;
   userProfileImage: string;
   text: string;
@@ -84,6 +90,16 @@ export default function Home() {
     fetchVideos();
   }, []);
 
+  // *** NOVO: carrega comentários sempre que o vídeo ativo mudar ***
+  useEffect(() => {
+    const currentVideoID = videos[activeIndex]?.videoID;
+    if (currentVideoID) {
+      loadComments(currentVideoID);
+    } else {
+      setComments([]); // limpa comentários se não tiver vídeo
+    }
+  }, [activeIndex, videos]);
+
   async function loadComments(videoID: string) {
     setLoadingComments(true);
     try {
@@ -94,7 +110,7 @@ export default function Home() {
         const data = doc.data();
         return {
           id: doc.id,
-          userId: data.userId || "unknown",
+          userID: data.userID || "unknown",
           userName: data.userName || "Anônimo",
           userProfileImage: data.userProfileImage || "",
           text: data.text || "",
@@ -175,362 +191,139 @@ export default function Home() {
   }
 
   if (videos.length === 0) {
-    return <div style={styles.loading}>Nenhum vídeo encontrado.</div>;
+    return <div style={styles.loading}>Nenhum vídeo disponível.</div>;
   }
 
   return (
-    <div
+    <main
+      style={styles.container}
       onTouchStart={onTouchStart}
       onTouchMove={onTouchMove}
       onTouchEnd={onTouchEnd}
-      style={styles.container}
     >
       <div
         style={{
-          display: "flex",
-          width: "200vw",
-          height: isCommentsOpen ? "60vh" : "100vh",
-          transform: isAnimating
-            ? animationDirection === "left"
-              ? "translateX(-100vw)"
-              : "translateX(100vw)"
-            : "translateX(0)",
-          transition: isAnimating ? "transform 0.5s ease" : "none",
+          ...styles.videoWrapper,
+          transform:
+            animationDirection === "left"
+              ? isAnimating
+                ? "translateX(-100%)"
+                : "translateX(0)"
+              : animationDirection === "right"
+              ? isAnimating
+                ? "translateX(100%)"
+                : "translateX(0)"
+              : "translateX(0)",
+          transition: isAnimating ? "transform 0.5s ease" : undefined,
         }}
         onTransitionEnd={onTransitionEnd}
       >
-        <div style={styles.videoWrapper}>
-          {isPlaying && canPlayVideo ? (
+        {currentVideo && (
+          <>
             <video
+              key={currentVideo.videoID}
               src={currentVideo.videoUrl}
+              poster={currentVideo.thumbnailUrl}
               controls
               autoPlay
+              muted
               style={styles.video}
-              onEnded={() => setIsPlaying(false)}
             />
-          ) : (
-            <Image
-              src={currentVideo.thumbnailUrl}
-              alt={currentVideo.artistSongName || "Thumbnail"}
-              fill
-              style={styles.thumbnail}
-              sizes="100vw"
-              priority
+            <Overlay
+              video={currentVideo}
+              onCommentClick={() => {
+                setIsCommentsOpen(true);
+                if (currentVideo.videoID) {
+                  loadComments(currentVideo.videoID);
+                }
+              }}
+              commentCount={comments.length}
             />
-          )}
-          <Overlay
-            video={currentVideo}
-            onCommentClick={async () => {
-              const shouldOpen = !isCommentsOpen;
-              setIsCommentsOpen(shouldOpen);
-              if (shouldOpen && currentVideo.videoID) {
-                await loadComments(currentVideo.videoID);
-              }
-            }}
-          />
-        </div>
-
-        {isAnimating && upcomingVideo && (
-          <div style={styles.videoWrapper}>
-            <Image
-              src={upcomingVideo.thumbnailUrl}
-              alt={upcomingVideo.artistSongName || "Thumbnail"}
-              fill
-              style={styles.thumbnail}
-              sizes="100vw"
-              priority
-            />
-            <Overlay video={upcomingVideo} />
-          </div>
+          </>
         )}
       </div>
 
       {isCommentsOpen && (
-        <div style={styles.commentsOverlay}>
+        <section style={styles.commentsSection}>
+          <button
+            onClick={() => setIsCommentsOpen(false)}
+            style={styles.closeCommentsButton}
+          >
+            Fechar comentários
+          </button>
           {loadingComments ? (
             <p>Carregando comentários...</p>
           ) : comments.length === 0 ? (
-            <p>Seja o primeiro a comentar!</p>
+            <p>Sem comentários ainda.</p>
           ) : (
             comments.map((comment) => (
-              <div
-                key={comment.id}
-                style={{
-                  marginBottom: "1rem",
-                  display: "flex",
-                  gap: "0.75rem",
-                  alignItems: "flex-start",
-                }}
-              >
-                {comment.userProfileImage ? (
-                  <Image
-                    src={comment.userProfileImage}
-                    alt={comment.userName}
-                    width={40}
-                    height={40}
-                    style={{ borderRadius: "50%", objectFit: "cover" }}
-                  />
-                ) : (
-                  <div
-                    style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "50%",
-                      backgroundColor: "#555",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      color: "#ccc",
-                      fontSize: "1.2rem",
-                      userSelect: "none",
-                    }}
-                  >
-                    ?
-                  </div>
-                )}
+              <div key={comment.id} style={styles.comment}>
+                <Image
+                  src={comment.userProfileImage}
+                  alt={comment.userName}
+                  width={40}
+                  height={40}
+                  style={{ borderRadius: "50%" }}
+                />
                 <div>
                   <strong>{comment.userName}</strong>
-                  <p style={{ margin: 0 }}>{comment.text}</p>
+                  <p>{comment.text}</p>
                 </div>
               </div>
             ))
           )}
-
-          <form
-            onSubmit={async (e) => {
-              e.preventDefault();
-              const form = e.target as HTMLFormElement;
-              const input = form.elements.namedItem(
-                "comment"
-              ) as HTMLInputElement;
-              const text = input.value.trim();
-              if (!text || !currentVideo?.videoID) return;
-
-              try {
-                const ref = collection(
-                  db,
-                  "videos",
-                  currentVideo.videoID,
-                  "comments"
-                );
-                await addDoc(ref, { text, createdAt: Date.now() });
-                setComments((prev) => [
-                  ...prev,
-                  {
-                    id: "temp-id-" + Date.now(),
-                    userId: "unknown",
-                    userName: "Anônimo",
-                    userProfileImage: "",
-                    text: text,
-                    timestamp: null,
-                    replies: [],
-                  },
-                ]);
-                input.value = "";
-              } catch (err) {
-                console.error("Erro ao comentar:", err);
-              }
-            }}
-            style={{ marginTop: "1rem", display: "flex", gap: "0.5rem" }}
-          >
-            <input
-              name="comment"
-              placeholder="Digite seu comentário..."
-              style={{
-                flex: 1,
-                padding: "0.5rem",
-                borderRadius: "6px",
-                border: "none",
-                fontSize: "1rem",
-              }}
-            />
-            <button
-              type="submit"
-              style={{
-                padding: "0.5rem 1rem",
-                background: "#fff",
-                color: "#000",
-                border: "none",
-                borderRadius: "6px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              Enviar
-            </button>
-          </form>
-        </div>
+        </section>
       )}
-    </div>
-  );
-}
-
-function Overlay({
-  video,
-  onCommentClick,
-}: {
-  video: Video;
-  onCommentClick?: () => void;
-}) {
-  return (
-    <div style={styles.overlay}>
-      {(video.userProfileImage || video.userName) && (
-        <div style={styles.profileRow}>
-          {video.userProfileImage ? (
-            <Image
-              src={video.userProfileImage}
-              alt={video.userName || "Avatar"}
-              width={60}
-              height={60}
-              style={styles.avatar}
-            />
-          ) : (
-            <div style={styles.defaultAvatar}>?</div>
-          )}
-          {video.userName && (
-            <span style={styles.username}>{video.userName}</span>
-          )}
-        </div>
-      )}
-
-      {video.latitude !== undefined && video.longitude !== undefined && (
-        <p style={{ margin: 0, fontSize: "1.1rem", opacity: 0.8 }}>
-          Latitude: {video.latitude.toFixed(5)} | Longitude:{" "}
-          {video.longitude.toFixed(5)}
-        </p>
-      )}
-
-      {video.artistSongName && (
-        <h1 style={styles.songTitle}>{video.artistSongName}</h1>
-      )}
-
-      {onCommentClick && (
-        <div style={{ display: "flex", justifyContent: "flex-end" }}>
-          <button onClick={onCommentClick} style={styles.commentButton}>
-            Comentários
-          </button>
-        </div>
-      )}
-    </div>
+    </main>
   );
 }
 
 const styles = {
   container: {
+    position: "relative" as const,
     width: "100vw",
     height: "100vh",
-    overflow: "hidden",
-    position: "relative" as const,
-    userSelect: "none" as const,
-    touchAction: "pan-y" as const,
+    overflow: "hidden" as const,
     backgroundColor: "#000",
-    display: "flex",
-    flexDirection: "column" as const,
-  },
-  loading: {
-    backgroundColor: "#000",
-    color: "#fff",
-    height: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    fontSize: "1.5rem",
-    fontWeight: "bold",
   },
   videoWrapper: {
-    width: "100vw",
+    width: "100%",
     height: "100%",
     position: "relative" as const,
-    flexShrink: 0,
-    backgroundColor: "#000",
   },
   video: {
     width: "100%",
     height: "100%",
     objectFit: "cover" as const,
-    position: "absolute" as const,
-    top: 0,
-    left: 0,
-    zIndex: 0,
   },
-  thumbnail: {
-    objectFit: "cover" as const,
-    filter: "brightness(0.6)",
-    position: "absolute" as const,
-    top: 0,
-    left: 0,
-    zIndex: 0,
-  },
-  overlay: {
-    position: "absolute" as const,
-    top: 20,
-    left: 20,
-    right: 20,
-    zIndex: 10,
+  loading: {
     color: "#fff",
-    textShadow: "0 0 5px rgba(0,0,0,0.8)",
-    display: "flex",
-    flexDirection: "column" as const,
-    gap: 12,
-    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-  },
-  profileRow: {
-    display: "flex",
-    alignItems: "center",
-    gap: 12,
-    marginTop: 10,
-  },
-  avatar: {
-    borderRadius: "50%",
-    objectFit: "cover" as const,
-    border: "2px solid white",
-    boxShadow: "0 0 6px rgba(255,255,255,0.7)",
-  },
-  defaultAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: "50%",
-    backgroundColor: "#555",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    color: "#ccc",
     fontSize: "1.5rem",
+    textAlign: "center" as const,
+    marginTop: "40vh",
   },
-  username: {
-    fontWeight: 600,
-    fontSize: "1.3rem",
-    textShadow: "0 0 3px rgba(0,0,0,0.7)",
-    userSelect: "text" as const,
-  },
-  songTitle: {
-    margin: 0,
-    fontSize: "2.5rem",
-    fontWeight: "bold",
-    maxWidth: "90vw",
-    overflowWrap: "break-word" as const,
-  },
-  commentButton: {
-    background: "transparent",
-    border: "1px solid white",
-    padding: "6px 12px",
-    borderRadius: "8px",
-    color: "white",
-    fontSize: "1rem",
-    cursor: "pointer",
-    alignSelf: "flex-start",
-  },
-  commentsOverlay: {
+  commentsSection: {
     position: "absolute" as const,
     bottom: 0,
     left: 0,
-    right: 0,
-    backgroundColor: "#111",
-    color: "#fff",
+    width: "100%",
     maxHeight: "40vh",
     overflowY: "auto" as const,
+    backgroundColor: "rgba(0,0,0,0.85)",
+    color: "#fff",
     padding: "1rem",
-    zIndex: 20,
-    borderTop: "1px solid #333",
+  },
+  closeCommentsButton: {
+    marginBottom: "1rem",
+    backgroundColor: "#222",
+    border: "none",
+    color: "#fff",
+    padding: "0.5rem 1rem",
+    cursor: "pointer",
+  },
+  comment: {
+    display: "flex",
+    gap: "1rem",
+    marginBottom: "1rem",
   },
 };
