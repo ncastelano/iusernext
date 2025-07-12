@@ -10,11 +10,8 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-import { getAuth } from "firebase/auth";
 
 import Overlay from "src/app/components/Overlay";
-
-const auth = getAuth();
 
 export interface Video {
   videoID?: string;
