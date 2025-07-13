@@ -325,7 +325,7 @@ export default function Mapa() {
             fullscreenControl: false,
             disableDefaultUI: true,
             clickableIcons: false,
-            gestureHandling: "auto",
+            gestureHandling: "greedy",
           }}
           onLoad={onLoad}
         >
