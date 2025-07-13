@@ -1,15 +1,20 @@
-// app/page.tsx ou app/home/page.tsx
+//teste/page.tsx
+
 "use client";
 
 import React from "react";
 import { GoogleMap, Polygon, useLoadScript } from "@react-google-maps/api";
+
+interface Props {
+  apiKey: string;
+}
 
 const libraries = ["places"];
 const mapContainerStyle = {
   width: "100%",
   height: "100vh",
 };
-const center = { lat: -23.5505, lng: -46.6333 }; // São Paulo, por exemplo
+const center = { lat: -23.5505, lng: -46.6333 };
 
 // Conversão de metros para graus aproximado
 const meterToLat = 1 / 111320;
@@ -18,39 +23,23 @@ const meterToLng = (lat: number) =>
 
 // Lista das empresas com dimensões
 const empresas = [
-  {
-    nome: "Empresa A",
-    largura: 3, // metros
-    altura: 3, // metros
-    cor: "#FF0000",
-  },
-  {
-    nome: "Empresa B",
-    largura: 10,
-    altura: 10,
-    cor: "#00FF00",
-  },
-  {
-    nome: "Empresa C",
-    largura: 10,
-    altura: 20,
-    cor: "#0000FF",
-  },
+  { nome: "Empresa A", largura: 3, altura: 3, cor: "#FF0000" },
+  { nome: "Empresa B", largura: 10, altura: 10, cor: "#00FF00" },
+  { nome: "Empresa C", largura: 10, altura: 20, cor: "#0000FF" },
 ];
 
-export default function Home() {
+export default function HomeMap({ apiKey }: Props) {
   const { isLoaded } = useLoadScript({
-    googleMapsApiKey: "AIzaSyDnhP6Wg40KC-hOCj-Fe5ogByUJJhWzeM4",
+    googleMapsApiKey: apiKey,
     libraries: libraries as any,
   });
 
   if (!isLoaded) return <div>Carregando mapa...</div>;
 
-  // Calcula os polígonos um ao lado do outro
   const baseLat = center.lat;
   let baseLng = center.lng;
 
-  const polygons = empresas.map((empresa, index) => {
+  const polygons = empresas.map((empresa) => {
     const latOffset = meterToLat * empresa.altura;
     const lngOffset = meterToLng(baseLat) * empresa.largura;
 
@@ -61,8 +50,7 @@ export default function Home() {
       { lat: baseLat + latOffset, lng: baseLng },
     ];
 
-    // Atualiza o ponto base para a próxima empresa (com um pequeno espaço)
-    baseLng += lngOffset + meterToLng(baseLat) * 1; // 1 metro de espaço
+    baseLng += lngOffset + meterToLng(baseLat); // espaço de 1 metro
 
     return {
       nome: empresa.nome,
@@ -73,7 +61,6 @@ export default function Home() {
 
   return (
     <div className="w-full h-screen flex">
-      {/* Lista lateral */}
       <div className="w-64 bg-white p-4 border-r overflow-y-auto">
         <h2 className="text-lg font-semibold mb-4">Empresas</h2>
         <ul>
@@ -93,7 +80,6 @@ export default function Home() {
         </ul>
       </div>
 
-      {/* Mapa */}
       <div className="flex-1">
         <GoogleMap
           mapContainerStyle={mapContainerStyle}
