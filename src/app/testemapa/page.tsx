@@ -1,19 +1,24 @@
-//teste/page.tsx
-
 "use client";
 
 import React from "react";
-import { GoogleMap, Polygon, useLoadScript } from "@react-google-maps/api";
+import {
+  GoogleMap,
+  Polygon,
+  useLoadScript,
+  type Libraries,
+} from "@react-google-maps/api";
 
 interface Props {
   apiKey: string;
 }
 
-const libraries = ["places"];
+const libraries: Libraries = ["places"];
+
 const mapContainerStyle = {
   width: "100%",
   height: "100vh",
 };
+
 const center = { lat: -23.5505, lng: -46.6333 };
 
 // Conversão de metros para graus aproximado
@@ -31,7 +36,7 @@ const empresas = [
 export default function HomeMap({ apiKey }: Props) {
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: apiKey,
-    libraries: libraries as any,
+    libraries,
   });
 
   if (!isLoaded) return <div>Carregando mapa...</div>;
