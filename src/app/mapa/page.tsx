@@ -107,6 +107,14 @@ export default function Mapa() {
     }
   }, []);
 
+  // *** NOVO: Remove scroll da página enquanto o componente está ativo ***
+  useEffect(() => {
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, []);
+
   useEffect(() => {
     const handler = (e: Event) => {
       e.preventDefault();
@@ -167,7 +175,6 @@ export default function Mapa() {
   }, [goToMyLocation]);
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
-  //if (!isLoaded) return <p>Carregando mapa...</p>
   if (!isLoaded) {
     return (
       <div
