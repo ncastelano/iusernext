@@ -8,10 +8,6 @@ import {
   type Libraries,
 } from "@react-google-maps/api";
 
-interface Props {
-  apiKey: string;
-}
-
 const libraries: Libraries = ["places"];
 
 const mapContainerStyle = {
@@ -21,19 +17,19 @@ const mapContainerStyle = {
 
 const center = { lat: -23.5505, lng: -46.6333 };
 
-// Conversão de metros para graus aproximado
 const meterToLat = 1 / 111320;
 const meterToLng = (lat: number) =>
   1 / ((40075000 * Math.cos((lat * Math.PI) / 180)) / 360);
 
-// Lista das empresas com dimensões
 const empresas = [
   { nome: "Empresa A", largura: 3, altura: 3, cor: "#FF0000" },
   { nome: "Empresa B", largura: 10, altura: 10, cor: "#00FF00" },
   { nome: "Empresa C", largura: 10, altura: 20, cor: "#0000FF" },
 ];
 
-export default function HomeMap({ apiKey }: Props) {
+export default function HomeMap() {
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: apiKey,
     libraries,
@@ -55,7 +51,7 @@ export default function HomeMap({ apiKey }: Props) {
       { lat: baseLat + latOffset, lng: baseLng },
     ];
 
-    baseLng += lngOffset + meterToLng(baseLat); // espaço de 1 metro
+    baseLng += lngOffset + meterToLng(baseLat);
 
     return {
       nome: empresa.nome,
