@@ -49,7 +49,6 @@ export default function Home() {
     "left" | "right" | null
   >(null);
   const [nextIndex, setNextIndex] = useState<number | null>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isCommentsOpen, setIsCommentsOpen] = useState(false);
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
@@ -152,7 +151,6 @@ export default function Home() {
     setAnimationDirection("left");
     setNextIndex((activeIndex + 1) % videos.length);
     setIsAnimating(true);
-    setIsPlaying(false);
   };
 
   const prevVideo = () => {
@@ -161,7 +159,6 @@ export default function Home() {
     setAnimationDirection("right");
     setNextIndex((activeIndex - 1 + videos.length) % videos.length);
     setIsAnimating(true);
-    setIsPlaying(false);
   };
 
   const onTouchStart = (e: React.TouchEvent) => {
@@ -200,12 +197,6 @@ export default function Home() {
   const currentVideo = videos[activeIndex];
   const canPlayVideo = !!(currentVideo?.videoID && currentVideo?.videoUrl);
 
-  useEffect(() => {
-    if (canPlayVideo && !isPlaying) {
-      setIsPlaying(true);
-    }
-  }, [canPlayVideo, isPlaying]);
-
   if (loading) return <div style={styles.loading}>Carregando vídeos...</div>;
   if (videos.length === 0)
     return <div style={styles.loading}>Nenhum vídeo disponível.</div>;
@@ -240,9 +231,9 @@ export default function Home() {
               key={currentVideo.videoID}
               src={currentVideo.videoUrl}
               poster={currentVideo.thumbnailUrl}
-              controls
               autoPlay
               muted
+              playsInline
               style={styles.video}
             />
             <Overlay
