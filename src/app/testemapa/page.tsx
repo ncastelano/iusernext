@@ -1,108 +1,413 @@
+//mapa/page.tsx
+
 "use client";
 
-import React from "react";
-import {
-  GoogleMap,
-  Polygon,
-  useLoadScript,
-  type Libraries,
-} from "@react-google-maps/api";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { collection, getDocs, Timestamp } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
+import Image from "next/image";
+import { CustomInfoWindowVideo } from "src/app/components/CustomInfoWindow";
+import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
+import { Video } from "types/video";
+import { User } from "types/user";
+import { FilterMap } from "src/app/components/FilterMap";
+import { VideoMarker } from "../components/VideoMaker";
+import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
+import { FilteredList } from "src/app/components/FilteredList";
+import { MarkerClusterer, Marker } from "@react-google-maps/api";
 
-const libraries: Libraries = ["places"];
-
-const mapContainerStyle = {
+const containerStyle = {
   width: "100%",
   height: "100vh",
 };
 
-const center = { lat: -23.5505, lng: -46.6333 };
+interface VideoRawData {
+  videoID: string;
+  userProfileImage: string;
+  userName: string;
+  userID: string;
+  latitude: number;
+  longitude: number;
+  artistSongName: string;
+  isFlash?: boolean;
+  isStore?: boolean;
+  isPlace?: boolean;
+  isProduct?: boolean;
+  thumbnailUrl: string;
+  createdAt?: Timestamp | Date;
+  publishedDateTime?: number | Timestamp | Date;
+}
 
-const meterToLat = 1 / 111320;
-const meterToLng = (lat: number) =>
-  1 / ((40075000 * Math.cos((lat * Math.PI) / 180)) / 360);
+function convertVideoRawToVideo(id: string, data: VideoRawData): Video {
+  return {
+    videoID: data.videoID,
+    userProfileImage: data.userProfileImage,
+    userName: data.userName,
+    userID: data.userID,
+    latitude: data.latitude,
+    longitude: data.longitude,
+    artistSongName: data.artistSongName,
+    isFlash: data.isFlash ?? false,
+    isStore: data.isStore ?? false,
+    isPlace: data.isPlace ?? false,
+    isProduct: data.isProduct ?? false,
+    thumbnailUrl: data.thumbnailUrl,
+    publishedDateTime:
+      data.publishedDateTime instanceof Timestamp
+        ? data.publishedDateTime.toDate().getTime()
+        : typeof data.publishedDateTime === "number"
+        ? data.publishedDateTime
+        : undefined,
+  };
+}
 
-const empresas = [
-  { nome: "Empresa A", largura: 3, altura: 3, cor: "#FF0000" },
-  { nome: "Empresa B", largura: 10, altura: 10, cor: "#00FF00" },
-  { nome: "Empresa C", largura: 10, altura: 20, cor: "#0000FF" },
-];
+export default function Mapa() {
+  const [videos, setVideos] = useState<Video[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedVideoId, setSelectedVideoId] = useState<string | null>(null);
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [deferredPrompt, setDeferredPrompt] =
+    useState<BeforeInstallPromptEvent | null>(null);
 
-export default function HomeMap() {
-  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string;
+  const [selectedFilter, setSelectedFilter] = useState<
+    "users" | "flash" | "store" | "place" | "product"
+  >("users");
+  const [searchTerm, setSearchTerm] = useState("");
+  const mapRef = useRef<google.maps.Map | null>(null);
 
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: apiKey,
-    libraries,
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const { isLoaded } = useJsApiLoader({
+    googleMapsApiKey: apiKey ?? "",
+    libraries: ["places"],
   });
 
-  if (!isLoaded) return <div>Carregando mapa...</div>;
+  const onLoad = (map: google.maps.Map) => {
+    mapRef.current = map;
+  };
 
-  const baseLat = center.lat;
-  let baseLng = center.lng;
+  const goToLocationWithZoom = ({ lat, lng }: { lat: number; lng: number }) => {
+    if (mapRef.current) {
+      mapRef.current.panTo({ lat, lng });
+      mapRef.current.setZoom(17);
+    }
+  };
 
-  const polygons = empresas.map((empresa) => {
-    const latOffset = meterToLat * empresa.altura;
-    const lngOffset = meterToLng(baseLat) * empresa.largura;
+  const goToMyLocation = useCallback(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const location = { lat: latitude, lng: longitude };
+          goToLocationWithZoom(location);
+        },
+        (error) => {
+          console.error("Erro ao obter localização atual:", error);
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    }
+  }, []);
 
-    const paths = [
-      { lat: baseLat, lng: baseLng },
-      { lat: baseLat, lng: baseLng + lngOffset },
-      { lat: baseLat + latOffset, lng: baseLng + lngOffset },
-      { lat: baseLat + latOffset, lng: baseLng },
-    ];
-
-    baseLng += lngOffset + meterToLng(baseLat);
-
-    return {
-      nome: empresa.nome,
-      paths,
-      cor: empresa.cor,
+  useEffect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+    };
+  }, []);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const videoSnapshot = await getDocs(collection(db, "videos"));
+        const videoData: Video[] = videoSnapshot.docs.map((doc) => {
+          const data = doc.data() as VideoRawData;
+          return convertVideoRawToVideo(doc.id, data);
+        });
+        setVideos(videoData);
+
+        const userSnapshot = await getDocs(collection(db, "users"));
+        const userData = userSnapshot.docs
+          .map((doc) => {
+            const data = doc.data();
+            if (
+              typeof data.latitude === "number" &&
+              typeof data.longitude === "number"
+            ) {
+              return {
+                uid: data.uid,
+                username: data.username ?? "", // <-- Ensure this field exists
+                visible: data.visible ?? [], // <-- Ensure this field exists
+                name: data.name || "",
+                email: data.email || "",
+                image: data.image || "",
+                latitude: data.latitude,
+                longitude: data.longitude,
+              } satisfies User;
+            }
+            return null;
+          })
+          .filter((u): u is User => u !== null);
+
+        setUsers(userData);
+
+        goToMyLocation();
+      } catch (error) {
+        console.error("Erro ao buscar dados:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, [goToMyLocation]);
+
+  if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
+  //if (!isLoaded) return <p>Carregando mapa...</p>
+  if (!isLoaded) {
+    return (
+      <div
+        style={{
+          backgroundColor: "#000",
+          color: "#fff",
+          height: "100vh",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "24px",
+          fontWeight: 500,
+          letterSpacing: "1px",
+          fontFamily: "Arial, sans-serif",
+          animation: "pulse 2s infinite",
+        }}
+      >
+        Explorando território...
+        <style>{`
+      @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+      }
+    `}</style>
+      </div>
+    );
+  }
+
+  const videosWithLocation = videos.filter(
+    (video) =>
+      typeof video.latitude === "number" && typeof video.longitude === "number"
+  );
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+
+  const filteredVideos = videosWithLocation.filter((video) => {
+    const matchesFilter =
+      (selectedFilter === "flash" && video.isFlash) ||
+      (selectedFilter === "store" && video.isStore) ||
+      (selectedFilter === "place" && video.isPlace) ||
+      (selectedFilter === "product" && video.isProduct);
+
+    const matchesSearch = video.artistSongName
+      ?.toLowerCase()
+      .includes(normalizedSearch);
+
+    return matchesFilter && matchesSearch;
   });
+
+  const filteredUsers =
+    selectedFilter === "users"
+      ? users.filter((user) =>
+          user.name.toLowerCase().includes(normalizedSearch)
+        )
+      : [];
 
   return (
-    <div className="w-full h-screen flex">
-      <div className="w-64 bg-white p-4 border-r overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-4">Empresas</h2>
-        <ul>
-          {empresas.map((empresa, i) => (
-            <li key={i} className="mb-2">
-              <div className="flex items-center space-x-2">
-                <div
-                  className="w-4 h-4 rounded"
-                  style={{ backgroundColor: empresa.cor }}
-                ></div>
-                <div>
-                  {empresa.nome} — {empresa.largura}m x {empresa.altura}m
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
+    <main
+      style={{
+        padding: 0,
+        fontFamily: "Arial, sans-serif",
+        position: "relative",
+      }}
+    >
+      <FilterMap
+        selected={selectedFilter}
+        onChange={setSelectedFilter}
+        onSearchChange={(term) => setSearchTerm(term.toLowerCase())}
+      />
 
-      <div className="flex-1">
-        <GoogleMap
-          mapContainerStyle={mapContainerStyle}
-          center={center}
-          zoom={20}
-          mapTypeId="satellite"
+      <FilteredList
+        filter={selectedFilter}
+        users={users}
+        videos={videosWithLocation}
+        onSelectUser={setSelectedUserId}
+        onSelectVideo={setSelectedVideoId}
+        goToLocation={goToLocationWithZoom}
+        searchTerm={searchTerm}
+      />
+
+      <button
+        onClick={goToMyLocation}
+        style={{
+          position: "fixed",
+          bottom: 90,
+          left: 20,
+          zIndex: 1000,
+          padding: "10px 16px",
+          backgroundColor: "#1a1a1a",
+          color: "#ccc",
+          border: "1px solid #444",
+          borderRadius: "8px",
+          cursor: "pointer",
+          fontWeight: 500,
+          fontSize: "14px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          transition: "all 0.2s ease-in-out",
+        }}
+      >
+        📍 Minha localização
+      </button>
+
+      {deferredPrompt && (
+        <button
+          onClick={async () => {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === "accepted") {
+              console.log("Usuário aceitou instalar o PWA");
+            } else {
+              console.log("Usuário recusou instalar o PWA");
+            }
+            setDeferredPrompt(null);
+          }}
+          style={{
+            position: "fixed",
+            bottom: 80,
+            right: 20,
+            zIndex: 1000,
+            backgroundColor: "#1a1a1a",
+            color: "#fff",
+            padding: "12px 16px",
+            borderRadius: "8px",
+            border: "none",
+            cursor: "pointer",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+          }}
         >
-          {polygons.map((item, i) => (
-            <Polygon
-              key={i}
-              paths={item.paths}
-              options={{
-                strokeColor: item.cor,
-                strokeOpacity: 0.8,
-                strokeWeight: 2,
-                fillColor: item.cor,
-                fillOpacity: 0.35,
-              }}
-            />
-          ))}
+          📲 Instalar iUser
+        </button>
+      )}
+
+      {loading ? (
+        <p style={{ textAlign: "center" }}>Carregando vídeos...</p>
+      ) : (
+        <GoogleMap
+          mapContainerStyle={containerStyle}
+          mapTypeId="hybrid"
+          options={{
+            tilt: 45,
+            heading: 45,
+            styles: darkThemeStyleArray,
+            backgroundColor: "#000000",
+            mapTypeControl: false,
+            keyboardShortcuts: false,
+            fullscreenControl: false,
+            disableDefaultUI: true,
+            clickableIcons: false,
+          }}
+          onLoad={onLoad}
+        >
+          {/* Cluster de vídeos */}
+          <MarkerClusterer>
+            {(clusterer) => (
+              <>
+                {filteredVideos.map((video) => (
+                  <Marker
+                    key={video.videoID}
+                    position={{ lat: video.latitude!, lng: video.longitude! }}
+                    clusterer={clusterer}
+                    icon={{
+                      url: video.thumbnailUrl,
+                      scaledSize: new google.maps.Size(40, 40),
+                      origin: new google.maps.Point(0, 0),
+                      anchor: new google.maps.Point(20, 20),
+                    }}
+                    onClick={() => setSelectedVideoId(video.videoID)}
+                  />
+                ))}
+              </>
+            )}
+          </MarkerClusterer>
+
+          {/* Cluster de usuários */}
+          <MarkerClusterer>
+            {(clusterer) => (
+              <>
+                {filteredUsers.map((user) => (
+                  <Marker
+                    key={user.uid}
+                    position={{ lat: user.latitude, lng: user.longitude }}
+                    clusterer={clusterer}
+                    icon={{
+                      url: user.image,
+                      scaledSize: new google.maps.Size(48, 48),
+                      origin: new google.maps.Point(0, 0),
+                      anchor: new google.maps.Point(24, 24),
+                    }}
+                    title={user.name}
+                    onClick={() => setSelectedUserId(user.uid)}
+                  />
+                ))}
+              </>
+            )}
+          </MarkerClusterer>
+
+          {/* Janela personalizada para vídeos */}
+          {selectedVideoId &&
+            (() => {
+              const video = filteredVideos.find(
+                (v) => v.videoID === selectedVideoId
+              );
+              if (!video) return null;
+              return (
+                <OverlayView
+                  position={{ lat: video.latitude!, lng: video.longitude! }}
+                  mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                >
+                  <CustomInfoWindowVideo
+                    video={video}
+                    onClose={() => setSelectedVideoId(null)}
+                  />
+                </OverlayView>
+              );
+            })()}
+
+          {/* Janela personalizada para usuários */}
+          {selectedUserId &&
+            (() => {
+              const user = filteredUsers.find((u) => u.uid === selectedUserId);
+              if (!user) return null;
+              return (
+                <OverlayView
+                  position={{ lat: user.latitude, lng: user.longitude }}
+                  mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                >
+                  <CustomInfoWindowUser
+                    user={user}
+                    onClose={() => setSelectedUserId(null)}
+                  />
+                </OverlayView>
+              );
+            })()}
         </GoogleMap>
-      </div>
-    </div>
+      )}
+    </main>
   );
 }

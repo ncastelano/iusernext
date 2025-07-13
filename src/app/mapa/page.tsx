@@ -1,5 +1,3 @@
-//mapa/page.tsx
-
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -142,8 +140,8 @@ export default function Mapa() {
             ) {
               return {
                 uid: data.uid,
-                username: data.username ?? "", // <-- Ensure this field exists
-                visible: data.visible ?? [], // <-- Ensure this field exists
+                username: data.username ?? "",
+                visible: data.visible ?? [],
                 name: data.name || "",
                 email: data.email || "",
                 image: data.image || "",
@@ -169,7 +167,6 @@ export default function Mapa() {
   }, [goToMyLocation]);
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
-  //if (!isLoaded) return <p>Carregando mapa...</p>
   if (!isLoaded) {
     return (
       <div
@@ -227,6 +224,26 @@ export default function Mapa() {
           user.name.toLowerCase().includes(normalizedSearch)
         )
       : [];
+
+  // Reordena para que o vídeo selecionado fique por último (no topo)
+  const sortedVideos = [...filteredVideos];
+  if (selectedVideoId) {
+    const index = sortedVideos.findIndex((v) => v.videoID === selectedVideoId);
+    if (index > -1) {
+      const [clickedVideo] = sortedVideos.splice(index, 1);
+      sortedVideos.push(clickedVideo);
+    }
+  }
+
+  // Reordena para que o usuário selecionado fique por último (no topo)
+  const sortedUsers = [...filteredUsers];
+  if (selectedUserId) {
+    const index = sortedUsers.findIndex((u) => u.uid === selectedUserId);
+    if (index > -1) {
+      const [clickedUser] = sortedUsers.splice(index, 1);
+      sortedUsers.push(clickedUser);
+    }
+  }
 
   return (
     <main
@@ -316,14 +333,15 @@ export default function Mapa() {
             styles: darkThemeStyleArray,
             backgroundColor: "#000000",
             mapTypeControl: false,
-            keyboardShortcuts: false,
+            keyboardShortcuts: true,
             fullscreenControl: false,
-            disableDefaultUI: true,
+            disableDefaultUI: false, // permite controles padrão
             clickableIcons: false,
+            gestureHandling: "greedy",
           }}
           onLoad={onLoad}
         >
-          {filteredVideos.map((video) => (
+          {sortedVideos.map((video) => (
             <OverlayView
               key={video.videoID}
               position={{ lat: video.latitude!, lng: video.longitude! }}
@@ -349,7 +367,7 @@ export default function Mapa() {
             </OverlayView>
           ))}
 
-          {filteredUsers.map((user) => (
+          {sortedUsers.map((user) => (
             <OverlayView
               key={user.uid}
               position={{ lat: user.latitude, lng: user.longitude }}
