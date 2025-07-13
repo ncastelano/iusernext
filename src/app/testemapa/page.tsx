@@ -1,21 +1,24 @@
-//mapa/page.tsx
+// mapa/page.tsx
 
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
-import Image from "next/image";
+import {
+  GoogleMap,
+  OverlayView,
+  useJsApiLoader,
+  MarkerClusterer,
+  Marker,
+} from "@react-google-maps/api";
 import { CustomInfoWindowVideo } from "src/app/components/CustomInfoWindow";
 import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
 import { Video } from "types/video";
 import { User } from "types/user";
 import { FilterMap } from "src/app/components/FilterMap";
-import { VideoMarker } from "../components/VideoMaker";
 import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
 import { FilteredList } from "src/app/components/FilteredList";
-import { MarkerClusterer, Marker } from "@react-google-maps/api";
 
 const containerStyle = {
   width: "100%",
@@ -70,7 +73,6 @@ export default function Mapa() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
-
   const [selectedFilter, setSelectedFilter] = useState<
     "users" | "flash" | "store" | "place" | "product"
   >("users");
@@ -99,8 +101,7 @@ export default function Mapa() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const location = { lat: latitude, lng: longitude };
-          goToLocationWithZoom(location);
+          goToLocationWithZoom({ lat: latitude, lng: longitude });
         },
         (error) => {
           console.error("Erro ao obter localização atual:", error);
@@ -117,10 +118,7 @@ export default function Mapa() {
     };
 
     window.addEventListener("beforeinstallprompt", handler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-    };
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
 
   useEffect(() => {
@@ -143,8 +141,8 @@ export default function Mapa() {
             ) {
               return {
                 uid: data.uid,
-                username: data.username ?? "", // <-- Ensure this field exists
-                visible: data.visible ?? [], // <-- Ensure this field exists
+                username: data.username ?? "",
+                visible: data.visible ?? [],
                 name: data.name || "",
                 email: data.email || "",
                 image: data.image || "",
@@ -157,7 +155,6 @@ export default function Mapa() {
           .filter((u): u is User => u !== null);
 
         setUsers(userData);
-
         goToMyLocation();
       } catch (error) {
         console.error("Erro ao buscar dados:", error);
@@ -170,7 +167,7 @@ export default function Mapa() {
   }, [goToMyLocation]);
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
-  //if (!isLoaded) return <p>Carregando mapa...</p>
+
   if (!isLoaded) {
     return (
       <div
@@ -191,12 +188,12 @@ export default function Mapa() {
       >
         Explorando território...
         <style>{`
-      @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
-      }
-    `}</style>
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -218,7 +215,6 @@ export default function Mapa() {
     const matchesSearch = video.artistSongName
       ?.toLowerCase()
       .includes(normalizedSearch);
-
     return matchesFilter && matchesSearch;
   });
 
@@ -324,7 +320,7 @@ export default function Mapa() {
           }}
           onLoad={onLoad}
         >
-          {/* Cluster de vídeos */}
+          {/* Vídeos */}
           <MarkerClusterer>
             {(clusterer) => (
               <>
@@ -346,7 +342,7 @@ export default function Mapa() {
             )}
           </MarkerClusterer>
 
-          {/* Cluster de usuários */}
+          {/* Usuários */}
           <MarkerClusterer>
             {(clusterer) => (
               <>
@@ -369,7 +365,7 @@ export default function Mapa() {
             )}
           </MarkerClusterer>
 
-          {/* Janela personalizada para vídeos */}
+          {/* Janela de vídeo */}
           {selectedVideoId &&
             (() => {
               const video = filteredVideos.find(
@@ -389,7 +385,7 @@ export default function Mapa() {
               );
             })()}
 
-          {/* Janela personalizada para usuários */}
+          {/* Janela de usuário */}
           {selectedUserId &&
             (() => {
               const user = filteredUsers.find((u) => u.uid === selectedUserId);
