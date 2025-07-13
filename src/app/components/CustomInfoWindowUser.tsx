@@ -1,24 +1,33 @@
-import React from 'react'
-import { User } from 'types/user'
-import Image from 'next/image'
+import React from "react";
+import { User } from "types/user";
+import Image from "next/image";
 
 export const CustomInfoWindowUser = ({
   user,
   onClose,
+  selected = false,
 }: {
-  user: User
-  onClose: () => void
+  user: User;
+  onClose: () => void;
+  selected?: boolean;
 }) => {
   return (
-    <div style={styles.container}>
+    <div
+      style={{
+        ...styles.container,
+        borderColor: selected ? "#2ecc71" : "#333",
+        borderWidth: selected ? 2 : 1,
+        borderStyle: "solid",
+      }}
+    >
       <div style={styles.imageWrapper}>
-       <Image
-  src={user.image}
-  alt={user.name}
-  width={100}
-  height={100}
-  style={{ objectFit: 'cover' }}
-/>
+        <Image
+          src={user.image}
+          alt={user.name}
+          width={100}
+          height={100}
+          style={{ objectFit: "cover" }}
+        />
       </div>
       <div style={styles.textWrapper}>
         <h4 style={styles.title}>{user.name}</h4>
@@ -28,64 +37,63 @@ export const CustomInfoWindowUser = ({
         ×
       </button>
     </div>
-  )
-}
+  );
+};
 
 const styles: Record<string, React.CSSProperties> = {
   container: {
-    position: 'absolute',
-    transform: 'translate(-50%, -100%)',
-    backgroundColor: '#1a1a1a',
-    border: '1px solid #333',
-    borderRadius: '10px',
-    padding: '8px',
-    width: '220px',
-    maxWidth: '90vw',
+    position: "absolute",
+    transform: "translate(-50%, -100%)",
+    backgroundColor: "#1a1a1a",
+    borderRadius: "10px",
+    padding: "8px",
+    width: "220px",
+    maxWidth: "90vw",
     zIndex: 100,
-    display: 'flex',
-    gap: '12px',
-    color: '#fff',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.4)',
+    display: "flex",
+    gap: "12px",
+    color: "#fff",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
   },
   imageWrapper: {
-    width: '100px',
-    height: '100px',
+    width: "100px",
+    height: "100px",
     flexShrink: 0,
-    borderRadius: '8px',
-    overflow: 'hidden',
+    borderRadius: "8px",
+    overflow: "hidden",
   },
   textWrapper: {
     flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
   },
   title: {
-    margin: '0 0 4px 0',
-    fontSize: '14px',
+    margin: "0 0 4px 0",
+    fontSize: "14px",
     fontWeight: 600,
-    lineHeight: '1.2',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    lineHeight: "1.2",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   subtitle: {
     margin: 0,
-    fontSize: '12px',
-    color: '#aaa',
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    fontSize: "12px",
+    color: "#aaa",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
   },
   closeButton: {
-    position: 'absolute',
-    top: '4px',
-    right: '4px',
-    background: 'transparent',
-    border: 'none',
-    color: '#ccc',
-    fontSize: '18px',
-    cursor: 'pointer',
+    position: "absolute",
+    top: "4px",
+    right: "4px",
+    background: "transparent",
+    border: "none",
+    color: "#ccc",
+    fontSize: "18px",
+    cursor: "pointer",
     lineHeight: 1,
   },
-}
+};
