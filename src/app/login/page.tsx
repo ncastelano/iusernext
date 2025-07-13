@@ -18,7 +18,7 @@ export default function LoginPage() {
   // Redireciona para /inicio se o usuário já estiver logado
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/home");
+      router.replace("/mapa");
     }
   }, [user, loading, router]);
 
@@ -26,7 +26,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, senha);
-      router.push("/home");
+      router.push("/mapa");
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(error.message);

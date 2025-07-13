@@ -1,5 +1,5 @@
 "use client";
-
+import { Zap } from "lucide-react";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
@@ -54,6 +54,11 @@ function NavigationBar() {
 
   const handleMenuToggle = () => {
     setMenuOpen((prev) => !prev);
+  };
+
+  const handleFlashClick = () => {
+    setMenuOpen(false);
+    router.push("/mapa");
   };
 
   return (
@@ -198,6 +203,25 @@ function NavigationBar() {
           }}
         >
           <ImageUp size={32} color="#fff" />
+        </div>
+
+        {/* FLASH ICON */}
+        <div
+          onClick={handleFlashClick}
+          style={{
+            ...iconBaseStyle,
+            userSelect: "none",
+          }}
+          title="Flash"
+          tabIndex={menuOpen ? 0 : -1}
+          role="button"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              handleFlashClick();
+            }
+          }}
+        >
+          <Zap size={32} color="#fff" />
         </div>
       </div>
     </nav>

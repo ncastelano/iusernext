@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Video } from "src/app/home/page"; // Importa a interface Video do Home para manter a tipagem
+import { Video } from "@/app/flash/page"; // Importa a interface Video do Home para manter a tipagem
 
 interface OverlayProps {
   video: Video;
@@ -33,12 +33,14 @@ export default function Overlay({
         </div>
       )}
 
-      {video.latitude !== undefined && video.longitude !== undefined && (
-        <p style={{ margin: 0, fontSize: "1.1rem", opacity: 0.8 }}>
-          Latitude: {video.latitude.toFixed(5)} | Longitude:{" "}
-          {video.longitude.toFixed(5)}
-        </p>
-      )}
+      {/*
+  {video.latitude !== undefined && video.longitude !== undefined && (
+    <p style={{ margin: 0, fontSize: "1.1rem", opacity: 0.8 }}>
+      Latitude: {video.latitude.toFixed(5)} | Longitude:{" "}
+      {video.longitude.toFixed(5)}
+    </p>
+  )}
+*/}
 
       {video.artistSongName && (
         <h1 style={styles.songTitle}>{video.artistSongName}</h1>

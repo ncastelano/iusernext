@@ -63,7 +63,7 @@ export default function CadastroPage() {
         image: imageURL,
       });
 
-      router.push("/home");
+      router.push("/mapa");
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(error.message);
