@@ -195,7 +195,6 @@ export default function Home() {
   };
 
   const currentVideo = videos[activeIndex];
-  const canPlayVideo = !!(currentVideo?.videoID && currentVideo?.videoUrl);
 
   if (loading) return <div style={styles.loading}>Carregando vídeos...</div>;
   if (videos.length === 0)
