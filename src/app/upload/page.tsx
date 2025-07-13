@@ -16,7 +16,6 @@ import { db, storage } from "@/lib/firebase";
 import { useUser } from "src/app/components/UserContext";
 import Image from "next/image";
 
-// Interface para evitar uso de any
 interface Store {
   id: string;
   artistSongName: string;
@@ -49,7 +48,12 @@ export default function UploadPage() {
       video.playsInline = true;
 
       video.onloadedmetadata = () => {
-        video.currentTime = 1;
+        // Definir currentTime após metadados para capturar frame
+        try {
+          video.currentTime = 1;
+        } catch (err) {
+          reject("Erro ao definir o tempo do vídeo para captura.");
+        }
       };
 
       video.onseeked = () => {
@@ -57,15 +61,16 @@ export default function UploadPage() {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext("2d");
-        if (!ctx) return reject("Erro ao criar canvas");
+        if (!ctx) return reject("Erro ao criar canvas para thumbnail.");
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         canvas.toBlob((blob) => {
           if (blob) resolve(blob);
-          else reject("Falha ao gerar thumbnail");
+          else reject("Falha ao gerar thumbnail do vídeo.");
         }, "image/jpeg");
       };
 
-      video.onerror = () => reject("Erro ao carregar vídeo");
+      video.onerror = () =>
+        reject("Erro ao carregar vídeo para gerar thumbnail.");
     });
   };
 
@@ -92,7 +97,7 @@ export default function UploadPage() {
     if (!user) return;
 
     if (!navigator.geolocation) {
-      setLocationError("Geolocalização não suportada.");
+      setLocationError("Geolocalização não suportada neste navegador.");
       return;
     }
 
@@ -100,47 +105,70 @@ export default function UploadPage() {
       async (position) => {
         const { latitude, longitude } = position.coords;
 
-        const q = query(collection(db, "videos"), where("isStore", "==", true));
-        const querySnapshot = await getDocs(q);
+        try {
+          const q = query(
+            collection(db, "videos"),
+            where("isStore", "==", true)
+          );
+          const querySnapshot = await getDocs(q);
 
-        const nearbyStores: Store[] = querySnapshot.docs
-          .map((doc) => {
-            const data = doc.data();
-            const distance = getDistanceFromLatLonInKm(
-              latitude,
-              longitude,
-              data.latitude,
-              data.longitude
-            );
-            return {
-              id: doc.id,
-              artistSongName: data.artistSongName,
-              thumbnailUrl: data.thumbnailUrl,
-              latitude: data.latitude,
-              longitude: data.longitude,
-              distance,
-            };
-          })
-          .filter((store) => store.distance < 5)
-          .sort((a, b) => a.distance - b.distance);
+          const nearbyStores: Store[] = querySnapshot.docs
+            .map((doc) => {
+              const data = doc.data();
+              // Validação dos dados antes de usar
+              if (
+                typeof data.latitude !== "number" ||
+                typeof data.longitude !== "number" ||
+                typeof data.artistSongName !== "string" ||
+                typeof data.thumbnailUrl !== "string"
+              ) {
+                return null;
+              }
+              const distance = getDistanceFromLatLonInKm(
+                latitude,
+                longitude,
+                data.latitude,
+                data.longitude
+              );
+              return {
+                id: doc.id,
+                artistSongName: data.artistSongName,
+                thumbnailUrl: data.thumbnailUrl,
+                latitude: data.latitude,
+                longitude: data.longitude,
+                distance,
+              };
+            })
+            .filter((store): store is Store => store !== null) // filtra nulos
+            .filter((store) => store.distance < 5)
+            .sort((a, b) => a.distance - b.distance);
 
-        setStoreList(nearbyStores);
+          setStoreList(nearbyStores);
+          setLocationError(null);
+        } catch (firestoreError) {
+          console.error("Erro ao buscar lojas próximas:", firestoreError);
+          setLocationError(
+            "Erro ao buscar lojas próximas. Tente novamente mais tarde."
+          );
+        }
       },
       (err) => {
         console.error("Erro ao obter localização:", err);
-        setLocationError("Não foi possível obter sua localização.");
+        if (err.code === 1)
+          setLocationError("Permissão para localização negada.");
+        else setLocationError("Não foi possível obter sua localização.");
       }
     );
   }, [user]);
 
   const handleUpload = async () => {
-    if (!videoFile || !artistSongName || !descriptionTags) {
-      alert("Preencha todos os campos.");
+    if (!videoFile || !artistSongName.trim() || !descriptionTags.trim()) {
+      alert("Por favor, preencha todos os campos antes de enviar.");
       return;
     }
 
     if (!user) {
-      alert("Usuário não autenticado");
+      alert("Usuário não autenticado.");
       return;
     }
 
@@ -150,8 +178,20 @@ export default function UploadPage() {
       const newDocRef = doc(collection(db, "videos"));
       const videoID = newDocRef.id;
 
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const userData = userDoc.data();
+      // Buscando dados do usuário com tratamento de erro
+      let userData;
+      try {
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+        if (!userDoc.exists()) {
+          console.warn("Dados do usuário não encontrados.");
+          userData = { name: "Anônimo", image: "" };
+        } else {
+          userData = userDoc.data();
+        }
+      } catch (userFetchError) {
+        console.error("Erro ao buscar dados do usuário:", userFetchError);
+        userData = { name: "Anônimo", image: "" };
+      }
 
       const videoRef = ref(storage, `All Videos/${videoID}.mp4`);
       const uploadTask = uploadBytesResumable(videoRef, videoFile);
@@ -165,8 +205,12 @@ export default function UploadPage() {
             setUploadProgress(progress);
           },
           (error) => {
-            console.error("Erro no upload:", error);
-            alert("Erro ao enviar o vídeo.");
+            console.error("Erro no upload do vídeo:", error);
+            alert(
+              `Erro ao enviar o vídeo: ${
+                error.code || error.message || "Erro desconhecido"
+              }`
+            );
             setUploadProgress(null);
             reject(error);
           },
@@ -176,14 +220,29 @@ export default function UploadPage() {
 
       const videoDownloadURL = await getDownloadURL(uploadTask.snapshot.ref);
 
+      // Gerar thumbnail e enviar para Storage
       let thumbDownloadURL = "";
       try {
         const thumbnailBlob = await generateThumbnailFromVideo(videoFile);
         const thumbRef = ref(storage, `All Thumbnails/${videoID}.jpg`);
-        const thumbUpload = await uploadBytesResumable(thumbRef, thumbnailBlob);
-        thumbDownloadURL = await getDownloadURL(thumbUpload.ref);
+        const thumbUploadTask = uploadBytesResumable(thumbRef, thumbnailBlob);
+
+        await new Promise<void>((resolve, reject) => {
+          thumbUploadTask.on(
+            "state_changed",
+            () => {}, // você pode querer mostrar progresso da thumbnail, mas é opcional
+            (error) => {
+              console.warn("Erro no upload da thumbnail:", error);
+              reject(error);
+            },
+            () => resolve()
+          );
+        });
+
+        thumbDownloadURL = await getDownloadURL(thumbUploadTask.snapshot.ref);
       } catch (thumbError) {
-        console.warn("Falha ao gerar thumbnail:", thumbError);
+        console.warn("Falha ao gerar ou enviar thumbnail:", thumbError);
+        // Não falhar o upload todo por causa da thumbnail
       }
 
       const postData = {
@@ -207,8 +266,12 @@ export default function UploadPage() {
       setUploadProgress(null);
       router.push("/tudo");
     } catch (error) {
-      console.error("Erro desconhecido:", error);
-      alert("Erro ao enviar vídeo.");
+      console.error("Erro desconhecido ao enviar vídeo:", error);
+      alert(
+        `Erro inesperado ao enviar vídeo: ${
+          (error as Error).message || "Erro desconhecido"
+        }`
+      );
       setUploadProgress(null);
     }
   };
@@ -357,11 +420,13 @@ export default function UploadPage() {
                 alt={store.artistSongName}
                 width={200}
                 height={150}
-                style={{ width: "100%", borderRadius: 4, height: "auto" }}
-                unoptimized
+                style={{ borderRadius: 8, objectFit: "cover" }}
               />
-              <p style={{ marginTop: 4, fontSize: 12 }}>
+              <p style={{ marginTop: 8, fontWeight: "bold", fontSize: 14 }}>
                 {store.artistSongName}
+              </p>
+              <p style={{ fontSize: 12, color: "#aaa" }}>
+                {store.distance.toFixed(2)} km
               </p>
             </div>
           ))}
@@ -370,46 +435,22 @@ export default function UploadPage() {
 
       <button
         onClick={handleUpload}
-        disabled={uploadProgress !== null}
         style={{
-          marginTop: 16,
-          padding: 12,
-          backgroundColor: uploadProgress !== null ? "#555" : "#fff",
+          marginTop: 24,
+          padding: "12px 32px",
+          backgroundColor: "#2ecc71",
           borderRadius: 10,
           fontWeight: "bold",
-          cursor: uploadProgress !== null ? "not-allowed" : "pointer",
-          color: uploadProgress !== null ? "#ccc" : "#000",
+          cursor: "pointer",
+          border: "none",
+          color: "#121212",
         }}
+        disabled={uploadProgress !== null && uploadProgress < 100}
       >
         {uploadProgress !== null
-          ? `Enviando... ${Math.round(uploadProgress)}%`
-          : "Upload Now"}
+          ? `Enviando... ${uploadProgress.toFixed(1)}%`
+          : "Enviar Vídeo"}
       </button>
-
-      {uploadProgress !== null && (
-        <div style={{ marginTop: 12 }}>
-          <div
-            style={{
-              height: "8px",
-              backgroundColor: "#333",
-              borderRadius: "4px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${uploadProgress}%`,
-                height: "100%",
-                backgroundColor: "#2ecc71",
-                transition: "width 0.3s ease",
-              }}
-            />
-          </div>
-          <p style={{ fontSize: 12, marginTop: 4 }}>
-            {`${Math.round(uploadProgress ?? 0)}%`}
-          </p>
-        </div>
-      )}
     </main>
   );
 }
