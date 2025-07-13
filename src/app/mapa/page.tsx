@@ -3,15 +3,16 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
+import Image from "next/image";
+import { CustomInfoWindowVideo } from "src/app/components/CustomInfoWindow";
+import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
 import { Video } from "types/video";
 import { User } from "types/user";
-import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
-
-import { FilterMap } from "../components/FilterMap";
-import { FilteredList } from "../components/FilteredList";
-import { CustomInfoWindowUser } from "../components/CustomInfoWindowUser";
-import { CustomInfoWindowVideo } from "../components/CustomInfoWindow";
+import { FilterMap } from "src/app/components/FilterMap";
+import { VideoMarker } from "../components/VideoMaker";
+import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
+import { FilteredList } from "src/app/components/FilteredList";
 
 const containerStyle = {
   width: "100%",
@@ -31,6 +32,7 @@ interface VideoRawData {
   isPlace?: boolean;
   isProduct?: boolean;
   thumbnailUrl: string;
+  createdAt?: Timestamp | Date;
   publishedDateTime?: number | Timestamp | Date;
 }
 
@@ -65,11 +67,11 @@ export default function Mapa() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+
   const [selectedFilter, setSelectedFilter] = useState<
     "users" | "flash" | "store" | "place" | "product"
   >("users");
   const [searchTerm, setSearchTerm] = useState("");
-
   const mapRef = useRef<google.maps.Map | null>(null);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -94,9 +96,12 @@ export default function Mapa() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          goToLocationWithZoom({ lat: latitude, lng: longitude });
+          const location = { lat: latitude, lng: longitude };
+          goToLocationWithZoom(location);
         },
-        (error) => console.error("Erro ao obter localização:", error),
+        (error) => {
+          console.error("Erro ao obter localização atual:", error);
+        },
         { enableHighAccuracy: true, timeout: 10000 }
       );
     }
@@ -107,8 +112,12 @@ export default function Mapa() {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
+
     window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+    };
   }, []);
 
   useEffect(() => {
@@ -131,18 +140,19 @@ export default function Mapa() {
             ) {
               return {
                 uid: data.uid,
-                username: data.username ?? "",
-                visible: data.visible ?? [],
+                username: data.username ?? "", // <-- Ensure this field exists
+                visible: data.visible ?? [], // <-- Ensure this field exists
                 name: data.name || "",
                 email: data.email || "",
                 image: data.image || "",
                 latitude: data.latitude,
                 longitude: data.longitude,
-              } as User;
+              } satisfies User;
             }
             return null;
           })
           .filter((u): u is User => u !== null);
+
         setUsers(userData);
 
         goToMyLocation();
@@ -157,15 +167,40 @@ export default function Mapa() {
   }, [goToMyLocation]);
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
-  if (!isLoaded)
+  //if (!isLoaded) return <p>Carregando mapa...</p>
+  if (!isLoaded) {
     return (
-      <div style={{ color: "white", textAlign: "center", paddingTop: "50vh" }}>
-        Carregando mapa...
+      <div
+        style={{
+          backgroundColor: "#000",
+          color: "#fff",
+          height: "100vh",
+          width: "100%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: "24px",
+          fontWeight: 500,
+          letterSpacing: "1px",
+          fontFamily: "Arial, sans-serif",
+          animation: "pulse 2s infinite",
+        }}
+      >
+        Explorando território...
+        <style>{`
+      @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.6; }
+        100% { opacity: 1; }
+      }
+    `}</style>
       </div>
     );
+  }
 
   const videosWithLocation = videos.filter(
-    (v) => typeof v.latitude === "number" && typeof v.longitude === "number"
+    (video) =>
+      typeof video.latitude === "number" && typeof video.longitude === "number"
   );
 
   const normalizedSearch = searchTerm.trim().toLowerCase();
@@ -191,31 +226,20 @@ export default function Mapa() {
         )
       : [];
 
-  const sortedVideos = [...filteredVideos];
-  if (selectedVideoId) {
-    const index = sortedVideos.findIndex((v) => v.videoID === selectedVideoId);
-    if (index > -1) {
-      const [clicked] = sortedVideos.splice(index, 1);
-      sortedVideos.push(clicked);
-    }
-  }
-
-  const sortedUsers = [...filteredUsers];
-  if (selectedUserId) {
-    const index = sortedUsers.findIndex((u) => u.uid === selectedUserId);
-    if (index > -1) {
-      const [clicked] = sortedUsers.splice(index, 1);
-      sortedUsers.push(clicked);
-    }
-  }
-
   return (
-    <main style={{ position: "relative" }}>
+    <main
+      style={{
+        padding: 0,
+        fontFamily: "Arial, sans-serif",
+        position: "relative",
+      }}
+    >
       <FilterMap
         selected={selectedFilter}
         onChange={setSelectedFilter}
-        onSearchChange={(term: string) => setSearchTerm(term.toLowerCase())}
+        onSearchChange={(term) => setSearchTerm(term.toLowerCase())}
       />
+
       <FilteredList
         filter={selectedFilter}
         users={users}
@@ -225,6 +249,7 @@ export default function Mapa() {
         goToLocation={goToLocationWithZoom}
         searchTerm={searchTerm}
       />
+
       <button
         onClick={goToMyLocation}
         style={{
@@ -238,6 +263,10 @@ export default function Mapa() {
           border: "1px solid #444",
           borderRadius: "8px",
           cursor: "pointer",
+          fontWeight: 500,
+          fontSize: "14px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+          transition: "all 0.2s ease-in-out",
         }}
       >
         📍 Minha localização
@@ -248,11 +277,16 @@ export default function Mapa() {
           onClick={async () => {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === "accepted") {
+              console.log("Usuário aceitou instalar o PWA");
+            } else {
+              console.log("Usuário recusou instalar o PWA");
+            }
             setDeferredPrompt(null);
           }}
           style={{
             position: "fixed",
-            bottom: 20,
+            bottom: 80,
             right: 20,
             zIndex: 1000,
             backgroundColor: "#1a1a1a",
@@ -261,6 +295,7 @@ export default function Mapa() {
             borderRadius: "8px",
             border: "none",
             cursor: "pointer",
+            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
           }}
         >
           📲 Instalar iUser
@@ -272,34 +307,102 @@ export default function Mapa() {
       ) : (
         <GoogleMap
           mapContainerStyle={containerStyle}
-          mapTypeId="satellite"
+          mapTypeId="hybrid"
           options={{
             tilt: 45,
-            heading: 0,
-            zoom: 18,
+            heading: 45,
             styles: darkThemeStyleArray,
-            rotateControl: true,
+            backgroundColor: "#000000",
             mapTypeControl: false,
-            streetViewControl: false,
+            keyboardShortcuts: false,
             fullscreenControl: false,
+            disableDefaultUI: true,
+            clickableIcons: false,
           }}
           onLoad={onLoad}
         >
-          {selectedFilter === "users"
-            ? sortedUsers.map((user) => (
-                <CustomInfoWindowUser
-                  user={user}
-                  onClose={() => setSelectedUserId(null)}
-                  selected={selectedUserId === user.uid}
-                />
-              ))
-            : sortedVideos.map((video) => (
-                <CustomInfoWindowVideo
+          {filteredVideos.map((video) => (
+            <OverlayView
+              key={video.videoID}
+              position={{ lat: video.latitude!, lng: video.longitude! }}
+              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: selectedVideoId === video.videoID ? 1000 : 1,
+                  transition: "z-index 0.3s ease",
+                }}
+              >
+                <VideoMarker
                   video={video}
-                  onClose={() => setSelectedVideoId(null)}
-                  selected={selectedVideoId === video.videoID}
+                  onClick={() => setSelectedVideoId(video.videoID)}
                 />
-              ))}
+                {selectedVideoId === video.videoID && (
+                  <OverlayView
+                    position={{ lat: video.latitude!, lng: video.longitude! }}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                  >
+                    <CustomInfoWindowVideo
+                      video={video}
+                      onClose={() => setSelectedVideoId(null)}
+                    />
+                  </OverlayView>
+                )}
+              </div>
+            </OverlayView>
+          ))}
+
+          {filteredUsers.map((user) => (
+            <OverlayView
+              key={user.uid}
+              position={{ lat: user.latitude, lng: user.longitude }}
+              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            >
+              <div
+                style={{
+                  position: "relative",
+                  zIndex: selectedUserId === user.uid ? 1000 : 1,
+                  transition: "z-index 0.3s ease",
+                }}
+              >
+                <div
+                  onClick={() => setSelectedUserId(user.uid)}
+                  title={user.name}
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: "50%",
+                    overflow: "hidden",
+                    border: "3px solid #2ecc71",
+                    boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+                    cursor: "pointer",
+                    backgroundColor: "#fff",
+                  }}
+                >
+                  <Image
+                    src={user.image}
+                    alt={user.name}
+                    width={60}
+                    height={60}
+                    style={{ objectFit: "cover" }}
+                  />
+                </div>
+
+                {selectedUserId === user.uid && (
+                  <OverlayView
+                    position={{ lat: user.latitude, lng: user.longitude }}
+                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                  >
+                    <CustomInfoWindowUser
+                      user={user}
+                      onClose={() => setSelectedUserId(null)}
+                    />
+                  </OverlayView>
+                )}
+              </div>
+            </OverlayView>
+          ))}
         </GoogleMap>
       )}
     </main>
