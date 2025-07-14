@@ -1,15 +1,20 @@
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
+import { notFound } from "next/navigation";
+import UserProfileClient from "src/app/components/UserProfileClient";
 import { User } from "types/user";
 import { Video } from "types/video";
-import { notFound } from "next/navigation";
-import UserProfileClient from "../components/UserProfileClient";
 
-export default async function UserProfilePage({
-  params,
-}: {
-  params: { name: string };
-}) {
+interface PageProps {
+  params: {
+    name: string;
+  };
+  searchParams?: {
+    [key: string]: string | string[] | undefined;
+  };
+}
+
+export default async function UserProfilePage({ params }: PageProps) {
   const { name } = params;
   const decodedName = decodeURIComponent(name);
 
