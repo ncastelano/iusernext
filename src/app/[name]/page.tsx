@@ -5,13 +5,10 @@ import UserProfileClient from "src/app/components/UserProfileClient";
 import { User } from "types/user";
 import { Video } from "types/video";
 
-interface PageProps {
-  params: {
-    name: string;
-  };
-}
-
-export default async function UserProfilePage({ params }: PageProps) {
+export default async function UserProfilePage(
+  props: Promise<{ params: { name: string } }>
+) {
+  const { params } = await props;
   const { name } = params;
   const decodedName = decodeURIComponent(name);
 
