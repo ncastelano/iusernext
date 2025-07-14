@@ -5,11 +5,11 @@ import { Video } from "types/video";
 import { notFound } from "next/navigation";
 import UserProfileClient from "src/app/components/UserProfileClient"; // componente client
 
-export default async function UserProfilePage({
-  params,
-}: {
+type Params = {
   params: { name: string };
-}) {
+};
+
+export default async function UserProfilePage({ params }: Params) {
   const { name } = params;
   const decodedName = decodeURIComponent(name);
 
