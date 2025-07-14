@@ -276,7 +276,7 @@ export default function Mapa() {
           transition: "all 0.2s ease-in-out",
         }}
       >
-        📍 Minha localização
+        📍 onde estou!
       </button>
 
       {deferredPrompt && (

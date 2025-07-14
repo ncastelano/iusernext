@@ -36,10 +36,13 @@ export default function UploadPage() {
   const [selectedStoreID, setSelectedStoreID] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
 
+  const [showOnMap, setShowOnMap] = useState(false);
+  const [userLat, setUserLat] = useState<number | null>(null);
+  const [userLng, setUserLng] = useState<number | null>(null);
+
   const router = useRouter();
   const { user, loading } = useUser();
 
-  // Gera thumbnail do vídeo
   const generateThumbnailFromVideo = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const video = document.createElement("video");
@@ -94,6 +97,8 @@ export default function UploadPage() {
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
+        setUserLat(latitude);
+        setUserLng(longitude);
 
         const q = query(collection(db, "videos"), where("isStore", "==", true));
         const querySnapshot = await getDocs(q);
@@ -194,6 +199,8 @@ export default function UploadPage() {
         thumbnailUrl: thumbDownloadURL,
         publishedDateTime: Date.now(),
         storeID: selectedStoreID || null,
+        latitude: showOnMap && userLat !== null ? userLat : 0,
+        longitude: showOnMap && userLng !== null ? userLng : 0,
       };
 
       await setDoc(newDocRef, postData);
@@ -348,6 +355,17 @@ export default function UploadPage() {
         </div>
       )}
 
+      <div style={{ marginTop: 16 }}>
+        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <input
+            type="checkbox"
+            checked={showOnMap}
+            onChange={() => setShowOnMap((prev) => !prev)}
+          />
+          Mostrar no mapa?
+        </label>
+      </div>
+
       <button
         onClick={handleUpload}
         disabled={uploadProgress !== null}
@@ -363,7 +381,7 @@ export default function UploadPage() {
       >
         {uploadProgress !== null
           ? `Enviando... ${Math.round(uploadProgress)}%`
-          : "Upload Now"}
+          : "Enviar"}
       </button>
 
       {uploadProgress !== null && (

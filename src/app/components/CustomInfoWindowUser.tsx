@@ -1,6 +1,7 @@
 import React from "react";
 import { User } from "types/user";
 import Image from "next/image";
+import Link from "next/link";
 
 export const CustomInfoWindowUser = ({
   user,
@@ -11,6 +12,29 @@ export const CustomInfoWindowUser = ({
   onClose: () => void;
   selected?: boolean;
 }) => {
+  const openGoogleMaps = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const currentLat = position.coords.latitude;
+          const currentLng = position.coords.longitude;
+
+          const destinationLat = user.latitude;
+          const destinationLng = user.longitude;
+
+          const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${currentLat},${currentLng}&destination=${destinationLat},${destinationLng}&travelmode=driving`;
+          window.open(mapsUrl, "_blank");
+        },
+        (err) => {
+          alert("Erro ao obter sua localização.");
+          console.error(err);
+        }
+      );
+    } else {
+      alert("Geolocalização não suportada.");
+    }
+  };
+
   return (
     <div
       style={{
@@ -20,7 +44,7 @@ export const CustomInfoWindowUser = ({
         borderStyle: "solid",
       }}
     >
-      <div style={styles.imageWrapper}>
+      <Link href={`/${user.name}`} style={styles.imageWrapper}>
         <Image
           src={user.image}
           alt={user.name}
@@ -28,11 +52,16 @@ export const CustomInfoWindowUser = ({
           height={100}
           style={{ objectFit: "cover" }}
         />
-      </div>
+      </Link>
+
       <div style={styles.textWrapper}>
         <h4 style={styles.title}>{user.name}</h4>
         <p style={styles.subtitle}>Email: {user.email}</p>
+        <button onClick={openGoogleMaps} style={styles.mapsButton}>
+          Como chegar
+        </button>
       </div>
+
       <button onClick={onClose} style={styles.closeButton} aria-label="Fechar">
         ×
       </button>
@@ -47,7 +76,7 @@ const styles: Record<string, React.CSSProperties> = {
     backgroundColor: "#1a1a1a",
     borderRadius: "10px",
     padding: "8px",
-    width: "220px",
+    width: "260px",
     maxWidth: "90vw",
     zIndex: 100,
     display: "flex",
@@ -66,7 +95,8 @@ const styles: Record<string, React.CSSProperties> = {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    justifyContent: "center",
+    justifyContent: "space-between",
+    overflow: "hidden",
   },
   title: {
     margin: "0 0 4px 0",
@@ -81,9 +111,8 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: "12px",
     color: "#aaa",
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    lineHeight: 1.2,
+    wordBreak: "break-word",
   },
   closeButton: {
     position: "absolute",
@@ -95,5 +124,17 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: "18px",
     cursor: "pointer",
     lineHeight: 1,
+  },
+  mapsButton: {
+    marginTop: "6px",
+    padding: "6px 10px",
+    backgroundColor: "#2ecc71",
+    color: "#000",
+    border: "none",
+    borderRadius: "6px",
+    fontSize: "12px",
+    fontWeight: 600,
+    cursor: "pointer",
+    alignSelf: "start",
   },
 };
