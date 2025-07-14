@@ -1,9 +1,9 @@
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { notFound } from "next/navigation";
-import UserProfileClient from "src/app/components/UserProfileClient";
 import { User } from "types/user";
 import { Video } from "types/video";
+import { notFound } from "next/navigation";
+import UserProfileClient from "../components/UserProfileClient";
 
 export default async function UserProfilePage({
   params,
