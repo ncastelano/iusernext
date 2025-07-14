@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { addDays, format } from "date-fns";
 import { ptBR } from "date-fns/locale/pt-BR";
