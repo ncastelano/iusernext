@@ -149,19 +149,25 @@ export default function Mapa() {
         const userData: User[] = userSnapshot.docs
           .map((doc) => {
             const data = doc.data();
-            // Retorna usuário mesmo que não tenha lat/lng
-            return {
-              uid: data.uid,
-              username: data.username ?? "",
-              visible: data.visible ?? true,
-              name: data.name || "",
-              email: data.email || "",
-              image: data.image || "",
-              latitude:
-                typeof data.latitude === "number" ? data.latitude : null,
-              longitude:
-                typeof data.longitude === "number" ? data.longitude : null,
-            } as User;
+            // Só retorna o usuário se tiver latitude e longitude válidos
+            if (
+              typeof data.latitude === "number" &&
+              typeof data.longitude === "number"
+            ) {
+              return {
+                uid: data.uid,
+                username: data.username ?? "",
+                visible: data.visible ?? true,
+                name: data.name || "",
+                email: data.email || "",
+                image: data.image || "",
+                latitude: data.latitude,
+                longitude: data.longitude,
+              } as User;
+            } else {
+              // Ignora usuários sem localização
+              return null;
+            }
           })
           .filter((u): u is User => u !== null);
 

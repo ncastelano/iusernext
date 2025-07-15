@@ -6,7 +6,7 @@ export interface User {
   name: string;
   email: string;
   image: string;
-  latitude: number | null; // aceitar null
+  latitude: number | null;
   longitude: number | null;
   visible: boolean;
 }
