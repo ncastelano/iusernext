@@ -86,7 +86,7 @@ export default function LoginPage() {
           }}
         >
           <Image
-            src="/icon/icon2.png"
+            src="/icon/icon.png"
             alt="Logo"
             width={200}
             height={200}
