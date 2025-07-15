@@ -171,15 +171,15 @@ define(["./workbox-4754cb34"], function (e) {
           revision: "2f5fc0f79aeb806b",
         },
         {
-          url: "/icon/icon1.png",
+          url: "/icon/icon_blackbg_512x512.png",
           revision: "79e9a68392e8bf92cac7daab7a0d84cd",
         },
         {
-          url: "/icon/icon.png",
+          url: "/icon/icon_blackbg_512x512.png",
           revision: "0ffba9c123706c3119d015c01425bdd0",
         },
         {
-          url: "/icon/icon.png",
+          url: "/icon/icon_blackbg_512x512.png",
           revision: "b7822b767b78c041976984a0a2dd7916",
         },
         { url: "/manifest.json", revision: "0e1e705c4d1ed55d41bffd7052635665" },
