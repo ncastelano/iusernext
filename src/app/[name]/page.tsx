@@ -5,6 +5,23 @@ import { Video } from "types/video";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { motion } from "framer-motion";
+import UserProfileAnimations from "../components/UserProfileAnimation";
+import {
+  FaInstagram,
+  FaFacebookF,
+  FaWhatsapp,
+  FaTwitter,
+  FaYoutube,
+  FaSnapchatGhost,
+  FaMapMarkerAlt,
+  FaHeart,
+  FaGift,
+  FaUserFriends,
+  FaUserPlus,
+} from "react-icons/fa";
+import InfoProfileAnimations from "../components/InfoProfileAnimations";
+import VideosProfileAnimations from "../components/VideoProfileAnimations";
 
 export default async function UserProfilePage({
   params,
@@ -40,80 +57,26 @@ export default async function UserProfilePage({
 
     return (
       <main className="max-w-xl mx-auto p-8 space-y-8 bg-black min-h-screen">
-        <section className="text-center">
-          <Image
-            src={safeUser.image || "/default-profile.png"}
-            alt={`Foto de ${safeUser.name}`}
-            width={160}
-            height={160}
-            className="rounded-full mx-auto object-cover shadow-md"
+        <section
+          className="relative w-full max-w-xl mx-auto overflow-hidden rounded-lg"
+          style={{ aspectRatio: "16 / 9" }}
+        >
+          <UserProfileAnimations
+            imageUrl={safeUser.image || "/default-profile.png"}
+            userName={safeUser.name}
           />
-          <h1 className="mt-4 text-4xl font-bold text-white">
-            {safeUser.name}
-          </h1>
-          <p className="text-xl text-gray-300">{safeUser.username}</p>
         </section>
 
-        <section className="space-y-4">
-          <h2 className="text-2xl font-semibold border-b border-gray-700 pb-2 text-white">
-            Informações
-          </h2>
-          <p className="text-white">
-            <strong>Email:</strong> <span>{safeUser.email}</span>
-          </p>
-          <p className="text-white">
-            <strong>Localização:</strong>{" "}
-            <span>
-              {safeUser.latitude !== null && safeUser.longitude !== null
-                ? `Latitude: ${safeUser.latitude.toFixed(
-                    6
-                  )}, Longitude: ${safeUser.longitude.toFixed(6)}`
-                : "Não informado"}
-            </span>
-          </p>
-          <p>
-            <strong>Status:</strong>{" "}
-            <span
-              className={`inline-block px-4 py-1 rounded-full text-white ${
-                safeUser.visible ? "bg-green-600" : "bg-gray-400"
-              }`}
-            >
-              {safeUser.visible ? "Visível" : "Oculto / Não informado"}
-            </span>
-          </p>
-        </section>
+        <InfoProfileAnimations
+          safeUser={safeUser}
+          videosCount={videos.length}
+        />
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 text-white flex items-center gap-2">
-            Vídeos de {safeUser.name}
-            <span className="bg-gray-700 text-sm px-2 py-1 rounded-full">
-              {videos.length}
-            </span>
-          </h2>
-          {videos.length === 0 ? (
-            <p className="text-gray-400">Nenhum vídeo encontrado.</p>
-          ) : (
-            <ul className="flex flex-col space-y-4">
-              {videos.map((video) => (
-                <li key={video.videoID} className="w-full max-w-md mx-auto">
-                  <Link
-                    href={`/${encodeURIComponent(
-                      safeUser.name
-                    )}/${encodeURIComponent(video.videoID)}`}
-                  >
-                    <Image
-                      src={video.thumbnailUrl || "/default-thumbnail.png"}
-                      alt={`Thumbnail do vídeo: ${video.artistSongName}`}
-                      width={320}
-                      height={180}
-                      className="rounded-lg object-cover shadow-lg cursor-pointer"
-                    />
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
+        {videos.length === 0 ? (
+          <p className="text-gray-400">Nenhum vídeo encontrado.</p>
+        ) : (
+          <VideosProfileAnimations videos={videos} userName={safeUser.name} />
+        )}
       </main>
     );
   } catch (error) {
