@@ -2,24 +2,10 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "types/user";
 import { Video } from "types/video";
-import Image from "next/image";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { motion } from "framer-motion";
+
 import UserProfileAnimations from "../components/UserProfileAnimation";
-import {
-  FaInstagram,
-  FaFacebookF,
-  FaWhatsapp,
-  FaTwitter,
-  FaYoutube,
-  FaSnapchatGhost,
-  FaMapMarkerAlt,
-  FaHeart,
-  FaGift,
-  FaUserFriends,
-  FaUserPlus,
-} from "react-icons/fa";
+
 import InfoProfileAnimations from "../components/InfoProfileAnimations";
 import VideosProfileAnimations from "../components/VideoProfileAnimations";
 
