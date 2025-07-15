@@ -8,15 +8,13 @@ import { UserSettingsButton } from "../components/UserSettingsButton";
 import { AnimatedSection } from "../components/AnimatedSection";
 import { AnimatedCard } from "../components/AnimatedCard";
 
-interface UserProfilePageProps {
+type Props = {
   params: {
     name: string;
   };
-}
+};
 
-export default async function UserProfilePage({
-  params,
-}: UserProfilePageProps) {
+export default async function UserProfilePage({ params }: Props) {
   const decodedName = decodeURIComponent(params.name);
 
   try {
