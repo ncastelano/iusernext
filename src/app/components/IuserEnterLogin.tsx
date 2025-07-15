@@ -1,73 +1,74 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Image from 'next/image'
-import { useRouter } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
-import { useUser } from '@/app/components/UserContext'
+import { useEffect, useState } from "react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
+import { useUser } from "@/app/components/UserContext";
 
 export default function IuserEnterLogin() {
-  const { user } = useUser()
+  const { user } = useUser();
 
-  const [showText, setShowText] = useState(false)
-  const router = useRouter()
+  const [showText, setShowText] = useState(false);
+  const router = useRouter();
 
-  const fallbackImage = '/icon/icon-white-512x512.png'
+  const fallbackImage = "/icon/icon1.png";
 
   useEffect(() => {
     if (!user?.image) {
-      const interval = setInterval(() => setShowText((prev) => !prev), 2500)
-      return () => clearInterval(interval)
+      const interval = setInterval(() => setShowText((prev) => !prev), 2500);
+      return () => clearInterval(interval);
     }
-  }, [user?.image])
+  }, [user?.image]);
 
   return (
     <div
-      title={`Usuário: ${user?.name ?? 'Anônimo'}\nEmail: ${user?.email ?? 'Anônimo'}`}
+      title={`Usuário: ${user?.name ?? "Anônimo"}\nEmail: ${
+        user?.email ?? "Anônimo"
+      }`}
       style={{
-        position: 'fixed',
+        position: "fixed",
         top: 20,
         left: 30,
         width: 64,
         height: 64,
-        borderRadius: '50%',
+        borderRadius: "50%",
         padding: 3,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        cursor: 'pointer',
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        cursor: "pointer",
         zIndex: 11000,
       }}
-     onClick={() => {
-  if (user?.name) {
-    router.push(`/${encodeURIComponent(user.name)}`)
-  } else {
-    router.push('/login')
-  }
-}}
-
+      onClick={() => {
+        if (user?.name) {
+          router.push(`/${encodeURIComponent(user.name)}`);
+        } else {
+          router.push("/login");
+        }
+      }}
     >
       <div
         style={{
           width: 54,
           height: 54,
-          borderRadius: '50%',
-          backgroundColor: user?.image ? '#00ff00' : '#fff',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "50%",
+          backgroundColor: user?.image ? "#00ff00" : "#fff",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
       >
         <div
           style={{
             width: 48,
             height: 48,
-            borderRadius: '50%',
-            backgroundColor: '#121212',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            overflow: 'hidden',
+            borderRadius: "50%",
+            backgroundColor: "#121212",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
           }}
         >
           <AnimatePresence mode="wait">
@@ -84,32 +85,32 @@ export default function IuserEnterLogin() {
                   alt="Foto do Usuário"
                   width={40}
                   height={40}
-                  style={{ objectFit: 'cover', borderRadius: '50%' }}
+                  style={{ objectFit: "cover", borderRadius: "50%" }}
                 />
               </motion.div>
             ) : (
               <motion.div
-                key={showText ? 'text' : 'fallback'}
+                key={showText ? "text" : "fallback"}
                 initial={{ opacity: 0, y: 10, scale: 0.7 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.5 }}
                 transition={{ duration: 0.6 }}
                 style={{
-                  color: '#fff',
+                  color: "#fff",
                   fontSize: 12,
                   fontWeight: 600,
-                  textAlign: 'center',
+                  textAlign: "center",
                 }}
               >
                 {showText ? (
-                  'Entrar'
+                  "Entrar"
                 ) : (
                   <Image
                     src={fallbackImage}
                     alt="Anônimo"
                     width={40}
                     height={40}
-                    style={{ objectFit: 'cover', borderRadius: '50%' }}
+                    style={{ objectFit: "cover", borderRadius: "50%" }}
                   />
                 )}
               </motion.div>
@@ -118,5 +119,5 @@ export default function IuserEnterLogin() {
         </div>
       </div>
     </div>
-  )
+  );
 }
