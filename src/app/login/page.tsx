@@ -86,13 +86,12 @@ export default function LoginPage() {
           }}
         >
           <Image
-            src="/icon/icon.png"
+            src="/icon/icon1.png"
             alt="Logo"
             width={200}
             height={200}
             style={{
               borderRadius: 12,
-              filter: "invert(1)",
             }}
           />
         </div>
