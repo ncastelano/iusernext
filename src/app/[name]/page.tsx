@@ -10,7 +10,7 @@ import { UserSettingsButton } from "../components/UserSettingsButton";
 export default async function UserProfilePage({
   params,
 }: {
-  params: { name: string };
+  params: Promise<{ name: string }>;
 }) {
   const { name } = await params;
   const decodedName = decodeURIComponent(name);
