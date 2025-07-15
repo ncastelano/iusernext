@@ -8,13 +8,16 @@ import { UserSettingsButton } from "../components/UserSettingsButton";
 import { AnimatedSection } from "../components/AnimatedSection";
 import { AnimatedCard } from "../components/AnimatedCard";
 
+interface UserProfilePageProps {
+  params: {
+    name: string;
+  };
+}
+
 export default async function UserProfilePage({
   params,
-}: {
-  params: { name: string };
-}) {
-  const { name } = params;
-  const decodedName = decodeURIComponent(name);
+}: UserProfilePageProps) {
+  const decodedName = decodeURIComponent(params.name);
 
   try {
     const usersRef = collection(db, "users");
