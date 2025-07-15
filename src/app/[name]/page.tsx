@@ -5,7 +5,6 @@ import { Video } from "types/video";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { UserSettingsButton } from "../components/UserSettingsButton";
 
 export default async function UserProfilePage({
   params,
@@ -35,10 +34,9 @@ export default async function UserProfilePage({
     const videosRef = collection(db, "videos");
     const qVideos = query(videosRef, where("userID", "==", user.uid));
     const videosSnapshot = await getDocs(qVideos);
-    const videos: Video[] = videosSnapshot.docs.map((doc) => ({
-      videoID: doc.id,
-      ...doc.data(),
-    })) as Video[];
+    const videos: Video[] = videosSnapshot.docs.map(
+      (doc) => doc.data() as Video
+    );
 
     return (
       <main className="max-w-xl mx-auto p-8 space-y-8 bg-black min-h-screen">
@@ -83,7 +81,6 @@ export default async function UserProfilePage({
               {safeUser.visible ? "Visível" : "Oculto / Não informado"}
             </span>
           </p>
-          <UserSettingsButton profileUid={safeUser.uid} />
         </section>
 
         <section>
