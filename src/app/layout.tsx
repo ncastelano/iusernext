@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   description: "a melhor rede social",
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon/icon1.png",
+    icon: "/icon/icon.png",
     apple: "/icon/icon.png",
   },
 };
