@@ -11,7 +11,7 @@ import NavigationBar from "./components/NavigationBar";
 
 export const metadata: Metadata = {
   title: "iUser",
-  description: "a melhor plataforma",
+  description: "a melhor rede social",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon/icon-192x192.png",
