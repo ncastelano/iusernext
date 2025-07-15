@@ -61,7 +61,7 @@ export default async function UserProfilePage({
         {/* User Info */}
         <AnimatedSection>
           <section className="px-6 mt-[-60px]">
-            <h1 className="text-3xl font-bold">@{safeUser.name}</h1>
+            <h1 className="text-3xl font-bold">{safeUser.name}</h1>
 
             <div className="mt-4 space-y-2 text-sm">
               <p>
