@@ -84,10 +84,18 @@ export default function Mapa() {
     mapRef.current = map;
   };
 
-  const goToLocationWithZoom = ({ lat, lng }: { lat: number; lng: number }) => {
-    if (mapRef.current) {
-      mapRef.current.panTo({ lat, lng });
-      mapRef.current.setZoom(17);
+  const goToLocationWithZoom = ({
+    lat,
+    lng,
+  }: {
+    lat: number | null;
+    lng: number | null;
+  }) => {
+    if (lat != null && lng != null) {
+      if (mapRef.current) {
+        mapRef.current.panTo({ lat, lng });
+        mapRef.current.setZoom(17);
+      }
     }
   };
 
@@ -107,7 +115,6 @@ export default function Mapa() {
     }
   }, []);
 
-  // *** NOVO: Remove scroll da página enquanto o componente está ativo ***
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => {
@@ -139,25 +146,22 @@ export default function Mapa() {
         setVideos(videoData);
 
         const userSnapshot = await getDocs(collection(db, "users"));
-        const userData = userSnapshot.docs
+        const userData: User[] = userSnapshot.docs
           .map((doc) => {
             const data = doc.data();
-            if (
-              typeof data.latitude === "number" &&
-              typeof data.longitude === "number"
-            ) {
-              return {
-                uid: data.uid,
-                username: data.username ?? "", // <-- Ensure this field exists
-                visible: data.visible ?? [], // <-- Ensure this field exists
-                name: data.name || "",
-                email: data.email || "",
-                image: data.image || "",
-                latitude: data.latitude,
-                longitude: data.longitude,
-              } satisfies User;
-            }
-            return null;
+            // Retorna usuário mesmo que não tenha lat/lng
+            return {
+              uid: data.uid,
+              username: data.username ?? "",
+              visible: data.visible ?? true,
+              name: data.name || "",
+              email: data.email || "",
+              image: data.image || "",
+              latitude:
+                typeof data.latitude === "number" ? data.latitude : null,
+              longitude:
+                typeof data.longitude === "number" ? data.longitude : null,
+            } as User;
           })
           .filter((u): u is User => u !== null);
 
@@ -195,12 +199,12 @@ export default function Mapa() {
       >
         Explorando território...
         <style>{`
-      @keyframes pulse {
-        0% { opacity: 1; }
-        50% { opacity: 0.6; }
-        100% { opacity: 1; }
-      }
-    `}</style>
+          @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+          }
+        `}</style>
       </div>
     );
   }
@@ -226,10 +230,24 @@ export default function Mapa() {
     return matchesFilter && matchesSearch;
   });
 
-  const filteredUsers =
+  // Se filtro for "users", filtra só os usuários com lat/lng e busca pelo nome
+  const usersWithLocation =
     selectedFilter === "users"
-      ? users.filter((user) =>
-          user.name.toLowerCase().includes(normalizedSearch)
+      ? users.filter(
+          (user) =>
+            typeof user.latitude === "number" &&
+            typeof user.longitude === "number" &&
+            user.name.toLowerCase().includes(normalizedSearch)
+        )
+      : [];
+
+  // Usuários sem localização, para mostrar na lista abaixo
+  const usersWithoutLocation =
+    selectedFilter === "users"
+      ? users.filter(
+          (user) =>
+            (user.latitude === null || user.longitude === null) &&
+            user.name.toLowerCase().includes(normalizedSearch)
         )
       : [];
 
@@ -249,7 +267,7 @@ export default function Mapa() {
 
       <FilteredList
         filter={selectedFilter}
-        users={users}
+        users={usersWithLocation}
         videos={videosWithLocation}
         onSelectUser={setSelectedUserId}
         onSelectVideo={setSelectedVideoId}
@@ -312,106 +330,135 @@ export default function Mapa() {
       {loading ? (
         <p style={{ textAlign: "center" }}>Carregando vídeos...</p>
       ) : (
-        <GoogleMap
-          mapContainerStyle={containerStyle}
-          mapTypeId="hybrid"
-          options={{
-            tilt: 45,
-            heading: 45,
-            styles: darkThemeStyleArray,
-            backgroundColor: "#000000",
-            mapTypeControl: false,
-            keyboardShortcuts: false,
-            fullscreenControl: false,
-            disableDefaultUI: true,
-            clickableIcons: false,
-            gestureHandling: "greedy",
-          }}
-          onLoad={onLoad}
-        >
-          {filteredVideos.map((video) => (
-            <OverlayView
-              key={video.videoID}
-              position={{ lat: video.latitude!, lng: video.longitude! }}
-              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: selectedVideoId === video.videoID ? 1000 : 1,
-                  transition: "z-index 0.3s ease",
-                }}
-              >
-                <VideoMarker
-                  video={video}
-                  onClick={() => setSelectedVideoId(video.videoID)}
-                />
-                {selectedVideoId === video.videoID && (
-                  <OverlayView
-                    position={{ lat: video.latitude!, lng: video.longitude! }}
-                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-                  >
-                    <CustomInfoWindowVideo
-                      video={video}
-                      onClose={() => setSelectedVideoId(null)}
-                    />
-                  </OverlayView>
-                )}
-              </div>
-            </OverlayView>
-          ))}
-
-          {filteredUsers.map((user) => (
-            <OverlayView
-              key={user.uid}
-              position={{ lat: user.latitude, lng: user.longitude }}
-              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-            >
-              <div
-                style={{
-                  position: "relative",
-                  zIndex: selectedUserId === user.uid ? 1000 : 1,
-                  transition: "z-index 0.3s ease",
-                }}
+        <>
+          <GoogleMap
+            mapContainerStyle={containerStyle}
+            mapTypeId="hybrid"
+            options={{
+              tilt: 45,
+              heading: 45,
+              styles: darkThemeStyleArray,
+              backgroundColor: "#000000",
+              mapTypeControl: false,
+              keyboardShortcuts: false,
+              fullscreenControl: false,
+              disableDefaultUI: true,
+              clickableIcons: false,
+              gestureHandling: "greedy",
+            }}
+            onLoad={onLoad}
+          >
+            {filteredVideos.map((video) => (
+              <OverlayView
+                key={video.videoID}
+                position={{ lat: video.latitude!, lng: video.longitude! }}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
               >
                 <div
-                  onClick={() => setSelectedUserId(user.uid)}
-                  title={user.name}
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: "50%",
-                    overflow: "hidden",
-                    border: "3px solid #2ecc71",
-                    boxShadow: "0 0 5px rgba(0,0,0,0.3)",
-                    cursor: "pointer",
-                    backgroundColor: "#fff",
+                    position: "relative",
+                    zIndex: selectedVideoId === video.videoID ? 1000 : 1,
+                    transition: "z-index 0.3s ease",
                   }}
                 >
-                  <Image
-                    src={user.image}
-                    alt={user.name}
-                    width={60}
-                    height={60}
-                    style={{ objectFit: "cover" }}
+                  <VideoMarker
+                    video={video}
+                    onClick={() => setSelectedVideoId(video.videoID)}
                   />
+                  {selectedVideoId === video.videoID && (
+                    <OverlayView
+                      position={{ lat: video.latitude!, lng: video.longitude! }}
+                      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    >
+                      <CustomInfoWindowVideo
+                        video={video}
+                        onClose={() => setSelectedVideoId(null)}
+                      />
+                    </OverlayView>
+                  )}
                 </div>
+              </OverlayView>
+            ))}
 
-                {selectedUserId === user.uid && (
-                  <OverlayView
-                    position={{ lat: user.latitude, lng: user.longitude }}
-                    mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            {usersWithLocation.map((user) => (
+              <OverlayView
+                key={user.uid}
+                position={{ lat: user.latitude!, lng: user.longitude! }}
+                mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+              >
+                <div
+                  style={{
+                    position: "relative",
+                    zIndex: selectedUserId === user.uid ? 1000 : 1,
+                    transition: "z-index 0.3s ease",
+                  }}
+                >
+                  <div
+                    onClick={() => setSelectedUserId(user.uid)}
+                    title={user.name}
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: "50%",
+                      overflow: "hidden",
+                      border: "3px solid #2ecc71",
+                      boxShadow: "0 0 5px rgba(0,0,0,0.3)",
+                      cursor: "pointer",
+                      backgroundColor: "#fff",
+                    }}
                   >
-                    <CustomInfoWindowUser
-                      user={user}
-                      onClose={() => setSelectedUserId(null)}
+                    <Image
+                      src={user.image}
+                      alt={user.name}
+                      width={60}
+                      height={60}
+                      style={{ objectFit: "cover" }}
                     />
-                  </OverlayView>
-                )}
-              </div>
-            </OverlayView>
-          ))}
-        </GoogleMap>
+                  </div>
+
+                  {selectedUserId === user.uid && (
+                    <OverlayView
+                      position={{ lat: user.latitude!, lng: user.longitude! }}
+                      mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+                    >
+                      <CustomInfoWindowUser
+                        user={user}
+                        onClose={() => setSelectedUserId(null)}
+                      />
+                    </OverlayView>
+                  )}
+                </div>
+              </OverlayView>
+            ))}
+          </GoogleMap>
+
+          {/* Lista simples para usuários sem localização */}
+          {selectedFilter === "users" && usersWithoutLocation.length > 0 && (
+            <section
+              style={{
+                maxHeight: "30vh",
+                overflowY: "auto",
+                backgroundColor: "#111",
+                color: "#eee",
+                padding: "12px 20px",
+                fontSize: 14,
+              }}
+            >
+              <h3>Usuários sem localização</h3>
+              {usersWithoutLocation.map((user) => (
+                <div
+                  key={user.uid}
+                  style={{
+                    padding: "6px 0",
+                    borderBottom: "1px solid #333",
+                  }}
+                >
+                  {user.name} (Localização não disponível)
+                </div>
+              ))}
+            </section>
+          )}
+        </>
       )}
     </main>
   );
