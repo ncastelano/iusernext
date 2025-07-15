@@ -35,9 +35,10 @@ export default async function UserProfilePage({
     const videosRef = collection(db, "videos");
     const qVideos = query(videosRef, where("userID", "==", user.uid));
     const videosSnapshot = await getDocs(qVideos);
-    const videos: Video[] = videosSnapshot.docs.map(
-      (doc) => doc.data() as Video
-    );
+    const videos: Video[] = videosSnapshot.docs.map((doc) => ({
+      videoID: doc.id,
+      ...doc.data(),
+    })) as Video[];
 
     return (
       <main className="max-w-xl mx-auto p-8 space-y-8 bg-black min-h-screen">
