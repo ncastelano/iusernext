@@ -1,13 +1,15 @@
+//app/[name]/page.tsx
+
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "types/user";
 import { Video } from "types/video";
 import { notFound } from "next/navigation";
-
-import UserProfileAnimations from "../components/UserProfileAnimation";
-
-import InfoProfileAnimations from "../components/InfoProfileAnimations";
-import VideosProfileAnimations from "../components/VideoProfileAnimations";
+import UserProfileAnimations from "./UserProfileAnimation";
+import InfoProfileAnimations from "./InfoProfileAnimations";
+import VideosProfileAnimations from "./VideoProfileAnimations";
+import FollowButton from "./FollowButton";
+import CommentProfile from "./CommentProfile";
 
 export default async function UserProfilePage({
   params,
@@ -52,6 +54,10 @@ export default async function UserProfilePage({
             userName={safeUser.name}
           />
         </section>
+
+        <FollowButton targetUid={safeUser.uid} />
+
+        <CommentProfile profileUid={safeUser.uid} />
 
         <InfoProfileAnimations
           safeUser={safeUser}

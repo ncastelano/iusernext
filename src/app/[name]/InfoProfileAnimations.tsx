@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   FaInstagram,
@@ -9,10 +10,7 @@ import {
   FaYoutube,
   FaSnapchatGhost,
   FaMapMarkerAlt,
-  FaHeart,
-  FaGift,
   FaUserFriends,
-  FaUserPlus,
 } from "react-icons/fa";
 import { User } from "types/user";
 
@@ -27,6 +25,39 @@ export default function InfoProfileAnimations({
   };
   videosCount: number;
 }) {
+  const [loadingRoute, setLoadingRoute] = useState(false);
+
+  const handleComoChegar = () => {
+    if (safeUser.latitude === null || safeUser.longitude === null) {
+      alert("Localização do usuário de destino não informada.");
+      return;
+    }
+
+    if (!navigator.geolocation) {
+      alert("Geolocalização não suportada pelo seu navegador.");
+      return;
+    }
+
+    setLoadingRoute(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude: originLat, longitude: originLng } = position.coords;
+        const destLat = safeUser.latitude!;
+        const destLng = safeUser.longitude!;
+
+        const mapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${originLat},${originLng}&destination=${destLat},${destLng}&travelmode=driving`;
+
+        window.open(mapsUrl, "_blank");
+        setLoadingRoute(false);
+      },
+      (error) => {
+        alert("Erro ao obter sua localização.");
+        setLoadingRoute(false);
+      }
+    );
+  };
+
   const infoList = [
     {
       label: "Email",
@@ -56,35 +87,18 @@ export default function InfoProfileAnimations({
         </span>
       ),
     },
-    {
-      label: "Seguidores",
-      content: "1.2k",
-      icon: <FaUserFriends className="text-yellow-400" />,
-    },
-    {
-      label: "Seguindo",
-      content: "320",
-      icon: <FaUserPlus className="text-purple-400" />,
-    },
-    {
-      label: "Curtidas",
-      content: "4.5k",
-      icon: <FaHeart className="text-pink-500" />,
-    },
-    {
-      label: "Desejados",
-      content: "78",
-      icon: <FaGift className="text-orange-400" />,
-    },
-    {
-      label: "Vídeos",
-      content: videosCount,
-      icon: <FaYoutube className="text-red-500" />,
-    },
+  ];
+
+  const statsList = [
+    { label: "Seguidores", content: "1.2k" },
+    { label: "Seguindo", content: "320" },
+    { label: "Curtidas", content: "4.5k" },
+    { label: "Desejados", content: "78" },
+    { label: "Vídeos", content: videosCount },
   ];
 
   return (
-    <section className="space-y-4">
+    <section className="space-y-6">
       <h2 className="text-2xl font-semibold border-b border-gray-700 pb-2 text-white">
         Informações
       </h2>
@@ -103,6 +117,20 @@ export default function InfoProfileAnimations({
           </p>
         </motion.div>
       ))}
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4, duration: 0.5 }}
+        className="flex justify-around text-white border-t border-gray-700 pt-4"
+      >
+        {statsList.map((item, index) => (
+          <div key={index} className="flex flex-col items-center">
+            <span className="text-xl font-bold">{item.content}</span>
+            <span className="text-sm text-gray-400">{item.label}</span>
+          </div>
+        ))}
+      </motion.div>
 
       <motion.div
         initial={{ opacity: 0, x: -50 }}
@@ -127,8 +155,15 @@ export default function InfoProfileAnimations({
         <button className="bg-white text-black font-semibold px-4 py-2 rounded-full hover:bg-gray-200 transition">
           Seguir
         </button>
-        <button className="bg-indigo-600 text-white font-semibold px-4 py-2 rounded-full hover:bg-indigo-700 transition flex items-center gap-2">
-          <FaMapMarkerAlt /> Como chegar
+        <button
+          onClick={handleComoChegar}
+          disabled={loadingRoute}
+          className={`${
+            loadingRoute ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
+          } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
+        >
+          <FaMapMarkerAlt />
+          {loadingRoute ? "Carregando..." : "Como chegar"}
         </button>
       </motion.div>
     </section>

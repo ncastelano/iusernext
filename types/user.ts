@@ -1,4 +1,4 @@
-//types/user.ts
+// types/user.ts
 
 export interface User {
   uid: string;
@@ -9,4 +9,5 @@ export interface User {
   latitude: number | null;
   longitude: number | null;
   visible: boolean;
+  viewedBy?: string[]; // UIDs de usuários (logados ou anônimos) que visualizaram o perfil
 }
