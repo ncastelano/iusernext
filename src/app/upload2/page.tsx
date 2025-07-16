@@ -6,7 +6,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { collection, doc, setDoc, getDoc } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { createFFmpeg, fetchFile } from "@ffmpeg/ffmpeg";
-import { useUser } from "src/app/context/auth-context";
+import { useUser } from "src/app/components/UserContext";
 
 export default function UploadPage2() {
   const [videoFile, setVideoFile] = useState<File | null>(null);

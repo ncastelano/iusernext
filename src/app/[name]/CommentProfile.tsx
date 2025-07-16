@@ -334,10 +334,12 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                       key={reply.id}
                       style={{
                         marginBottom: "1rem",
-                        backgroundColor: "#fff",
-                        padding: "0.75rem",
-                        borderRadius: "10px",
-                        border: "1px solid #eee",
+                        backgroundColor: "transparent", // fundo transparente igual ao principal
+                        border: "1px solid white", // borda branca igual
+                        borderRadius: "12px", // mesmo border-radius
+                        padding: "1rem", // mesmo padding
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", // mesma sombra sutil
+                        color: "rgb(255, 255, 255)", // texto branco igual
                       }}
                     >
                       <div
@@ -350,23 +352,23 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                         <Image
                           src={reply.userProfileImage}
                           alt={reply.userName}
-                          width={36}
-                          height={36}
+                          width={48} // igual ao comentário principal
+                          height={48}
                           style={{
                             borderRadius: "50%",
-                            border: "2px solid  rgb(255, 255, 255)",
+                            border: "2px solid rgb(255, 255, 255)",
                             boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-                            objectFit: "cover", // garante corte e escala correta
-                            width: "48px", // força largura fixa
-                            height: "48px", // força altura fixa
-                            display: "block", // remove espaços em linha
+                            objectFit: "cover",
+                            width: "48px",
+                            height: "48px",
+                            display: "block",
                           }}
                         />
                         <strong>{reply.userName}</strong>
                         <span
                           style={{
                             marginLeft: "auto",
-                            fontSize: "0.75rem",
+                            fontSize: "0.8rem", // mesmo tamanho da timestamp principal
                             color: "#666",
                           }}
                         >
@@ -375,7 +377,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                             : "Data desconhecida"}
                         </span>
                       </div>
-                      <p style={{ marginLeft: "2.5rem", marginTop: "0.5rem" }}>
+                      <p style={{ marginLeft: "3.5rem", marginTop: "0.5rem" }}>
                         {reply.text}
                       </p>
                     </li>
