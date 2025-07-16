@@ -51,7 +51,7 @@ export default function InfoProfileAnimations({
         window.open(mapsUrl, "_blank");
         setLoadingRoute(false);
       },
-      (error) => {
+      (_error) => {
         alert("Erro ao obter sua localização.");
         setLoadingRoute(false);
       }
