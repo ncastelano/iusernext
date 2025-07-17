@@ -1,4 +1,5 @@
-// ✅ Sem 'use client' — componente Server
+//app/[name]/page.tsx
+
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "types/user";
@@ -13,9 +14,10 @@ import CommentProfile from "./CommentProfile";
 export default async function UserProfilePage({
   params,
 }: {
-  params: { name: string };
+  params: Promise<{ name: string }>;
 }) {
-  const decodedName = decodeURIComponent(params.name);
+  const { name } = await params;
+  const decodedName = decodeURIComponent(name);
 
   try {
     const usersRef = collection(db, "users");
@@ -26,6 +28,7 @@ export default async function UserProfilePage({
 
     const user = userSnapshot.docs[0].data() as User;
 
+    // Definindo valores padrão caso estejam ausentes
     const safeUser = {
       ...user,
       latitude: typeof user.latitude === "number" ? user.latitude : null,
@@ -79,10 +82,6 @@ export default async function UserProfilePage({
     );
   } catch (error) {
     console.error("Erro ao buscar usuário ou vídeos:", error);
-    return (
-      <main className="min-h-screen bg-black flex items-center justify-center text-white">
-        <p>Erro ao carregar o perfil.</p>
-      </main>
-    );
+    return <div>Erro ao carregar o perfil.</div>;
   }
 }
