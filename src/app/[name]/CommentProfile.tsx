@@ -244,13 +244,15 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
             <li
               key={comment.id}
               style={{
-                backgroundColor: "transparent",
-                border: "1px solid white",
-                borderRadius: "12px",
-                padding: "1rem",
-                marginBottom: "1rem",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                color: "rgb(255, 255, 255)",
+                background: "rgba(253, 253, 253, 0)",
+                border: "1px solid rgba(255, 255, 255, 0.15)",
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                borderRadius: "16px",
+                padding: "1.5rem",
+                marginBottom: "1.5rem",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.2)",
+                color: "#ffffff",
               }}
             >
               <div

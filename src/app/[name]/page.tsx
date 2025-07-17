@@ -1,5 +1,4 @@
-//app/[name]/page.tsx
-
+// ✅ Sem 'use client' — componente Server
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { User } from "types/user";
@@ -14,10 +13,9 @@ import CommentProfile from "./CommentProfile";
 export default async function UserProfilePage({
   params,
 }: {
-  params: Promise<{ name: string }>;
+  params: { name: string };
 }) {
-  const { name } = await params;
-  const decodedName = decodeURIComponent(name);
+  const decodedName = decodeURIComponent(params.name);
 
   try {
     const usersRef = collection(db, "users");
@@ -28,7 +26,6 @@ export default async function UserProfilePage({
 
     const user = userSnapshot.docs[0].data() as User;
 
-    // Definindo valores padrão caso estejam ausentes
     const safeUser = {
       ...user,
       latitude: typeof user.latitude === "number" ? user.latitude : null,
@@ -44,35 +41,48 @@ export default async function UserProfilePage({
     );
 
     return (
-      <main className="max-w-xl mx-auto p-8 space-y-8 bg-black min-h-screen">
-        <section
-          className="relative w-full max-w-xl mx-auto overflow-hidden rounded-lg"
-          style={{ aspectRatio: "16 / 9" }}
-        >
-          <UserProfileAnimations
-            imageUrl={safeUser.image || "/default-profile.png"}
-            userName={safeUser.name}
-          />
-        </section>
+      <main className="min-h-screen bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white">
+        <div className="max-w-3xl mx-auto p-6 space-y-10">
+          <section
+            className="relative overflow-hidden rounded-3xl shadow-xl"
+            style={{ aspectRatio: "16 / 9" }}
+          >
+            <UserProfileAnimations
+              imageUrl={safeUser.image || "/default-profile.png"}
+              userName={safeUser.name}
+            />
+          </section>
 
-        <FollowButton targetUid={safeUser.uid} />
+          <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
+            <FollowButton targetUid={safeUser.uid} />
+            <CommentProfile profileUid={safeUser.uid} />
+            <InfoProfileAnimations
+              safeUser={safeUser}
+              videosCount={videos.length}
+            />
+          </div>
 
-        <CommentProfile profileUid={safeUser.uid} />
-
-        <InfoProfileAnimations
-          safeUser={safeUser}
-          videosCount={videos.length}
-        />
-
-        {videos.length === 0 ? (
-          <p className="text-gray-400">Nenhum vídeo encontrado.</p>
-        ) : (
-          <VideosProfileAnimations videos={videos} userName={safeUser.name} />
-        )}
+          <section className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
+            {videos.length === 0 ? (
+              <p className="text-gray-300 text-center">
+                Nenhum vídeo encontrado.
+              </p>
+            ) : (
+              <VideosProfileAnimations
+                videos={videos}
+                userName={safeUser.name}
+              />
+            )}
+          </section>
+        </div>
       </main>
     );
   } catch (error) {
     console.error("Erro ao buscar usuário ou vídeos:", error);
-    return <div>Erro ao carregar o perfil.</div>;
+    return (
+      <main className="min-h-screen bg-black flex items-center justify-center text-white">
+        <p>Erro ao carregar o perfil.</p>
+      </main>
+    );
   }
 }

@@ -27,8 +27,9 @@ export default function UserProfileAnimations({
         priority
       />
 
-      {/* Gradiente escurecendo de cima para baixo */}
+      {/* Gradiente escurecendo de cima para baixo 
       <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black pointer-events-none" />
+      */}
 
       {/* Nome do usuário com @, no rodapé da imagem */}
       <motion.h1
