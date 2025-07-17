@@ -1,45 +1,44 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
-import Destaques from '@/app/components/Destaques'
+import { useEffect, useState } from "react";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+import Destaques from "@/app/components/Destaques";
 
-import Image from 'next/image'
+import Image from "next/image";
 interface Video {
-  id: string
-  videoUrl: string
-  thumbnailUrl: string
-  artistSongName: string
-  userName: string
+  id: string;
+  videoUrl: string;
+  thumbnailUrl: string;
+  artistSongName: string;
+  userName: string;
 }
 
-
 export default function TelaAzul() {
-  const [videos, setVideos] = useState<Video[]>([])
+  const [videos, setVideos] = useState<Video[]>([]);
 
   useEffect(() => {
     async function fetchVideos() {
-      const querySnapshot = await getDocs(collection(db, 'videos'))
-      const fetchedVideos: Video[] = []
+      const querySnapshot = await getDocs(collection(db, "videos"));
+      const fetchedVideos: Video[] = [];
       querySnapshot.forEach((doc) => {
-        const data = doc.data()
+        const data = doc.data();
         fetchedVideos.push({
           id: doc.id,
-          videoUrl: data.videoUrl || '',
-          thumbnailUrl: data.thumbnailUrl || '',
-          artistSongName: data.artistSongName || '',
-          userName: data.userName || '',
-        })
-      })
-      setVideos(fetchedVideos)
+          videoUrl: data.videoUrl || "",
+          thumbnailUrl: data.thumbnailUrl || "",
+          artistSongName: data.artistSongName || "",
+          userName: data.userName || "",
+        });
+      });
+      setVideos(fetchedVideos);
     }
 
-    fetchVideos()
-  }, [])
+    fetchVideos();
+  }, []);
 
-  const populares = videos.filter((_, i) => i % 2 === 0)
-  const novos = videos.filter((_, i) => i % 2 !== 0)
+  const populares = videos.filter((_, i) => i % 2 === 0);
+  const novos = videos.filter((_, i) => i % 2 !== 0);
 
   return (
     <main className="bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen p-8">
@@ -48,7 +47,9 @@ export default function TelaAzul() {
       <Destaques videos={videos} limit={5} showSeeMoreButton />
 
       <section className="mb-8">
-        <h2 className="text-xl mb-4 text-blue-600 dark:text-blue-400">Populares</h2>
+        <h2 className="text-xl mb-4 text-blue-600 dark:text-blue-400">
+          Populares
+        </h2>
         <VideoGrid videos={populares} />
       </section>
 
@@ -57,7 +58,7 @@ export default function TelaAzul() {
         <VideoGrid videos={novos} />
       </section>
     </main>
-  )
+  );
 }
 
 function VideoGrid({ videos }: { videos: Video[] }) {
@@ -87,10 +88,12 @@ function VideoGrid({ videos }: { videos: Video[] }) {
             <h3 className="text-base font-medium text-gray-900 dark:text-white mb-1">
               {video.artistSongName}
             </h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">por {video.userName}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              por {video.userName}
+            </p>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 }

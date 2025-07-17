@@ -1,6 +1,6 @@
 "use client";
 import { serverTimestamp, Timestamp } from "firebase/firestore";
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   collection,
   getDocs,
@@ -44,15 +44,29 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [newReply, setNewReply] = useState("");
-  const [lastDoc, setLastDoc] =
-    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
-  const [hasMore, setHasMore] = useState(true);
+
+  const hasMoreRef = useRef(true);
+  const lastDocRef = useRef<QueryDocumentSnapshot<DocumentData> | null>(null);
 
   const PAGE_SIZE = 5;
 
+  // Atualizar refs quando estados mudam
+  const [hasMore, setHasMore] = useState(true);
+  const [lastDoc, setLastDoc] =
+    useState<QueryDocumentSnapshot<DocumentData> | null>(null);
+
+  useEffect(() => {
+    hasMoreRef.current = hasMore;
+  }, [hasMore]);
+
+  useEffect(() => {
+    lastDocRef.current = lastDoc;
+  }, [lastDoc]);
+
+  // Função para carregar comentários (paginados)
   const loadComments = useCallback(
     async (isInitialLoad = false) => {
-      if (!hasMore && !isInitialLoad) return;
+      if (!hasMoreRef.current && !isInitialLoad) return;
 
       if (isInitialLoad) {
         setLoadingComments(true);
@@ -65,11 +79,11 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
 
         let q;
 
-        if (lastDoc && !isInitialLoad) {
+        if (lastDocRef.current && !isInitialLoad) {
           q = query(
             commentsRef,
             orderBy("timestamp", "desc"),
-            startAfter(lastDoc),
+            startAfter(lastDocRef.current),
             limit(PAGE_SIZE)
           );
         } else {
@@ -101,29 +115,34 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
         if (snapshot.docs.length < PAGE_SIZE) {
           setHasMore(false);
         } else {
+          setHasMore(true);
           setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
         }
       } catch (err) {
         console.error("Erro ao carregar comentários:", err);
         setError("Erro ao carregar comentários.");
-      }
-
-      if (isInitialLoad) {
-        setLoadingComments(false);
-      } else {
-        setLoadingMore(false);
+      } finally {
+        if (isInitialLoad) {
+          setLoadingComments(false);
+        } else {
+          setLoadingMore(false);
+        }
       }
     },
-    [hasMore, lastDoc, profileUid]
+    [profileUid]
   );
 
-  const resetAndLoadComments = useCallback(async () => {
+  // Função para resetar estados e carregar comentários iniciais
+  const resetAndLoadComments = useCallback(() => {
     setComments([]);
     setHasMore(true);
     setLastDoc(null);
-    await loadComments(true);
+    hasMoreRef.current = true;
+    lastDocRef.current = null;
+    loadComments(true);
   }, [loadComments]);
 
+  // Usar useEffect para resetar e carregar ao mudar profileUid (sem dependência de resetAndLoadComments)
   useEffect(() => {
     if (!profileUid) return;
     resetAndLoadComments();
@@ -210,6 +229,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
       setError("Erro ao enviar resposta. Tente novamente.");
     }
   }
+
   return (
     <section style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
       <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Comentários</h3>

@@ -9,11 +9,12 @@ import { CustomInfoWindowVideo } from "src/app/components/CustomInfoWindow";
 import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
 import { Video } from "types/video";
 import { User } from "types/user";
-import { FilterMap } from "src/app/components/FilterMap";
+import { FilterMap } from "@/app/mapa/FilterMap";
 import { VideoMarker } from "../components/VideoMaker";
 import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
-import { FilteredList } from "src/app/components/FilteredList";
+import { FilteredList } from "@/app/mapa/FilteredList";
 import { SendOrDeleteLocation } from "./SendOrDeleteLocation";
+import { useUser } from "../components/UserContext";
 
 const containerStyle = {
   width: "100%",
@@ -68,6 +69,7 @@ export default function Mapa() {
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
+  const { user: currentUser } = useUser();
 
   const [selectedFilter, setSelectedFilter] = useState<
     "users" | "flash" | "store" | "place" | "product"
@@ -382,7 +384,10 @@ export default function Mapa() {
                       height: 48,
                       borderRadius: "50%",
                       overflow: "hidden",
-                      border: "3px solid #2ecc71",
+                      border:
+                        currentUser?.uid === user.uid
+                          ? "3px solid red"
+                          : "3px solid #2ecc71",
                       boxShadow: "0 0 5px rgba(0,0,0,0.3)",
                       cursor: "pointer",
                       backgroundColor: "#fff",
