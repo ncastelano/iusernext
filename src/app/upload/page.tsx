@@ -41,7 +41,7 @@ export default function UploadPage() {
   const [userLng, setUserLng] = useState<number | null>(null);
 
   const router = useRouter();
-  const { user, loading } = useUser();
+  const { user } = useUser();
 
   const generateThumbnailFromVideo = (file: File): Promise<Blob> => {
     return new Promise((resolve, reject) => {

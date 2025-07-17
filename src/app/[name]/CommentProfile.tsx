@@ -1,7 +1,6 @@
 "use client";
 import { serverTimestamp } from "firebase/firestore";
-
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   collection,
   getDocs,
@@ -43,81 +42,78 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
   const [loadingComments, setLoadingComments] = useState(false);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState("");
-
   const [newComment, setNewComment] = useState("");
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [newReply, setNewReply] = useState("");
-
   const [lastDoc, setLastDoc] =
     useState<QueryDocumentSnapshot<DocumentData> | null>(null);
   const [hasMore, setHasMore] = useState(true);
 
   const PAGE_SIZE = 5;
 
-  useEffect(() => {
-    if (!profileUid) return;
-    resetAndLoadComments();
-  }, [profileUid]);
+  const loadComments = useCallback(
+    async (isInitialLoad = false) => {
+      if (!hasMore && !isInitialLoad) return;
+      isInitialLoad ? setLoadingComments(true) : setLoadingMore(true);
 
-  async function resetAndLoadComments() {
+      try {
+        const commentsRef = collection(db, "users", profileUid, "comments");
+        let q = query(
+          commentsRef,
+          orderBy("timestamp", "desc"),
+          limit(PAGE_SIZE)
+        );
+
+        if (lastDoc && !isInitialLoad) {
+          q = query(
+            commentsRef,
+            orderBy("timestamp", "desc"),
+            startAfter(lastDoc),
+            limit(PAGE_SIZE)
+          );
+        }
+
+        const snapshot = await getDocs(q);
+        const newComments = snapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            userID: data.userID,
+            userName: data.userName,
+            userProfileImage: data.userProfileImage || "/default-profile.png",
+            text: data.text,
+            timestamp: data.timestamp,
+            replies: data.replies || [],
+          } as Comment;
+        });
+
+        setComments((prev) =>
+          isInitialLoad ? newComments : [...prev, ...newComments]
+        );
+
+        if (snapshot.docs.length < PAGE_SIZE) setHasMore(false);
+        else setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+      } catch (err) {
+        console.error("Erro ao carregar comentários:", err);
+        setError("Erro ao carregar comentários.");
+      }
+
+      isInitialLoad ? setLoadingComments(false) : setLoadingMore(false);
+    },
+    [hasMore, lastDoc, profileUid]
+  );
+
+  const resetAndLoadComments = useCallback(async () => {
     setComments([]);
     setLastDoc(null);
     setHasMore(true);
     await loadComments(true);
-  }
+  }, [loadComments]);
 
-  async function loadComments(isInitialLoad = false) {
-    if (!hasMore && !isInitialLoad) return;
-
-    if (isInitialLoad) setLoadingComments(true);
-    else setLoadingMore(true);
-
-    try {
-      const commentsRef = collection(db, "users", profileUid, "comments");
-      let q = query(
-        commentsRef,
-        orderBy("timestamp", "desc"),
-        limit(PAGE_SIZE)
-      );
-
-      if (lastDoc && !isInitialLoad) {
-        q = query(
-          commentsRef,
-          orderBy("timestamp", "desc"),
-          startAfter(lastDoc),
-          limit(PAGE_SIZE)
-        );
-      }
-
-      const snapshot = await getDocs(q);
-
-      const newComments = snapshot.docs.map((doc) => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          userID: data.userID,
-          userName: data.userName,
-          userProfileImage: data.userProfileImage || "/default-profile.png",
-          text: data.text,
-          timestamp: data.timestamp,
-          replies: data.replies || [],
-        } as Comment;
-      });
-
-      setComments((prev) =>
-        isInitialLoad ? newComments : [...prev, ...newComments]
-      );
-
-      if (snapshot.docs.length < PAGE_SIZE) setHasMore(false);
-      else setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
-    } catch (err) {
-      console.error("Erro ao carregar comentários:", err);
-      setError("Erro ao carregar comentários.");
-    }
-
-    if (isInitialLoad) setLoadingComments(false);
-    else setLoadingMore(false);
-  }
+  useEffect(() => {
+    if (!profileUid) return;
+    resetAndLoadComments();
+  }, [profileUid, resetAndLoadComments]);
 
   async function handleCommentSubmit() {
     if (!user) {
@@ -161,7 +157,6 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
     setError("");
 
     try {
-      // Referência para o documento do comentário pai
       const commentDocRef = doc(
         db,
         "users",
@@ -169,8 +164,6 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
         "comments",
         parentCommentId
       );
-
-      // Obter o documento atual do comentário
       const commentDocSnapshot = await getDoc(commentDocRef);
 
       if (!commentDocSnapshot.exists()) {
@@ -187,16 +180,13 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
         userName: user.name,
         userProfileImage: user.image || "/default-profile.png",
         text: newReply.trim(),
-        timestamp: Timestamp.now(), // ← CORRETO PARA ARRAYS
+        timestamp: Timestamp.now(),
         replies: [],
       };
 
       const updatedReplies = [...currentReplies, newReplyObj];
 
-      // Atualizar o array replies no documento
-      await updateDoc(commentDocRef, {
-        replies: updatedReplies,
-      });
+      await updateDoc(commentDocRef, { replies: updatedReplies });
 
       setNewReply("");
       setReplyingTo(null);
@@ -221,13 +211,13 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
             <li
               key={comment.id}
               style={{
-                backgroundColor: "transparent", // ← sem fundo
-                border: "1px solid white", // ← borda branca visível
+                backgroundColor: "transparent",
+                border: "1px solid white",
                 borderRadius: "12px",
                 padding: "1rem",
                 marginBottom: "1rem",
-                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", // sombra mais sutil
-                color: "rgb(255, 255, 255)", // ← texto preto ou outro visível no fundo
+                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                color: "rgb(255, 255, 255)",
               }}
             >
               <div
@@ -246,13 +236,12 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                     borderRadius: "50%",
                     border: "2px solid  rgb(255, 255, 255)",
                     boxShadow: "0 0 5px rgba(0,0,0,0.1)",
-                    objectFit: "cover", // garante corte e escala correta
-                    width: "48px", // força largura fixa
-                    height: "48px", // força altura fixa
-                    display: "block", // remove espaços em linha
+                    objectFit: "cover",
+                    width: "48px",
+                    height: "48px",
+                    display: "block",
                   }}
                 />
-
                 <strong>{comment.userName}</strong>
                 <span
                   style={{
@@ -264,7 +253,6 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                   {comment.timestamp?.toDate().toLocaleString()}
                 </span>
               </div>
-
               <p style={{ marginLeft: "3.5rem", marginTop: "0.5rem" }}>
                 {comment.text}
               </p>
@@ -334,12 +322,12 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                       key={reply.id}
                       style={{
                         marginBottom: "1rem",
-                        backgroundColor: "transparent", // fundo transparente igual ao principal
-                        border: "1px solid white", // borda branca igual
-                        borderRadius: "12px", // mesmo border-radius
-                        padding: "1rem", // mesmo padding
-                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", // mesma sombra sutil
-                        color: "rgb(255, 255, 255)", // texto branco igual
+                        backgroundColor: "transparent",
+                        border: "1px solid white",
+                        borderRadius: "12px",
+                        padding: "1rem",
+                        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        color: "rgb(255, 255, 255)",
                       }}
                     >
                       <div
@@ -352,7 +340,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                         <Image
                           src={reply.userProfileImage}
                           alt={reply.userName}
-                          width={48} // igual ao comentário principal
+                          width={48}
                           height={48}
                           style={{
                             borderRadius: "50%",
@@ -368,7 +356,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                         <span
                           style={{
                             marginLeft: "auto",
-                            fontSize: "0.8rem", // mesmo tamanho da timestamp principal
+                            fontSize: "0.8rem",
                             color: "#666",
                           }}
                         >
@@ -407,51 +395,47 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
           {loadingMore ? "Carregando..." : "Carregar mais"}
         </button>
       )}
+
       {user ? (
         <div style={{ position: "relative", marginBottom: "1rem" }}>
-          <div style={{ position: "relative", marginBottom: "1rem" }}>
-            <textarea
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Escreva um comentário..."
-              rows={1}
-              style={{
-                width: "100%",
-                height: "44px",
-                padding: "0 4.5rem 0 1rem", // espaço lateral pro botão
-                borderRadius: "9999px",
-                border: "1px solid #ccc",
-                resize: "none",
-                fontSize: "1rem",
-                display: "flex",
-                alignItems: "center",
-                boxSizing: "border-box",
-                lineHeight: "44px", // garante que o texto fique centralizado verticalmente
-                overflow: "hidden",
-              }}
-            />
-            <button
-              onClick={handleCommentSubmit}
-              style={{
-                position: "absolute",
-                top: "5px", // <-- ajuste fino manual
-                right: "5px",
-                height: "34px",
-                padding: "0 1rem",
-                backgroundColor: "#0070f3",
-                color: "#fff",
-                border: "none",
-                borderRadius: "9999px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                fontSize: "0.9rem",
-                whiteSpace: "nowrap",
-              }}
-            >
-              Enviar
-            </button>
-          </div>
-
+          <textarea
+            value={newComment}
+            onChange={(e) => setNewComment(e.target.value)}
+            placeholder="Escreva um comentário..."
+            rows={1}
+            style={{
+              width: "100%",
+              height: "44px",
+              padding: "0 4.5rem 0 1rem",
+              borderRadius: "9999px",
+              border: "1px solid #ccc",
+              resize: "none",
+              fontSize: "1rem",
+              lineHeight: "44px",
+              overflow: "hidden",
+              boxSizing: "border-box",
+            }}
+          />
+          <button
+            onClick={handleCommentSubmit}
+            style={{
+              position: "absolute",
+              top: "5px",
+              right: "5px",
+              height: "34px",
+              padding: "0 1rem",
+              backgroundColor: "#0070f3",
+              color: "#fff",
+              border: "none",
+              borderRadius: "9999px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              fontSize: "0.9rem",
+              whiteSpace: "nowrap",
+            }}
+          >
+            Enviar
+          </button>
           {error && (
             <p style={{ color: "red", marginTop: "0.5rem" }}>{error}</p>
           )}
