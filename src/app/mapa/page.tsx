@@ -1,13 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  collection,
-  getDocs,
-  Timestamp,
-  doc,
-  updateDoc,
-} from "firebase/firestore";
+import { collection, getDocs, Timestamp } from "firebase/firestore";
 
 import { db } from "@/lib/firebase";
 import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
@@ -20,7 +14,6 @@ import { FilterMap } from "src/app/components/FilterMap";
 import { VideoMarker } from "../components/VideoMaker";
 import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
 import { FilteredList } from "src/app/components/FilteredList";
-import { useUser } from "src/app/components/UserContext";
 import { SendOrDeleteLocation } from "./SendOrDeleteLocation";
 
 const containerStyle = {
