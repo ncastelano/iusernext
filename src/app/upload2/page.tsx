@@ -156,7 +156,7 @@ export default function UploadPage2() {
 
       alert("Vídeo enviado com sucesso!");
       setUploadProgress(null);
-      router.push("/tudo");
+      router.push("/");
     } catch (error: unknown) {
       console.error("Erro desconhecido:", error);
       alert("Erro ao enviar vídeo.");
