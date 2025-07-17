@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { collection, getDocs, Timestamp } from "firebase/firestore";
-
 import { db } from "@/lib/firebase";
 import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
 import Image from "next/image";

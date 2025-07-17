@@ -38,7 +38,7 @@ function NavigationBar() {
   };
 
   const handleFlashClick = () => {
-    router.push("/mapa");
+    router.push("/flash");
   };
 
   return (
