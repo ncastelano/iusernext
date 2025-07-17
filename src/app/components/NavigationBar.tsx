@@ -1,20 +1,17 @@
 "use client";
-import { Zap } from "lucide-react";
-import React, { useState } from "react";
+import { Zap, UserRoundPen, MapPinHouse, ImageUp } from "lucide-react";
+import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
-import { UserRoundPen, MapPinHouse, ImageUp, Menu } from "lucide-react";
 import Image from "next/image";
 
 function NavigationBar() {
   const router = useRouter();
   const { user } = useUser();
-  const [menuOpen, setMenuOpen] = useState(false);
 
-  // Estilo base idêntico ao userProfileImage da Home, responsivo e com borda e sombra
   const iconBaseStyle: React.CSSProperties = {
-    width: "clamp(60px, 8vw, 90px)",
-    height: "clamp(60px, 8vw, 90px)",
+    width: "clamp(60px, 8vw, 80px)",
+    height: "clamp(60px, 8vw, 80px)",
     borderRadius: "50%",
     display: "flex",
     alignItems: "center",
@@ -28,36 +25,19 @@ function NavigationBar() {
     boxSizing: "border-box",
   };
 
-  const activeIconStyle: React.CSSProperties = {
-    backgroundColor: "rgba(255, 255, 255, 0.15)",
-    boxShadow: "0 0 12px 2px rgba(255,255,255,0.7)",
-  };
-
   const handleUserClick = () => {
-    setMenuOpen(false);
-    if (user?.name) {
-      router.push(`/${user.name}`);
-    } else {
-      router.push("/login");
-    }
+    router.push(user?.name ? `/${user.name}` : "/login");
   };
 
   const handleMapaClick = () => {
-    setMenuOpen(false);
     router.push("/mapa");
   };
 
   const handleUploadClick = () => {
-    setMenuOpen(false);
     router.push("/upload");
   };
 
-  const handleMenuToggle = () => {
-    setMenuOpen((prev) => !prev);
-  };
-
   const handleFlashClick = () => {
-    setMenuOpen(false);
     router.push("/mapa");
   };
 
@@ -71,158 +51,95 @@ function NavigationBar() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
+        gap: 20,
+        padding: "12px 24px",
+        borderRadius: 60,
         zIndex: 1000,
-        userSelect: "none",
-        padding: menuOpen ? "12px 24px" : "0",
-        backgroundColor: menuOpen ? "rgba(0,0,0,0.4)" : "transparent",
-        borderRadius: menuOpen ? 60 : 0,
-        boxShadow: menuOpen ? "0 0 15px rgba(255,255,255,0.2)" : "none",
-        gap: menuOpen ? 20 : 0,
-        width: menuOpen ? "auto" : "clamp(60px, 8vw, 90px)", // ESSA LINHA limita a largura quando fechado
+        background: "rgba(255, 255, 255, 0.15)",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
+        border: "1px solid rgba(255, 255, 255, 0.2)",
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
       }}
-      aria-label="Navigation menu"
     >
-      {/* Botão principal - Menu */}
+      {/* Avatar ou ícone do usuário */}
       <div
-        onClick={handleMenuToggle}
+        onClick={handleUserClick}
         style={{
           ...iconBaseStyle,
-          ...(menuOpen ? activeIconStyle : {}),
-          minWidth: "clamp(60px, 8vw, 90px)",
-          minHeight: "clamp(60px, 8vw, 90px)",
-          padding: 0,
-          boxSizing: "border-box",
-          userSelect: "none",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
+          ...(user?.image
+            ? {
+                backgroundColor: "transparent",
+                boxShadow: "0 0 10px 2px rgba(255,255,255,0.6)",
+              }
+            : {}),
         }}
-        aria-expanded={menuOpen}
-        aria-controls="nav-icons"
+        title={user?.name || "Login"}
         role="button"
         tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            handleMenuToggle();
-          }
-        }}
-        title="Menu"
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleUserClick()
+        }
       >
-        <Menu size={32} color="#fff" />
+        {user?.image ? (
+          <Image
+            src={user.image}
+            alt={user.name || "User"}
+            width={80}
+            height={80}
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              borderRadius: "50%",
+            }}
+            priority
+          />
+        ) : (
+          <UserRoundPen size={32} color="#fff" />
+        )}
       </div>
 
-      {/* Ícones que aparecem quando o menu está aberto */}
+      {/* Mapa */}
       <div
-        id="nav-icons"
-        style={{
-          display: "flex",
-          gap: 20,
-          opacity: menuOpen ? 1 : 0,
-          pointerEvents: menuOpen ? "auto" : "none",
-          transition: "opacity 0.3s ease 0.1s, transform 0.3s ease",
-          transform: menuOpen ? "translateY(0)" : "translateY(20px)",
-        }}
+        onClick={handleMapaClick}
+        style={iconBaseStyle}
+        title="Mapa"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleMapaClick()
+        }
       >
-        {/* USER ICON OR AVATAR */}
-        <div
-          onClick={handleUserClick}
-          style={{
-            ...iconBaseStyle,
-            ...(user?.image
-              ? {
-                  backgroundColor: "transparent",
-                  boxShadow: "0 0 10px 2px rgba(255,255,255,0.6)",
-                }
-              : {}),
-            overflow: "hidden",
-            userSelect: "none",
-          }}
-          title={user?.name || "Login"}
-          tabIndex={menuOpen ? 0 : -1}
-          role="button"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleUserClick();
-            }
-          }}
-        >
-          {user?.image ? (
-            <Image
-              src={user.image}
-              alt={user.name || "User"}
-              width={90}
-              height={90}
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                borderRadius: "50%",
-                display: "block",
-                userSelect: "none",
-              }}
-              priority
-            />
-          ) : (
-            <UserRoundPen size={32} color="#fff" />
-          )}
-        </div>
+        <MapPinHouse size={32} color="#fff" />
+      </div>
 
-        {/* MAP ICON */}
-        <div
-          onClick={handleMapaClick}
-          style={{
-            ...iconBaseStyle,
-            userSelect: "none",
-          }}
-          title="Mapa"
-          tabIndex={menuOpen ? 0 : -1}
-          role="button"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleMapaClick();
-            }
-          }}
-        >
-          <MapPinHouse size={32} color="#fff" />
-        </div>
+      {/* Upload */}
+      <div
+        onClick={handleUploadClick}
+        style={iconBaseStyle}
+        title="Upload"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleUploadClick()
+        }
+      >
+        <ImageUp size={32} color="#fff" />
+      </div>
 
-        {/* UPLOAD ICON */}
-        <div
-          onClick={handleUploadClick}
-          style={{
-            ...iconBaseStyle,
-            userSelect: "none",
-          }}
-          title="Upload"
-          tabIndex={menuOpen ? 0 : -1}
-          role="button"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleUploadClick();
-            }
-          }}
-        >
-          <ImageUp size={32} color="#fff" />
-        </div>
-
-        {/* FLASH ICON */}
-        <div
-          onClick={handleFlashClick}
-          style={{
-            ...iconBaseStyle,
-            userSelect: "none",
-          }}
-          title="Flash"
-          tabIndex={menuOpen ? 0 : -1}
-          role="button"
-          onKeyDown={(e) => {
-            if (e.key === "Enter" || e.key === " ") {
-              handleFlashClick();
-            }
-          }}
-        >
-          <Zap size={32} color="#fff" />
-        </div>
+      {/* Flash */}
+      <div
+        onClick={handleFlashClick}
+        style={iconBaseStyle}
+        title="Flash"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleFlashClick()
+        }
+      >
+        <Zap size={32} color="#fff" />
       </div>
     </nav>
   );

@@ -21,6 +21,7 @@ import { VideoMarker } from "../components/VideoMaker";
 import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
 import { FilteredList } from "src/app/components/FilteredList";
 import { useUser } from "src/app/components/UserContext";
+import { SendOrDeleteLocation } from "./SendOrDeleteLocation";
 
 const containerStyle = {
   width: "100%",
@@ -81,43 +82,6 @@ export default function Mapa() {
   >("users");
   const [searchTerm, setSearchTerm] = useState("");
   const mapRef = useRef<google.maps.Map | null>(null);
-  const { user } = useUser();
-  const [sendingLocation, setSendingLocation] = useState(false);
-
-  const sendMyLocation = () => {
-    if (!user)
-      return alert("Você precisa estar logado para enviar sua localização.");
-
-    if (navigator.geolocation) {
-      setSendingLocation(true);
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const { latitude, longitude } = position.coords;
-          try {
-            const userRef = doc(db, "users", user.uid);
-            await updateDoc(userRef, {
-              latitude,
-              longitude,
-            });
-            alert("Localização enviada com sucesso!");
-          } catch (error) {
-            console.error("Erro ao atualizar localização:", error);
-            alert("Erro ao atualizar localização.");
-          } finally {
-            setSendingLocation(false);
-          }
-        },
-        (error) => {
-          console.error("Erro ao obter localização:", error);
-          alert("Erro ao obter sua localização.");
-          setSendingLocation(false);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    } else {
-      alert("Geolocalização não é suportada neste navegador.");
-    }
-  };
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
@@ -325,50 +289,7 @@ export default function Mapa() {
         goToLocation={goToLocationWithZoom}
         searchTerm={searchTerm}
       />
-      <button
-        onClick={sendMyLocation}
-        disabled={sendingLocation}
-        style={{
-          position: "fixed",
-          bottom: 200,
-          left: 20,
-          zIndex: 1000,
-          padding: "10px 16px",
-          backgroundColor: sendingLocation ? "#555" : "#007bff",
-          color: "#fff",
-          border: "none",
-          borderRadius: "20px",
-          cursor: "pointer",
-          fontWeight: 500,
-          fontSize: "14px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-          transition: "all 0.2s ease-in-out",
-        }}
-      >
-        📡 {sendingLocation ? "Enviando..." : "enviar localização"}
-      </button>
-
-      <button
-        onClick={goToMyLocation}
-        style={{
-          position: "fixed",
-          bottom: 150,
-          left: 20,
-          zIndex: 1000,
-          padding: "10px 16px",
-          backgroundColor: "#1a1a1a",
-          color: "#ccc",
-          border: "1px solid #444",
-          borderRadius: "8px",
-          cursor: "pointer",
-          fontWeight: 500,
-          fontSize: "14px",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-          transition: "all 0.2s ease-in-out",
-        }}
-      >
-        📍 onde estou!
-      </button>
+      <SendOrDeleteLocation />
 
       {deferredPrompt && (
         <button
