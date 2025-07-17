@@ -18,7 +18,8 @@ function NavigationBar() {
     justifyContent: "center",
     cursor: "pointer",
     border: "2px solid white",
-    backgroundColor: "#222",
+    backgroundColor: "transparent",
+    backdropFilter: "blur(10px)",
     boxShadow: "0 0 6px rgba(255,255,255,0.5)",
     transition: "all 0.3s ease",
     overflow: "hidden",
@@ -55,11 +56,11 @@ function NavigationBar() {
         padding: "12px 24px",
         borderRadius: 60,
         zIndex: 1000,
-        background: "rgba(255, 255, 255, 0.15)",
+        background: "transparent",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
+        border: "transparent",
+        boxShadow: "transparent",
       }}
     >
       {/* Avatar ou ícone do usuário */}

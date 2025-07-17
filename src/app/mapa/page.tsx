@@ -95,7 +95,7 @@ export default function Mapa() {
     if (lat != null && lng != null) {
       if (mapRef.current) {
         mapRef.current.panTo({ lat, lng });
-        mapRef.current.setZoom(17);
+        mapRef.current.setZoom(24);
       }
     }
   };
@@ -105,8 +105,7 @@ export default function Mapa() {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
-          const location = { lat: latitude, lng: longitude };
-          goToLocationWithZoom(location);
+          goToLocationWithZoom({ lat: latitude, lng: longitude });
         },
         (error) => {
           console.error("Erro ao obter localização atual:", error);
@@ -115,6 +114,53 @@ export default function Mapa() {
       );
     }
   }, []);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const videoSnapshot = await getDocs(collection(db, "videos"));
+      const videoData: Video[] = videoSnapshot.docs.map((doc) => {
+        const data = doc.data() as VideoRawData;
+        return convertVideoRawToVideo(doc.id, data);
+      });
+      setVideos(videoData);
+
+      const userSnapshot = await getDocs(collection(db, "users"));
+      const userData: User[] = userSnapshot.docs
+        .map((doc) => {
+          const data = doc.data();
+          if (
+            typeof data.latitude === "number" &&
+            typeof data.longitude === "number"
+          ) {
+            return {
+              uid: data.uid,
+              username: data.username ?? "",
+              visible: data.visible ?? true,
+              name: data.name || "",
+              email: data.email || "",
+              image: data.image || "",
+              latitude: data.latitude,
+              longitude: data.longitude,
+            } as User;
+          } else {
+            return null;
+          }
+        })
+        .filter((u): u is User => u !== null);
+
+      setUsers(userData);
+      goToMyLocation();
+    } catch (error) {
+      console.error("Erro ao buscar dados:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [goToMyLocation]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -128,62 +174,9 @@ export default function Mapa() {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
-
     window.addEventListener("beforeinstallprompt", handler);
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", handler);
-    };
+    return () => window.removeEventListener("beforeinstallprompt", handler);
   }, []);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const videoSnapshot = await getDocs(collection(db, "videos"));
-        const videoData: Video[] = videoSnapshot.docs.map((doc) => {
-          const data = doc.data() as VideoRawData;
-          return convertVideoRawToVideo(doc.id, data);
-        });
-        setVideos(videoData);
-
-        const userSnapshot = await getDocs(collection(db, "users"));
-        const userData: User[] = userSnapshot.docs
-          .map((doc) => {
-            const data = doc.data();
-            // Só retorna o usuário se tiver latitude e longitude válidos
-            if (
-              typeof data.latitude === "number" &&
-              typeof data.longitude === "number"
-            ) {
-              return {
-                uid: data.uid,
-                username: data.username ?? "",
-                visible: data.visible ?? true,
-                name: data.name || "",
-                email: data.email || "",
-                image: data.image || "",
-                latitude: data.latitude,
-                longitude: data.longitude,
-              } as User;
-            } else {
-              // Ignora usuários sem localização
-              return null;
-            }
-          })
-          .filter((u): u is User => u !== null);
-
-        setUsers(userData);
-
-        goToMyLocation();
-      } catch (error) {
-        console.error("Erro ao buscar dados:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchData();
-  }, [goToMyLocation]);
 
   if (!apiKey) return <p>Chave da API do Google Maps não definida.</p>;
   if (!isLoaded) {
@@ -237,7 +230,6 @@ export default function Mapa() {
     return matchesFilter && matchesSearch;
   });
 
-  // Se filtro for "users", filtra só os usuários com lat/lng e busca pelo nome
   const usersWithLocation =
     selectedFilter === "users"
       ? users.filter(
@@ -248,7 +240,6 @@ export default function Mapa() {
         )
       : [];
 
-  // Usuários sem localização, para mostrar na lista abaixo
   const usersWithoutLocation =
     selectedFilter === "users"
       ? users.filter(
@@ -281,7 +272,8 @@ export default function Mapa() {
         goToLocation={goToLocationWithZoom}
         searchTerm={searchTerm}
       />
-      <SendOrDeleteLocation />
+
+      <SendOrDeleteLocation onUpdate={fetchData} />
 
       {deferredPrompt && (
         <button
@@ -353,7 +345,10 @@ export default function Mapa() {
                   />
                   {selectedVideoId === video.videoID && (
                     <OverlayView
-                      position={{ lat: video.latitude!, lng: video.longitude! }}
+                      position={{
+                        lat: video.latitude!,
+                        lng: video.longitude!,
+                      }}
                       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
                     >
                       <CustomInfoWindowVideo
@@ -404,7 +399,10 @@ export default function Mapa() {
 
                   {selectedUserId === user.uid && (
                     <OverlayView
-                      position={{ lat: user.latitude!, lng: user.longitude! }}
+                      position={{
+                        lat: user.latitude!,
+                        lng: user.longitude!,
+                      }}
                       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
                     >
                       <CustomInfoWindowUser
@@ -418,7 +416,6 @@ export default function Mapa() {
             ))}
           </GoogleMap>
 
-          {/* Lista simples para usuários sem localização */}
           {selectedFilter === "users" && usersWithoutLocation.length > 0 && (
             <section
               style={{

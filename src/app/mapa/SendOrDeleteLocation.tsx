@@ -5,7 +5,11 @@ import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "../components/UserContext";
 
-export function SendOrDeleteLocation() {
+interface SendOrDeleteLocationProps {
+  onUpdate?: () => void;
+}
+
+export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
   const { user } = useUser();
   const [sendingLocation, setSendingLocation] = useState(false);
   const [locationData, setLocationData] = useState<{
@@ -22,6 +26,7 @@ export function SendOrDeleteLocation() {
     cidade: string;
     estado: string;
   } | null>(null);
+
   // Real-time stream from Firestore
   useEffect(() => {
     if (!user?.uid) return;
@@ -55,7 +60,7 @@ export function SendOrDeleteLocation() {
             `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`,
             {
               headers: {
-                "User-Agent": "YourAppName/1.0", // obrigatório no Nominatim
+                "User-Agent": "YourAppName/1.0",
               },
             }
           );
@@ -75,11 +80,7 @@ export function SendOrDeleteLocation() {
 
           const estado = data.address.state_code || data.address.state || "??";
 
-          setAddress({
-            bairro,
-            cidade,
-            estado,
-          });
+          setAddress({ bairro, cidade, estado });
         } catch (err) {
           console.error("Erro ao obter endereço:", err);
           setAddress(null);
@@ -108,6 +109,7 @@ export function SendOrDeleteLocation() {
               visible: true,
             });
             alert("Localização enviada com sucesso!");
+            onUpdate?.(); // <- chamada de atualização
           } catch (err) {
             console.error("Erro ao enviar localização:", err);
             alert("Erro ao enviar localização.");
@@ -136,6 +138,7 @@ export function SendOrDeleteLocation() {
         visible: false,
       });
       alert("Localização oculta com sucesso.");
+      onUpdate?.(); // <- chamada de atualização
     } catch (err) {
       console.error("Erro ao ocultar localização:", err);
       alert("Erro ao ocultar localização.");
@@ -146,7 +149,6 @@ export function SendOrDeleteLocation() {
     if (address && locationData.visible) {
       return `${address.bairro}, ${address.cidade} - ${address.estado}`;
     }
-
     return "Localização: não informada.";
   };
 
@@ -158,24 +160,22 @@ export function SendOrDeleteLocation() {
         left: 20,
         zIndex: 1000,
         backdropFilter: "blur(10px)",
-        WebkitBackdropFilter: "blur(10px)",
-        background: "rgba(255, 255, 255, 0.15)",
+        background: "transparent",
         borderRadius: "16px",
         padding: "16px",
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
-        border: "1px solid rgba(255, 255, 255, 0.2)",
-        color: "#fff",
+        border: "transparent",
+        color: "#fff", // ✅ texto visível
         width: "260px",
         fontFamily: "sans-serif",
       }}
     >
-      {/* Linha 1: localização */}
       <div
         style={{
           fontSize: "14px",
           marginBottom: "12px",
           fontWeight: 500,
-          textShadow: "0 1px 2px rgba(0,0,0,0.4)",
+          textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)", // ✅ sombra escura = contraste
+          zIndex: 2000,
         }}
       >
         📍 {renderLocationText()}
@@ -196,7 +196,7 @@ export function SendOrDeleteLocation() {
             cursor: "pointer",
             fontWeight: 600,
             fontSize: "13px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            //boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
             transition: "background 0.3s",
           }}
         >
@@ -215,7 +215,7 @@ export function SendOrDeleteLocation() {
             cursor: "pointer",
             fontWeight: 600,
             fontSize: "13px",
-            boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+            //boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
           }}
         >
           Ocultar
