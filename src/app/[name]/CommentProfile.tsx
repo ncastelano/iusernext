@@ -53,7 +53,12 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
   const loadComments = useCallback(
     async (isInitialLoad = false) => {
       if (!hasMore && !isInitialLoad) return;
-      isInitialLoad ? setLoadingComments(true) : setLoadingMore(true);
+
+      if (isInitialLoad) {
+        setLoadingComments(true);
+      } else {
+        setLoadingMore(true);
+      }
 
       try {
         const commentsRef = collection(db, "users", profileUid, "comments");
@@ -61,7 +66,6 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
         let q;
 
         if (lastDoc && !isInitialLoad) {
-          // Importante: não repetir orderBy duas vezes no mesmo query
           q = query(
             commentsRef,
             orderBy("timestamp", "desc"),
@@ -94,14 +98,21 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
           isInitialLoad ? newComments : [...prev, ...newComments]
         );
 
-        if (snapshot.docs.length < PAGE_SIZE) setHasMore(false);
-        else setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+        if (snapshot.docs.length < PAGE_SIZE) {
+          setHasMore(false);
+        } else {
+          setLastDoc(snapshot.docs[snapshot.docs.length - 1]);
+        }
       } catch (err) {
         console.error("Erro ao carregar comentários:", err);
         setError("Erro ao carregar comentários.");
       }
 
-      isInitialLoad ? setLoadingComments(false) : setLoadingMore(false);
+      if (isInitialLoad) {
+        setLoadingComments(false);
+      } else {
+        setLoadingMore(false);
+      }
     },
     [hasMore, lastDoc, profileUid]
   );
@@ -199,7 +210,6 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
       setError("Erro ao enviar resposta. Tente novamente.");
     }
   }
-
   return (
     <section style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
       <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Comentários</h3>
