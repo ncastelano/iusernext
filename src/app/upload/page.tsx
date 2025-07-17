@@ -215,13 +215,6 @@ export default function UploadPage() {
     }
   };
 
-  if (loading)
-    return (
-      <main style={{ padding: 32, background: "#121212", color: "#e0e0e0" }}>
-        Carregando...
-      </main>
-    );
-
   if (!user)
     return (
       <main style={{ padding: 32, background: "#121212", color: "#e0e0e0" }}>
