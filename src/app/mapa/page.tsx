@@ -285,7 +285,7 @@ export default function Mapa() {
         onClick={goToMyLocation}
         style={{
           position: "fixed",
-          bottom: 90,
+          bottom: 150,
           left: 20,
           zIndex: 1000,
           padding: "10px 16px",
