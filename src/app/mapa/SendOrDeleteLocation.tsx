@@ -174,7 +174,7 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
           fontSize: "14px",
           marginBottom: "12px",
           fontWeight: 500,
-          textShadow: "0 1px 2px rgba(0, 0, 0, 0.5)", // ✅ sombra escura = contraste
+
           zIndex: 2000,
         }}
       >
@@ -196,7 +196,7 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             cursor: "pointer",
             fontWeight: 600,
             fontSize: "13px",
-            //boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+
             transition: "background 0.3s",
           }}
         >
@@ -215,7 +215,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             cursor: "pointer",
             fontWeight: 600,
             fontSize: "13px",
-            //boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
           }}
         >
           Ocultar
