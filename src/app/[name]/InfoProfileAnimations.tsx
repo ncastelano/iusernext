@@ -58,37 +58,6 @@ export default function InfoProfileAnimations({
     );
   };
 
-  const infoList = [
-    {
-      label: "Email",
-      content: safeUser.email,
-      icon: <FaUserFriends className="text-blue-400" />,
-    },
-    {
-      label: "Localização",
-      content:
-        safeUser.latitude !== null && safeUser.longitude !== null
-          ? `Latitude: ${safeUser.latitude.toFixed(
-              6
-            )}, Longitude: ${safeUser.longitude.toFixed(6)}`
-          : "Não informado",
-      icon: <FaMapMarkerAlt className="text-red-500" />,
-    },
-    {
-      label: "Status",
-      content: safeUser.visible ? "Visível" : "Oculto / Não informado",
-      icon: (
-        <span
-          className={`text-white px-2 py-1 rounded-full text-sm ${
-            safeUser.visible ? "bg-green-600" : "bg-gray-500"
-          }`}
-        >
-          {safeUser.visible ? "Visível" : "Oculto"}
-        </span>
-      ),
-    },
-  ];
-
   const statsList = [
     { label: "Seguidores", content: "1.2k" },
     { label: "Seguindo", content: "320" },
@@ -103,21 +72,78 @@ export default function InfoProfileAnimations({
         Informações
       </h2>
 
-      {infoList.map((item, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.1 * index, duration: 0.5 }}
-          className="flex items-center gap-4 text-white"
-        >
-          <span className="text-xl">{item.icon}</span>
-          <p>
-            <strong>{item.label}:</strong> <span>{item.content}</span>
-          </p>
-        </motion.div>
-      ))}
+      {/* EMAIL */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.1, duration: 0.5 }}
+        className="flex items-center gap-4 text-white"
+      >
+        <FaUserFriends className="text-blue-400 text-xl" />
+        <p>
+          <strong>Email:</strong> <span>{safeUser.email}</span>
+        </p>
+      </motion.div>
 
+      {/* STATUS */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className="flex items-center gap-4 text-white"
+      >
+        <span
+          className={`text-white px-2 py-1 rounded-full text-sm ${
+            safeUser.visible ? "bg-green-600" : "bg-gray-500"
+          }`}
+        >
+          {safeUser.visible ? "Visível" : "Oculto"}
+        </span>
+        <p>
+          <strong>Status:</strong>{" "}
+          <span>{safeUser.visible ? "Visível" : "Oculto / Não informado"}</span>
+        </p>
+      </motion.div>
+
+      {/* LOCALIZAÇÃO */}
+      <motion.div
+        initial={{ opacity: 0, x: -50 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+        className="flex flex-col md:flex-row md:items-center gap-4 text-white"
+      >
+        <div className="flex items-center gap-4">
+          <FaMapMarkerAlt className="text-red-500 text-xl" />
+          <p>
+            <strong>Localização:</strong>{" "}
+            {safeUser.latitude !== null && safeUser.longitude !== null ? (
+              <span>
+                Latitude: {safeUser.latitude.toFixed(6)}, Longitude:{" "}
+                {safeUser.longitude.toFixed(6)}
+              </span>
+            ) : (
+              <span>Não informada</span>
+            )}
+          </p>
+        </div>
+
+        {safeUser.latitude !== null && safeUser.longitude !== null && (
+          <button
+            onClick={handleComoChegar}
+            disabled={loadingRoute}
+            className={`${
+              loadingRoute
+                ? "bg-indigo-400"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
+          >
+            <FaMapMarkerAlt />
+            {loadingRoute ? "Carregando..." : "Como chegar"}
+          </button>
+        )}
+      </motion.div>
+
+      {/* ESTATÍSTICAS */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -132,6 +158,7 @@ export default function InfoProfileAnimations({
         ))}
       </motion.div>
 
+      {/* REDES SOCIAIS */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -146,6 +173,7 @@ export default function InfoProfileAnimations({
         <FaSnapchatGhost className="text-yellow-400 text-2xl cursor-pointer" />
       </motion.div>
 
+      {/* BOTÃO SEGUIR */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
@@ -154,16 +182,6 @@ export default function InfoProfileAnimations({
       >
         <button className="bg-white text-black font-semibold px-4 py-2 rounded-full hover:bg-gray-200 transition">
           Seguir
-        </button>
-        <button
-          onClick={handleComoChegar}
-          disabled={loadingRoute}
-          className={`${
-            loadingRoute ? "bg-indigo-400" : "bg-indigo-600 hover:bg-indigo-700"
-          } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
-        >
-          <FaMapMarkerAlt />
-          {loadingRoute ? "Carregando..." : "Como chegar"}
         </button>
       </motion.div>
     </section>
