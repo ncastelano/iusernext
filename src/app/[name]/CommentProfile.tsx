@@ -1,5 +1,5 @@
 "use client";
-import { serverTimestamp } from "firebase/firestore";
+import { serverTimestamp, Timestamp } from "firebase/firestore";
 import React, { useEffect, useState, useCallback } from "react";
 import {
   collection,
@@ -7,7 +7,6 @@ import {
   addDoc,
   orderBy,
   query,
-  Timestamp,
   limit,
   startAfter,
   DocumentData,
@@ -58,17 +57,21 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
 
       try {
         const commentsRef = collection(db, "users", profileUid, "comments");
-        let q = query(
-          commentsRef,
-          orderBy("timestamp", "desc"),
-          limit(PAGE_SIZE)
-        );
+
+        let q;
 
         if (lastDoc && !isInitialLoad) {
+          // Importante: não repetir orderBy duas vezes no mesmo query
           q = query(
             commentsRef,
             orderBy("timestamp", "desc"),
             startAfter(lastDoc),
+            limit(PAGE_SIZE)
+          );
+        } else {
+          q = query(
+            commentsRef,
+            orderBy("timestamp", "desc"),
             limit(PAGE_SIZE)
           );
         }
@@ -82,7 +85,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
             userName: data.userName,
             userProfileImage: data.userProfileImage || "/default-profile.png",
             text: data.text,
-            timestamp: data.timestamp,
+            timestamp: data.timestamp || null,
             replies: data.replies || [],
           } as Comment;
         });
@@ -105,8 +108,8 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
 
   const resetAndLoadComments = useCallback(async () => {
     setComments([]);
-    setLastDoc(null);
     setHasMore(true);
+    setLastDoc(null);
     await loadComments(true);
   }, [loadComments]);
 
@@ -250,7 +253,9 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
                     color: "#666",
                   }}
                 >
-                  {comment.timestamp?.toDate().toLocaleString()}
+                  {comment.timestamp instanceof Timestamp
+                    ? comment.timestamp.toDate().toLocaleString()
+                    : "Data desconhecida"}
                 </span>
               </div>
               <p style={{ marginLeft: "3.5rem", marginTop: "0.5rem" }}>
