@@ -16,7 +16,6 @@ import { db, storage } from "@/lib/firebase";
 import { useUser } from "src/app/components/UserContext";
 import Image from "next/image";
 
-// Tipagem
 interface Store {
   id: string;
   artistSongName: string;
@@ -35,7 +34,6 @@ export default function UploadPage() {
   const [storeList, setStoreList] = useState<Store[]>([]);
   const [selectedStoreID, setSelectedStoreID] = useState<string | null>(null);
   const [locationError, setLocationError] = useState<string | null>(null);
-
   const [showOnMap, setShowOnMap] = useState(false);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -93,7 +91,6 @@ export default function UploadPage() {
 
   useEffect(() => {
     if (!user || !navigator.geolocation) return;
-
     navigator.geolocation.getCurrentPosition(
       async (position) => {
         const { latitude, longitude } = position.coords;
@@ -138,7 +135,6 @@ export default function UploadPage() {
       alert("Preencha todos os campos.");
       return;
     }
-
     if (!user) {
       alert("Usuário não autenticado");
       return;
@@ -204,7 +200,6 @@ export default function UploadPage() {
       };
 
       await setDoc(newDocRef, postData);
-
       alert("Vídeo enviado com sucesso!");
       setUploadProgress(null);
       router.push("/");
@@ -217,17 +212,13 @@ export default function UploadPage() {
 
   if (!user)
     return (
-      <main style={{ padding: 32, background: "#121212", color: "#e0e0e0" }}>
-        <h1>Você precisa estar logado para fazer upload.</h1>
+      <main className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white p-10">
+        <h1 className="text-xl mb-6">
+          Você precisa estar logado para fazer upload.
+        </h1>
         <button
           onClick={() => router.push("/login")}
-          style={{
-            marginTop: 16,
-            padding: 12,
-            background: "#444",
-            borderRadius: 10,
-            color: "#fff",
-          }}
+          className="px-6 py-3 rounded-xl bg-purple-700 hover:bg-purple-600 transition"
         >
           Ir para Login
         </button>
@@ -235,172 +226,123 @@ export default function UploadPage() {
     );
 
   return (
-    <main style={{ padding: 32, background: "#121212", color: "#e0e0e0" }}>
-      <h1 style={{ fontSize: 24, fontWeight: "bold" }}>Upload de Vídeo</h1>
+    <main className="min-h-screen bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white p-10 flex justify-center items-center">
+      <div className="bg-white/10 backdrop-blur-lg rounded-3xl shadow-xl p-8 max-w-lg w-full flex flex-col items-center space-y-6">
+        <h1 className="text-2xl font-semibold">Upload de Vídeo</h1>
 
-      {videoURL && (
-        <video
-          controls
-          playsInline
-          muted
-          width="100%"
-          style={{ marginTop: 16 }}
-        >
-          <source src={videoURL} type="video/mp4" />
-          Seu navegador não suporta vídeo.
-        </video>
-      )}
+        {videoURL && (
+          <video
+            controls
+            playsInline
+            muted
+            className="w-full rounded-lg"
+            style={{ maxHeight: "300px" }}
+          >
+            <source src={videoURL} type="video/mp4" />
+            Seu navegador não suporta vídeo.
+          </video>
+        )}
 
-      <input
-        type="file"
-        accept="video/mp4,video/webm"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setVideoFile(file);
-            const url = URL.createObjectURL(file);
-            setVideoURL(url);
-          }
-        }}
-        style={{
-          marginTop: 16,
-          display: "block",
-          backgroundColor: "#222",
-          borderRadius: 5,
-          padding: 8,
-          width: "100%",
-        }}
-      />
-
-      <input
-        type="text"
-        placeholder="Artist - Song"
-        value={artistSongName}
-        onChange={(e) => setArtistSongName(e.target.value)}
-        style={{
-          marginTop: 16,
-          width: "100%",
-          padding: 8,
-          borderRadius: 5,
-          backgroundColor: "#222",
-          color: "#e0e0e0",
-        }}
-      />
-
-      <input
-        type="text"
-        placeholder="Description - Tags"
-        value={descriptionTags}
-        onChange={(e) => setDescriptionTags(e.target.value)}
-        style={{
-          marginTop: 8,
-          width: "100%",
-          padding: 8,
-          borderRadius: 5,
-          backgroundColor: "#222",
-          color: "#e0e0e0",
-        }}
-      />
-
-      <h2 style={{ marginTop: 16 }}>Selecione a loja próxima:</h2>
-      {locationError && (
-        <p style={{ color: "red", marginBottom: 8 }}>{locationError}</p>
-      )}
-
-      {storeList.length > 0 && (
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))",
-            gap: 12,
-            marginTop: 8,
+        <input
+          type="file"
+          accept="video/mp4,video/webm"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setVideoFile(file);
+              const url = URL.createObjectURL(file);
+              setVideoURL(url);
+            }
           }}
-        >
-          {storeList.map((store) => (
-            <div
-              key={store.id}
-              onClick={() => setSelectedStoreID(store.id)}
-              style={{
-                border:
-                  selectedStoreID === store.id
-                    ? "2px solid #2ecc71"
-                    : "1px solid #555",
-                borderRadius: 8,
-                padding: 8,
-                cursor: "pointer",
-                backgroundColor: "#1e1e1e",
-                textAlign: "center",
-              }}
-            >
-              <Image
-                src={store.thumbnailUrl}
-                alt={store.artistSongName}
-                width={200}
-                height={150}
-                style={{ width: "100%", borderRadius: 4, height: "auto" }}
-                unoptimized
-              />
-              <p style={{ marginTop: 4, fontSize: 12 }}>
-                {store.artistSongName}
-              </p>
-            </div>
-          ))}
-        </div>
-      )}
+          className="w-full rounded-lg bg-[#2a2a3d] text-white px-4 py-3 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
 
-      <div style={{ marginTop: 16 }}>
-        <label style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <input
+          type="text"
+          placeholder="Título"
+          value={artistSongName}
+          onChange={(e) => setArtistSongName(e.target.value)}
+          className="w-full rounded-lg bg-[#2a2a3d] text-white px-4 py-3 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+
+        <input
+          type="text"
+          placeholder="Descrição"
+          value={descriptionTags}
+          onChange={(e) => setDescriptionTags(e.target.value)}
+          className="w-full rounded-lg bg-[#2a2a3d] text-white px-4 py-3 border border-white/20 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        />
+
+        <label className="flex items-center space-x-2 text-sm">
           <input
             type="checkbox"
             checked={showOnMap}
             onChange={() => setShowOnMap((prev) => !prev)}
+            className="rounded"
           />
-          Mostrar no mapa?
+          <span>Mostrar no mapa?</span>
         </label>
-      </div>
 
-      <button
-        onClick={handleUpload}
-        disabled={uploadProgress !== null}
-        style={{
-          marginTop: 16,
-          padding: 12,
-          backgroundColor: uploadProgress !== null ? "#555" : "#fff",
-          borderRadius: 10,
-          fontWeight: "bold",
-          cursor: uploadProgress !== null ? "not-allowed" : "pointer",
-          color: uploadProgress !== null ? "#ccc" : "#000",
-        }}
-      >
-        {uploadProgress !== null
-          ? `Enviando... ${Math.round(uploadProgress)}%`
-          : "Enviar"}
-      </button>
+        {locationError && (
+          <p className="text-red-500 text-sm">{locationError}</p>
+        )}
 
-      {uploadProgress !== null && (
-        <div style={{ marginTop: 12 }}>
-          <div
-            style={{
-              height: "8px",
-              backgroundColor: "#333",
-              borderRadius: "4px",
-              overflow: "hidden",
-            }}
-          >
-            <div
-              style={{
-                width: `${uploadProgress}%`,
-                height: "100%",
-                backgroundColor: "#2ecc71",
-                transition: "width 0.3s ease",
-              }}
-            />
+        {storeList.length > 0 && (
+          <div className="grid grid-cols-2 gap-4 w-full max-h-64 overflow-auto">
+            {storeList.map((store) => (
+              <div
+                key={store.id}
+                onClick={() => setSelectedStoreID(store.id)}
+                className={`cursor-pointer rounded-lg overflow-hidden border ${
+                  selectedStoreID === store.id
+                    ? "border-purple-500"
+                    : "border-white/20"
+                }`}
+              >
+                <Image
+                  src={store.thumbnailUrl}
+                  alt={store.artistSongName}
+                  width={200}
+                  height={150}
+                  className="w-full h-auto"
+                  unoptimized
+                />
+                <p className="text-center text-sm p-2">
+                  {store.artistSongName}
+                </p>
+              </div>
+            ))}
           </div>
-          <p style={{ fontSize: 12, marginTop: 4 }}>{`${Math.round(
-            uploadProgress
-          )}%`}</p>
-        </div>
-      )}
+        )}
+
+        <button
+          onClick={handleUpload}
+          disabled={uploadProgress !== null}
+          className={`w-full py-3 rounded-xl font-semibold transition ${
+            uploadProgress !== null
+              ? "bg-purple-800 cursor-not-allowed"
+              : "bg-purple-600 hover:bg-purple-700"
+          }`}
+        >
+          {uploadProgress !== null
+            ? `Enviando... ${Math.round(uploadProgress)}%`
+            : "Enviar"}
+        </button>
+
+        {uploadProgress !== null && (
+          <div className="w-full mt-2">
+            <div className="w-full h-2 bg-white/20 rounded-full overflow-hidden">
+              <div
+                className="h-2 bg-purple-500 transition-all"
+                style={{ width: `${uploadProgress}%` }}
+              />
+            </div>
+            <p className="text-xs text-center mt-1">
+              {Math.round(uploadProgress)}%
+            </p>
+          </div>
+        )}
+      </div>
     </main>
   );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, CSSProperties, useEffect } from "react";
 import { auth, db, storage } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -8,6 +8,121 @@ import { collection, doc, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+
+const mainStyle: CSSProperties = {
+  minHeight: "100vh",
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  padding: "24px",
+  background: "linear-gradient(to bottom, #0f0c29, #302b63, #24243e)",
+};
+
+const glassCard: CSSProperties = {
+  background: "rgba(255, 255, 255, 0.05)",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  borderRadius: "24px",
+  padding: "40px 32px",
+  maxWidth: "420px",
+  width: "100%",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.4)",
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  color: "#f5f5f5",
+};
+
+const titleContainer: CSSProperties = {
+  display: "flex",
+  alignItems: "center",
+  gap: "10px",
+  justifyContent: "center",
+};
+
+const logoStyle: CSSProperties = {
+  borderRadius: "10px",
+  objectFit: "cover",
+};
+
+const logoWrapper: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  gap: 4,
+  marginBottom: 28,
+};
+
+const titleStyle: CSSProperties = {
+  fontSize: 28,
+  fontWeight: 700,
+  color: "#fff",
+};
+
+const subtitleStyle: CSSProperties = {
+  fontSize: 14,
+  color: "#ccc",
+};
+
+const formStyle: CSSProperties = {
+  display: "flex",
+  flexDirection: "column",
+  gap: "16px",
+  width: "100%",
+};
+
+const inputStyle: CSSProperties = {
+  width: "100%",
+  padding: "12px 16px",
+  background: "rgba(255, 255, 255, 0.07)",
+  border: "1px solid rgba(255, 255, 255, 0.15)",
+  borderRadius: 10,
+  color: "#fff",
+  fontSize: "14px",
+  outline: "none",
+};
+
+const buttonStyle: CSSProperties = {
+  padding: "12px",
+  background: "linear-gradient(135deg, #4ea1f3, #2563eb)",
+  color: "#fff",
+  border: "none",
+  borderRadius: 10,
+  fontWeight: 600,
+  fontSize: "15px",
+  cursor: "pointer",
+  boxShadow: "0 4px 12px rgba(0, 0, 0, 0.3)",
+};
+
+const avatarLabelStyle: CSSProperties = {
+  width: 160,
+  height: 160,
+  borderRadius: "50%",
+  backgroundColor: "rgba(255,255,255,0.05)",
+  border: "2px dashed #555",
+  color: "#ccc",
+  fontSize: 14,
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  cursor: "pointer",
+  userSelect: "none",
+  margin: "0 auto 28px auto",
+  transition: "all 0.3s ease-in-out",
+};
+
+const footerText: CSSProperties = {
+  marginTop: 24,
+  fontSize: 14,
+  color: "#bbb",
+  textAlign: "center",
+};
+
+const linkStyle: CSSProperties = {
+  color: "#4ea1f3",
+  textDecoration: "underline",
+};
 
 export default function CadastroPage() {
   const [email, setEmail] = useState("");
@@ -17,13 +132,10 @@ export default function CadastroPage() {
   const [previewURL, setPreviewURL] = useState<string | null>(null);
   const router = useRouter();
 
-  const customLoader = ({ src }: { src: string }) => {
-    return src;
-  };
+  const customLoader = ({ src }: { src: string }) => src;
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
-
     if (file) {
       if (file.size > 6 * 1024 * 1024) {
         alert("Arquivo muito grande! Máximo permitido: 6MB.");
@@ -32,7 +144,6 @@ export default function CadastroPage() {
         setPreviewURL(null);
         return;
       }
-
       setImageFile(file);
       const url = URL.createObjectURL(file);
       setPreviewURL(url);
@@ -74,64 +185,47 @@ export default function CadastroPage() {
   };
 
   return (
-    <main
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        background: "linear-gradient(to bottom right, #0e0e0e, #1a1a1a)",
-        padding: "16px",
-      }}
-    >
-      <div
-        style={{
-          padding: 24,
-          borderRadius: 16,
-          backgroundColor: "#1a1a1a",
-          boxShadow: "0 8px 24px rgba(0,0,0,0.6)",
-          width: "100%",
-          maxWidth: 400,
-          display: "flex",
-          flexDirection: "column",
-          textAlign: "center",
-          color: "#ccc",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginBottom: 20,
-          }}
-        >
-          {/* Avatar circular com preview */}
-          <label htmlFor="avatarInput" style={avatarLabelStyle}>
-            {previewURL ? (
-              <Image
-                src={previewURL}
-                alt="Preview Avatar"
-                width={200}
-                height={200}
-                style={{
-                  width: "100%",
-                  height: "100%",
-                  borderRadius: "50%",
-                  objectFit: "cover",
-                }}
-                loader={customLoader}
-                unoptimized
-              />
-            ) : (
-              "Escolher Avatar"
-            )}
-          </label>
+    <main style={mainStyle}>
+      <div style={glassCard}>
+        {/* Logo + título */}
+        <div style={logoWrapper}>
+          <div style={titleContainer}>
+            <Image
+              src="/icon/icon1.png"
+              alt="Logo iUser"
+              width={40}
+              height={40}
+              style={logoStyle}
+            />
+            <h1 style={titleStyle}>iUser</h1>
+          </div>
+          <p style={subtitleStyle}>Sua rede social</p>
         </div>
 
-        <form
-          onSubmit={handleCadastro}
-          style={{ display: "flex", flexDirection: "column", gap: 12 }}
-        >
+        {/* Avatar Upload */}
+        <label htmlFor="avatarInput" style={avatarLabelStyle}>
+          {previewURL ? (
+            <Image
+              src={previewURL}
+              alt="Avatar Preview"
+              width={160}
+              height={160}
+              style={{
+                width: "100%",
+                height: "100%",
+                borderRadius: "50%",
+                objectFit: "cover",
+              }}
+              loader={customLoader}
+              unoptimized
+            />
+          ) : (
+            "Escolher Avatar"
+          )}
+        </label>
+
+        {/* Formulário */}
+        <form onSubmit={handleCadastro} style={formStyle}>
           <input
             type="text"
             placeholder="Nome"
@@ -156,28 +250,23 @@ export default function CadastroPage() {
             required
             style={inputStyle}
           />
-
-          {/* Input de arquivo escondido */}
           <input
             id="avatarInput"
             type="file"
-            accept="image/gif,image/bmp,image/jpeg,image/png,image/jpg"
+            accept="image/*"
             onChange={handleImageChange}
             style={{ display: "none" }}
             required
           />
-
           <button type="submit" style={buttonStyle}>
             Cadastrar
           </button>
         </form>
 
-        <p style={{ marginTop: 20, fontSize: 14, color: "#aaa" }}>
+        {/* Link para login */}
+        <p style={footerText}>
           Já tem uma conta?{" "}
-          <Link
-            href="/login"
-            style={{ color: "#4ea1f3", textDecoration: "underline" }}
-          >
+          <Link href="/login" style={linkStyle}>
             Entrar
           </Link>
         </p>
@@ -185,44 +274,3 @@ export default function CadastroPage() {
     </main>
   );
 }
-
-const avatarLabelStyle: React.CSSProperties = {
-  width: 200,
-  height: 200,
-  borderRadius: "50%",
-  backgroundColor: "#2a2a2a",
-  border: "2px dashed #444",
-  color: "#ccc",
-  fontSize: 16,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  cursor: "pointer",
-  userSelect: "none",
-  margin: "0 auto",
-  transition: "background-color 0.2s",
-};
-
-const inputStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#2a2a2a",
-  border: "1px solid #444",
-  borderRadius: 8,
-  color: "#ccc",
-  fontSize: "14px",
-  outline: "none",
-} as React.CSSProperties;
-
-const buttonStyle = {
-  padding: "12px",
-  backgroundColor: "#1a1a1a",
-  color: "#ccc",
-  border: "1px solid #444",
-  borderRadius: 8,
-  cursor: "pointer",
-  fontWeight: 500,
-  fontSize: "14px",
-  boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
-  transition: "all 0.2s ease-in-out",
-} as React.CSSProperties;
