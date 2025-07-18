@@ -25,6 +25,7 @@ export const useVideos = () => {
             longitude: data.longitude ?? 0,
             userProfileImage: data.userProfileImage ?? "",
             userName: data.userName ?? "",
+            namePage: data.namePage ?? "",
             thumbnailUrl: data.thumbnailUrl ?? "",
             publishedDateTime: data.publishedDateTime ?? null,
             videoUrl: data.videoUrl ?? "",
