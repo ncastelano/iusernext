@@ -296,16 +296,30 @@ export default function Mapa() {
             bottom: 80,
             right: 20,
             zIndex: 1000,
-            backgroundColor: "#1a1a1a",
+            background: "rgba(255, 255, 255, 0)",
+            backdropFilter: "blur(8px)",
+            WebkitBackdropFilter: "blur(8px)",
             color: "#fff",
             padding: "12px 16px",
-            borderRadius: "8px",
-            border: "none",
+            borderRadius: "16px",
             cursor: "pointer",
-            boxShadow: "0 4px 8px rgba(0, 0, 0, 0.3)",
+            boxShadow: "0 6px 24px rgba(0, 0, 0, 0.2)",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          📲 Instalar iUser
+          <span>instalar atalho</span>
+          <Image
+            src="/icon/icon1.png"
+            alt="Logo iUser"
+            width={20}
+            height={20}
+            style={{
+              objectFit: "contain",
+              marginTop: "-6px", // alternativa
+            }}
+          />
         </button>
       )}
 
