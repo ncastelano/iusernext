@@ -412,10 +412,13 @@ export default function Mapa() {
                       }}
                       mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
                     >
-                      <CustomInfoWindowUser
-                        user={user}
-                        onClose={() => setSelectedUserId(null)}
-                      />
+                      <div style={{ zIndex: 9999, position: "relative" }}>
+                        <CustomInfoWindowUser
+                          user={user}
+                          onClose={() => setSelectedUserId(null)}
+                          selected={true} // para borda verde
+                        />
+                      </div>
                     </OverlayView>
                   )}
                 </div>
