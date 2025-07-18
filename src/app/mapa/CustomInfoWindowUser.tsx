@@ -18,7 +18,6 @@ import {
 export const CustomInfoWindowUser = ({
   user,
   onClose,
-  selected = false,
 }: {
   user: User;
   onClose: () => void;
