@@ -184,7 +184,7 @@ export default function UploadPage() {
 
       const postData = {
         userID: user.uid,
-        userName: userData?.name || "Anônimo",
+        userName: userData?.namePage || "Anônimo",
         userProfileImage: userData?.image || "",
         postID: videoID,
         totalComments: 0,
