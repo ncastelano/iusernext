@@ -1,19 +1,22 @@
-import { db } from '@/lib/firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { db } from "@/lib/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 // Defina os campos que você espera no Firestore:
 interface UserDataFromFirestore {
   name: string;
   username?: string | null;
+  namePage?: string | null;
   image: string;
   latitude: number;
   longitude: number;
   visible: boolean;
 }
 
-export async function getUserFromFirestore(uid: string): Promise<UserDataFromFirestore | null> {
+export async function getUserFromFirestore(
+  uid: string
+): Promise<UserDataFromFirestore | null> {
   try {
-    const docRef = doc(db, 'users', uid);
+    const docRef = doc(db, "users", uid);
     const snapshot = await getDoc(docRef);
 
     if (snapshot.exists()) {
@@ -21,7 +24,9 @@ export async function getUserFromFirestore(uid: string): Promise<UserDataFromFir
 
       // Validação básica (exemplo: garantir que pelo menos o nome existe)
       if (!data.name || !data.image) {
-        console.warn(`Usuário com uid ${uid} tem dados incompletos no Firestore.`);
+        console.warn(
+          `Usuário com uid ${uid} tem dados incompletos no Firestore.`
+        );
         return null;
       }
 

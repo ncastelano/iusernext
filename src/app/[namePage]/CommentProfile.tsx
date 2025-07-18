@@ -163,7 +163,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
       const commentsRef = collection(db, "users", profileUid, "comments");
       await addDoc(commentsRef, {
         userID: user.uid,
-        userName: user.name,
+        userName: user.namePage,
         userProfileImage: user.image || "/default-profile.png",
         text: newComment.trim(),
         timestamp: serverTimestamp(),
@@ -210,7 +210,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
       const newReplyObj: Comment = {
         id: Math.random().toString(36).substring(2, 15),
         userID: user.uid,
-        userName: user.name,
+        userName: user.namePage,
         userProfileImage: user.image || "/default-profile.png",
         text: newReply.trim(),
         timestamp: Timestamp.now(),

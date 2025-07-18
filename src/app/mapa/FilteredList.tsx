@@ -32,7 +32,7 @@ export function FilteredList({
 
   if (filter === "users") {
     items = users.filter((user) =>
-      user.name.toLowerCase().includes(normalizedSearch)
+      user.namePage.toLowerCase().includes(normalizedSearch)
     );
   } else {
     items = videos
@@ -96,7 +96,7 @@ export function FilteredList({
                 goToLocation({ lat: user.latitude, lng: user.longitude });
               }
             }}
-            title={(item as User).name}
+            title={(item as User).namePage}
             style={{
               display: "flex",
               flexDirection: "column",
@@ -119,7 +119,7 @@ export function FilteredList({
             >
               <Image
                 src={(item as User).image}
-                alt={(item as User).name}
+                alt={(item as User).namePage}
                 fill
                 style={{ objectFit: "cover" }}
               />
@@ -127,12 +127,12 @@ export function FilteredList({
             <div className="marquee-container">
               <span
                 className={
-                  (item as User).name.split(" ")[0].length > 8
+                  (item as User).namePage.split(" ")[0].length > 8
                     ? "marquee-text"
                     : ""
                 }
               >
-                {(item as User).name.split(" ")[0]}
+                {(item as User).namePage.split(" ")[0]}
               </span>
             </div>
           </div>

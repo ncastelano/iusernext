@@ -41,8 +41,8 @@ export default function IuserEnterLogin() {
         zIndex: 11000,
       }}
       onClick={() => {
-        if (user?.name) {
-          router.push(`/${encodeURIComponent(user.name)}`);
+        if (user?.namePage) {
+          router.push(`/${encodeURIComponent(user.namePage)}`);
         } else {
           router.push("/login");
         }

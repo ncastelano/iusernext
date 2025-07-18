@@ -54,7 +54,7 @@ export const CustomInfoWindowVideo = ({
       </div>
       <div style={styles.textWrapper}>
         <h4 style={styles.title}>{video.artistSongName}</h4>
-        <p style={styles.subtitle}>@{video.userName}</p>
+        <p style={styles.subtitle}>@{video.namePage}</p>
       </div>
       <button onClick={onClose} style={styles.closeButton} aria-label="Fechar">
         ×

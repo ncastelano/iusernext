@@ -14,14 +14,14 @@ import CommentProfile from "./CommentProfile";
 export default async function UserProfilePage({
   params,
 }: {
-  params: Promise<{ name: string }>;
+  params: Promise<{ namePage: string }>;
 }) {
-  const { name } = await params;
-  const decodedName = decodeURIComponent(name);
+  const { namePage } = await params;
+  const decodedName = decodeURIComponent(namePage);
 
   try {
     const usersRef = collection(db, "users");
-    const qUser = query(usersRef, where("name", "==", decodedName));
+    const qUser = query(usersRef, where("namePage", "==", decodedName));
     const userSnapshot = await getDocs(qUser);
 
     if (userSnapshot.empty) return notFound();
@@ -52,7 +52,7 @@ export default async function UserProfilePage({
           >
             <UserProfileAnimations
               imageUrl={safeUser.image || "/default-profile.png"}
-              userName={safeUser.name}
+              userName={safeUser.namePage}
             />
           </section>
 
@@ -73,7 +73,7 @@ export default async function UserProfilePage({
             ) : (
               <VideosProfileAnimations
                 videos={videos}
-                userName={safeUser.name}
+                userName={safeUser.namePage}
               />
             )}
           </section>

@@ -5,13 +5,13 @@ import { collection, getDocs, Timestamp } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
 import Image from "next/image";
-import { CustomInfoWindowVideo } from "src/app/components/CustomInfoWindow";
+import { CustomInfoWindowVideo } from "@/app/mapa/CustomInfoWindow";
 import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
 import { Video } from "types/video";
 import { User } from "types/user";
 import { FilterMap } from "@/app/mapa/FilterMap";
 import { VideoMarker } from "../components/VideoMaker";
-import { CustomInfoWindowUser } from "src/app/components/CustomInfoWindowUser";
+import { CustomInfoWindowUser } from "@/app/mapa/CustomInfoWindowUser";
 import { FilteredList } from "@/app/mapa/FilteredList";
 import { SendOrDeleteLocation } from "./SendOrDeleteLocation";
 import { useUser } from "../components/UserContext";
@@ -25,6 +25,7 @@ interface VideoRawData {
   videoID: string;
   userProfileImage: string;
   userName: string;
+  namePage: string;
   userID: string;
   latitude: number;
   longitude: number;
@@ -43,6 +44,7 @@ function convertVideoRawToVideo(id: string, data: VideoRawData): Video {
     videoID: data.videoID,
     userProfileImage: data.userProfileImage,
     userName: data.userName,
+    namePage: data.namePage,
     userID: data.userID,
     latitude: data.latitude,
     longitude: data.longitude,
@@ -139,7 +141,7 @@ export default function Mapa() {
               uid: data.uid,
               username: data.username ?? "",
               visible: data.visible ?? true,
-              name: data.name || "",
+              namePage: data.namePage || "",
               email: data.email || "",
               image: data.image || "",
               latitude: data.latitude,
@@ -238,7 +240,7 @@ export default function Mapa() {
           (user) =>
             typeof user.latitude === "number" &&
             typeof user.longitude === "number" &&
-            user.name.toLowerCase().includes(normalizedSearch)
+            user.namePage.toLowerCase().includes(normalizedSearch)
         )
       : [];
 
@@ -247,7 +249,7 @@ export default function Mapa() {
       ? users.filter(
           (user) =>
             (user.latitude === null || user.longitude === null) &&
-            user.name.toLowerCase().includes(normalizedSearch)
+            user.namePage.toLowerCase().includes(normalizedSearch)
         )
       : [];
 
@@ -378,7 +380,7 @@ export default function Mapa() {
                 >
                   <div
                     onClick={() => setSelectedUserId(user.uid)}
-                    title={user.name}
+                    title={user.namePage}
                     style={{
                       width: 48,
                       height: 48,
@@ -395,7 +397,7 @@ export default function Mapa() {
                   >
                     <Image
                       src={user.image}
-                      alt={user.name}
+                      alt={user.namePage}
                       width={60}
                       height={60}
                       style={{ objectFit: "cover" }}
@@ -441,7 +443,7 @@ export default function Mapa() {
                     borderBottom: "1px solid #333",
                   }}
                 >
-                  {user.name} (Localização não disponível)
+                  {user.namePage} (Localização não disponível)
                 </div>
               ))}
             </section>

@@ -128,7 +128,7 @@ export default function Home() {
     try {
       const commentData = {
         userID: user.uid,
-        userName: user.name,
+        userName: user.namePage,
         userProfileImage: user.image || "",
         text: newComment.trim(),
         timestamp: Timestamp.now(),

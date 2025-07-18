@@ -1,5 +1,5 @@
 "use client";
-import { Zap, UserRoundPen, MapPinHouse, ImageUp } from "lucide-react";
+import { Zap, CircleUserRound, MapPin, Plus } from "lucide-react";
 import React from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/app/components/UserContext";
@@ -27,7 +27,7 @@ function NavigationBar() {
   };
 
   const handleUserClick = () => {
-    router.push(user?.name ? `/${user.name}` : "/login");
+    router.push(user?.namePage ? `/${user.namePage}` : "/login");
   };
 
   const handleMapaClick = () => {
@@ -75,7 +75,7 @@ function NavigationBar() {
               }
             : {}),
         }}
-        title={user?.name || "Login"}
+        title={user?.namePage || "Login"}
         role="button"
         tabIndex={0}
         onKeyDown={(e) =>
@@ -85,7 +85,7 @@ function NavigationBar() {
         {user?.image ? (
           <Image
             src={user.image}
-            alt={user.name || "User"}
+            alt={user.namePage || "User"}
             width={80}
             height={80}
             style={{
@@ -97,7 +97,7 @@ function NavigationBar() {
             priority
           />
         ) : (
-          <UserRoundPen size={32} color="#fff" />
+          <CircleUserRound size={32} color="#fff" />
         )}
       </div>
 
@@ -112,21 +112,7 @@ function NavigationBar() {
           (e.key === "Enter" || e.key === " ") && handleMapaClick()
         }
       >
-        <MapPinHouse size={32} color="#fff" />
-      </div>
-
-      {/* Upload */}
-      <div
-        onClick={handleUploadClick}
-        style={iconBaseStyle}
-        title="Upload"
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) =>
-          (e.key === "Enter" || e.key === " ") && handleUploadClick()
-        }
-      >
-        <ImageUp size={32} color="#fff" />
+        <MapPin size={32} color="#fff" />
       </div>
 
       {/* Flash */}
@@ -141,6 +127,20 @@ function NavigationBar() {
         }
       >
         <Zap size={32} color="#fff" />
+      </div>
+
+      {/* Upload */}
+      <div
+        onClick={handleUploadClick}
+        style={iconBaseStyle}
+        title="Upload"
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) =>
+          (e.key === "Enter" || e.key === " ") && handleUploadClick()
+        }
+      >
+        <Plus size={32} color="#fff" />
       </div>
     </nav>
   );

@@ -2,6 +2,7 @@ export type Video = {
   videoID: string;
   userProfileImage: string;
   userName: string;
+  namePage: string;
   userID?: string;
   thumbnailUrl: string;
   publishedDateTime?: number;

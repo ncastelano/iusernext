@@ -44,10 +44,10 @@ export const CustomInfoWindowUser = ({
         borderStyle: "solid",
       }}
     >
-      <Link href={`/${user.name}`} style={styles.imageWrapper}>
+      <Link href={`/${user.namePage}`} style={styles.imageWrapper}>
         <Image
           src={user.image}
-          alt={user.name}
+          alt={user.namePage}
           width={100}
           height={100}
           style={{ objectFit: "cover" }}
@@ -55,7 +55,7 @@ export const CustomInfoWindowUser = ({
       </Link>
 
       <div style={styles.textWrapper}>
-        <h4 style={styles.title}>{user.name}</h4>
+        <h4 style={styles.title}>{user.namePage}</h4>
         <p style={styles.subtitle}>Email: {user.email}</p>
         <button onClick={openGoogleMaps} style={styles.mapsButton}>
           Como chegar

@@ -32,6 +32,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           uid: firebaseUser.uid,
           email: firebaseUser.email ?? "",
           name: data.name,
+          namePage: data.namePage ?? "",
           username: data.username ?? "",
           image: data.image,
           latitude: data.latitude,

@@ -3,6 +3,7 @@
 export interface User {
   uid: string;
   username: string;
+  namePage: string;
   name: string;
   email: string;
   image: string;
