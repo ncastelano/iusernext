@@ -10,6 +10,12 @@ interface SendOrDeleteLocationProps {
   onUpdate?: () => void;
 }
 
+interface AddressComponent {
+  long_name: string;
+  short_name: string;
+  types: string[];
+}
+
 export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
   const { user } = useUser();
   const [sendingLocation, setSendingLocation] = useState(false);
@@ -63,10 +69,11 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&language=pt-BR`
           );
           const data = await res.json();
-          const addressComponents = data.results[0]?.address_components || [];
+          const addressComponents: AddressComponent[] =
+            data.results[0]?.address_components || [];
 
           const getComponent = (types: string[]) =>
-            addressComponents.find((c: any) =>
+            addressComponents.find((c) =>
               types.every((t) => c.types.includes(t))
             )?.long_name || "";
 
@@ -443,16 +450,16 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             <button
               onClick={() => setShowPermissionModal(false)}
               style={{
-                backgroundColor: "rgba(255, 255, 255, 0.3)",
-                color: "#fff",
-                padding: "12px 25px",
-                borderRadius: "15px",
-                border: "1px solid rgba(255, 255, 255, 0.5)",
-                fontWeight: "600",
+                backgroundColor: "rgba(255, 255, 255, 0.8)",
+                borderRadius: "12px",
+                padding: "10px 20px",
+                fontWeight: 700,
+                fontSize: "1rem",
                 cursor: "pointer",
+                border: "none",
               }}
             >
-              Entendi
+              Fechar
             </button>
           </div>
         </div>

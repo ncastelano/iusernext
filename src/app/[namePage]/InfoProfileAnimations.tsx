@@ -10,7 +10,6 @@ import {
   FaYoutube,
   FaSnapchatGhost,
   FaMapMarkerAlt,
-  FaUserFriends,
 } from "react-icons/fa";
 import {
   UserPlus as LucideUserPlus,

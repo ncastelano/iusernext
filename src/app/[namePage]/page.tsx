@@ -8,7 +8,6 @@ import { notFound } from "next/navigation";
 import UserProfileAnimations from "./UserProfileAnimation";
 import InfoProfileAnimations from "./InfoProfileAnimations";
 import VideosProfileAnimations from "./VideoProfileAnimations";
-import FollowButton from "./FollowButton";
 import CommentProfile from "./CommentProfile";
 
 export default async function UserProfilePage({
