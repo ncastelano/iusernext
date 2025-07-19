@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { useUser } from "../components/UserContext";
+import { FaLocationArrow, FaEdit, FaEyeSlash } from "react-icons/fa";
 
 interface SendOrDeleteLocationProps {
   onUpdate?: () => void;
@@ -26,13 +27,15 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
     cidade: string;
     estado: string;
   } | null>(null);
-
   const [showPermissionModal, setShowPermissionModal] = useState(false);
+  const [editingManual, setEditingManual] = useState(false);
+  const [rua, setRua] = useState("");
+  const [numero, setNumero] = useState("");
+  const [bairroInput, setBairroInput] = useState("");
+  const [cidade, setCidade] = useState("");
 
-  // Real-time stream from Firestore
   useEffect(() => {
     if (!user?.uid) return;
-
     const userRef = doc(db, "users", user.uid);
     const unsubscribe = onSnapshot(userRef, (docSnap) => {
       const data = docSnap.data();
@@ -44,13 +47,11 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
         });
       }
     });
-
     return () => unsubscribe();
   }, [user?.uid]);
 
   useEffect(() => {
     const { latitude, longitude, visible } = locationData;
-
     if (
       typeof latitude === "number" &&
       typeof longitude === "number" &&
@@ -59,28 +60,19 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
       const fetchAddress = async () => {
         try {
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json&accept-language=pt-BR`,
-            {
-              headers: {
-                "User-Agent": "iUser/1.0",
-              },
-            }
+            `https://maps.googleapis.com/maps/api/geocode/json?latlng=${latitude},${longitude}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&language=pt-BR`
           );
           const data = await res.json();
+          const addressComponents = data.results[0]?.address_components || [];
 
-          const bairro =
-            data.address.suburb ||
-            data.address.neighbourhood ||
-            data.address.village ||
-            "Bairro desconhecido";
+          const getComponent = (types: string[]) =>
+            addressComponents.find((c: any) =>
+              types.every((t) => c.types.includes(t))
+            )?.long_name || "";
 
-          const cidade =
-            data.address.city ||
-            data.address.town ||
-            data.address.county ||
-            "Cidade desconhecida";
-
-          const estado = data.address.state_code || data.address.state || "??";
+          const bairro = getComponent(["sublocality", "sublocality_level_1"]);
+          const cidade = getComponent(["administrative_area_level_2"]);
+          const estado = getComponent(["administrative_area_level_1"]);
 
           setAddress({ bairro, cidade, estado });
         } catch (err) {
@@ -88,7 +80,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
           setAddress(null);
         }
       };
-
       fetchAddress();
     } else {
       setAddress(null);
@@ -97,7 +88,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
 
   const sendLocation = () => {
     if (!user) return alert("Você precisa estar logado.");
-
     if (navigator.geolocation) {
       setSendingLocation(true);
       navigator.geolocation.getCurrentPosition(
@@ -136,7 +126,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
 
   const deleteLocation = async () => {
     if (!user) return alert("Você precisa estar logado.");
-
     try {
       const userRef = doc(db, "users", user.uid);
       await updateDoc(userRef, {
@@ -147,6 +136,42 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
     } catch (err) {
       console.error("Erro ao ocultar localização:", err);
       alert("Erro ao ocultar localização.");
+    }
+  };
+
+  const saveManualAddress = async () => {
+    if (!user) return;
+    const query = `${rua}, ${numero}, ${bairroInput}, ${cidade}`;
+    if (!query.trim()) return alert("Preencha todos os campos.");
+
+    try {
+      const res = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          query
+        )}&key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&language=pt-BR`
+      );
+      const data = await res.json();
+      const result = data.results[0];
+      if (!result) throw new Error("Endereço não encontrado");
+      const { lat, lng } = result.geometry.location;
+
+      const userRef = doc(db, "users", user.uid);
+      await updateDoc(userRef, {
+        latitude: lat,
+        longitude: lng,
+        visible: true,
+      });
+
+      setEditingManual(false);
+      setRua("");
+      setNumero("");
+      setBairroInput("");
+      setCidade("");
+      alert("Endereço salvo com sucesso!");
+      onUpdate?.();
+    } catch (err) {
+      console.error("Erro ao salvar endereço manual:", err);
+      alert("Erro ao salvar endereço. Verifique os dados informados.");
     }
   };
 
@@ -185,32 +210,63 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
         >
           📍 {renderLocationText()}
         </div>
-
-        {/* Botões lado a lado */}
-        <div style={{ display: "flex", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "row",
+            gap: "15px",
+            alignItems: "center",
+          }}
+        >
           <button
             onClick={sendLocation}
             disabled={sendingLocation}
+            title={sendingLocation ? "Enviando..." : "Enviar Localização Atual"}
             style={{
-              flex: 1,
               padding: "10px",
               backgroundColor: sendingLocation ? "#4e944f" : "#28a745",
               color: "#fff",
               border: "none",
               borderRadius: "12px",
-              cursor: "pointer",
+              cursor: sendingLocation ? "not-allowed" : "pointer",
               fontWeight: 600,
-              fontSize: "13px",
-              transition: "background 0.3s",
+              fontSize: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "45px",
+              height: "45px",
             }}
           >
-            {sendingLocation ? "Enviando..." : "Enviar"}
+            <FaLocationArrow />
+          </button>
+
+          <button
+            onClick={() => setEditingManual(true)}
+            title="Editar Endereço"
+            style={{
+              padding: "10px",
+              backgroundColor: "#007bff",
+              color: "#fff",
+              border: "none",
+              borderRadius: "12px",
+              cursor: "pointer",
+              fontWeight: 600,
+              fontSize: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "45px",
+              height: "45px",
+            }}
+          >
+            <FaEdit />
           </button>
 
           <button
             onClick={deleteLocation}
+            title="Ocultar"
             style={{
-              flex: 1,
               padding: "10px",
               backgroundColor: "#dc3545",
               color: "#fff",
@@ -218,20 +274,123 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
               borderRadius: "12px",
               cursor: "pointer",
               fontWeight: 600,
-              fontSize: "13px",
+              fontSize: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "45px",
+              height: "45px",
             }}
           >
-            Ocultar
+            <FaEyeSlash />
           </button>
         </div>
       </div>
 
-      {/* Modal glassmorphism para permissão negada */}
+      {editingManual && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            height: "100vh",
+            width: "100vw",
+            backgroundColor: "rgba(0,0,0,0.4)",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            zIndex: 2000,
+          }}
+          onClick={() => setEditingManual(false)}
+        >
+          <div
+            style={{
+              background: "#fff",
+              padding: "30px",
+              borderRadius: "20px",
+              width: "90%",
+              maxWidth: "400px",
+              color: "#000",
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2
+              style={{
+                marginBottom: "10px",
+                fontSize: "20px",
+                fontWeight: "600",
+              }}
+            >
+              Editar Endereço
+            </h2>
+            <input
+              type="text"
+              placeholder="Rua"
+              value={rua}
+              onChange={(e) => setRua(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            />
+            <input
+              type="text"
+              placeholder="Número"
+              value={numero}
+              onChange={(e) => setNumero(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            />
+            <input
+              type="text"
+              placeholder="Bairro"
+              value={bairroInput}
+              onChange={(e) => setBairroInput(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            />
+            <input
+              type="text"
+              placeholder="Cidade"
+              value={cidade}
+              onChange={(e) => setCidade(e.target.value)}
+              style={{ width: "100%", padding: "10px", marginBottom: "10px" }}
+            />
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={saveManualAddress}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  backgroundColor: "#28a745",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Salvar
+              </button>
+              <button
+                onClick={() => setEditingManual(false)}
+                style={{
+                  flex: 1,
+                  padding: "10px",
+                  backgroundColor: "#6c757d",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "12px",
+                  cursor: "pointer",
+                  fontWeight: 600,
+                }}
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showPermissionModal && (
         <div
           role="dialog"
           aria-modal="true"
-          aria-labelledby="modal-title"
           tabIndex={-1}
           style={{
             position: "fixed",
@@ -244,7 +403,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             justifyContent: "center",
             alignItems: "center",
             zIndex: 2000,
-            padding: "20px",
           }}
           onClick={() => setShowPermissionModal(false)}
         >
@@ -252,22 +410,17 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
             style={{
               background: "rgba(255, 255, 255, 0.15)",
               backdropFilter: "blur(12px)",
-              WebkitBackdropFilter: "blur(12px)",
               borderRadius: "20px",
               border: "1px solid rgba(255, 255, 255, 0.3)",
               padding: "30px",
               maxWidth: "400px",
               width: "100%",
-              boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
               color: "#fff",
-              position: "relative",
-              fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
               textAlign: "center",
             }}
             onClick={(e) => e.stopPropagation()}
           >
             <h2
-              id="modal-title"
               style={{
                 marginBottom: "15px",
                 fontSize: "1.5rem",
@@ -287,7 +440,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
               localização nas configurações do seu navegador e recarregue a
               página.
             </p>
-
             <button
               onClick={() => setShowPermissionModal(false)}
               style={{
@@ -298,19 +450,6 @@ export function SendOrDeleteLocation({ onUpdate }: SendOrDeleteLocationProps) {
                 border: "1px solid rgba(255, 255, 255, 0.5)",
                 fontWeight: "600",
                 cursor: "pointer",
-                fontSize: "1rem",
-                transition: "background-color 0.3s, color 0.3s",
-                backdropFilter: "blur(6px)",
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.6)";
-                e.currentTarget.style.color = "#222";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  "rgba(255, 255, 255, 0.3)";
-                e.currentTarget.style.color = "#fff";
               }}
             >
               Entendi

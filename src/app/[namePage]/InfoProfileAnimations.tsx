@@ -143,62 +143,40 @@ export default function InfoProfileAnimations({
 
   return (
     <section className="space-y-6">
-      <h2 className="text-2xl font-semibold border-b border-gray-700 pb-2 text-white">
-        Informações
-      </h2>
-
-      {/* STATUS */}
+      {/* STATUS + LOCALIZAÇÃO (condicional) */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex items-center gap-4 text-white"
-      >
-        <span
-          className={`text-white px-2 py-1 rounded-full text-sm ${
-            safeUser.visible ? "bg-green-600" : "bg-gray-500"
-          }`}
-        >
-          {safeUser.visible ? "Visível" : "Oculto"}
-        </span>
-      </motion.div>
-
-      {/* LOCALIZAÇÃO */}
-      <motion.div
-        initial={{ opacity: 0, x: -50 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
         className="flex flex-col md:flex-row md:items-center gap-4 text-white"
       >
-        <div className="flex items-center gap-4">
-          <FaMapMarkerAlt className="text-red-500 text-xl" />
-          <p>
-            <strong>Localização:</strong>{" "}
-            {safeUser.latitude !== null && safeUser.longitude !== null ? (
-              <span>
-                Latitude: {safeUser.latitude.toFixed(6)}, Longitude:{" "}
-                {safeUser.longitude.toFixed(6)}
-              </span>
-            ) : (
-              <span>Não informada</span>
-            )}
-          </p>
-        </div>
+        {safeUser.visible &&
+          safeUser.latitude !== null &&
+          safeUser.longitude !== null && (
+            <>
+              <div className="flex items-center gap-2">
+                <FaMapMarkerAlt className="text-red-500 text-xl" />
+                <p>
+                  <strong>Localização:</strong> Latitude:{" "}
+                  {safeUser.latitude.toFixed(6)}, Longitude:{" "}
+                  {safeUser.longitude.toFixed(6)}
+                </p>
+              </div>
 
-        {safeUser.latitude !== null && safeUser.longitude !== null && (
-          <button
-            onClick={handleComoChegar}
-            disabled={loadingRoute}
-            className={`${
-              loadingRoute
-                ? "bg-indigo-400"
-                : "bg-indigo-600 hover:bg-indigo-700"
-            } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
-          >
-            <FaMapMarkerAlt />
-            {loadingRoute ? "Carregando..." : "Como chegar"}
-          </button>
-        )}
+              <button
+                onClick={handleComoChegar}
+                disabled={loadingRoute}
+                className={`${
+                  loadingRoute
+                    ? "bg-indigo-400"
+                    : "bg-indigo-600 hover:bg-indigo-700"
+                } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
+              >
+                <FaMapMarkerAlt />
+                {loadingRoute ? "Carregando..." : "Como chegar"}
+              </button>
+            </>
+          )}
       </motion.div>
 
       {/* ESTATÍSTICAS E BOTÃO */}

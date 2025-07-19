@@ -57,12 +57,11 @@ export default async function UserProfilePage({
           </section>
 
           <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
-            <FollowButton targetUid={safeUser.uid} />
-            <CommentProfile profileUid={safeUser.uid} />
             <InfoProfileAnimations
               safeUser={safeUser}
               videosCount={videos.length}
             />
+            <CommentProfile profileUid={safeUser.uid} />
           </div>
 
           <section className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
