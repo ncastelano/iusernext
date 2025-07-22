@@ -126,7 +126,7 @@ export function FilterMap({
             padding: "6px 12px 6px 32px",
             borderRadius: "10px",
             border: "1px solid #ccc",
-            fontSize: "14px",
+            fontSize: "20px",
             outline: "none",
             width: "180px",
             color: "#000",
