@@ -193,7 +193,7 @@ export default function HomePage() {
               borderRadius: "0.5rem",
               border: "none",
               width: "100%",
-              fontSize: "1rem",
+              fontSize: "40px", // <-- aqui
               minWidth: 0,
               boxSizing: "border-box",
               background: "transparent",
