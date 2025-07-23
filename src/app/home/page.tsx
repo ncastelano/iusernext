@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
 import {
   Home,
   MapPin,
@@ -57,6 +57,15 @@ type MarkerData = {
   lat: number;
   lng: number;
   title: string;
+  image?: string; // avatar image for users
+};
+
+type VideoData = MarkerData & {
+  thumbnailUrl?: string; // vídeo thumbnail
+  isFlash?: boolean;
+  isPlace?: boolean;
+  isStore?: boolean;
+  isProduct?: boolean;
 };
 
 export default function HomePage() {
@@ -64,6 +73,9 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("flash");
   const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [allMarkers, setAllMarkers] = useState<MarkerData[]>([]);
+  const [videosCache, setVideosCache] = useState<VideoData[]>([]);
+  const [usersCache, setUsersCache] = useState<MarkerData[]>([]);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
@@ -72,7 +84,6 @@ export default function HomePage() {
   });
 
   useEffect(() => {
-    // Apenas para ajustar o tamanho da fonte globalmente, se quiser
     const newScale =
       window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
     document.body.style.fontSize = `${newScale}rem`;
@@ -80,17 +91,23 @@ export default function HomePage() {
 
   useEffect(() => {
     const loadMarkers = async () => {
-      const newMarkers: MarkerData[] = [];
+      const newVideoMarkers: VideoData[] = [];
+      const newUserMarkers: MarkerData[] = [];
 
       const videosSnapshot = await getDocs(collection(db, "videos"));
       videosSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.latitude && data.longitude) {
-          newMarkers.push({
+          newVideoMarkers.push({
             id: doc.id,
             lat: data.latitude,
             lng: data.longitude,
             title: data.artistSongName || "Vídeo",
+            thumbnailUrl: data.thumbnailUrl, // imagem do vídeo
+            isFlash: data.isFlash,
+            isPlace: data.isPlace,
+            isStore: data.isStore,
+            isProduct: data.isProduct,
           });
         }
       });
@@ -99,20 +116,61 @@ export default function HomePage() {
       usersSnapshot.forEach((doc) => {
         const data = doc.data();
         if (data.latitude && data.longitude) {
-          newMarkers.push({
+          newUserMarkers.push({
             id: doc.id,
             lat: data.latitude,
             lng: data.longitude,
             title: data.name || "Usuário",
+            image: data.image, // imagem do usuário
           });
         }
       });
 
-      setMarkers(newMarkers);
+      const combined = [...newVideoMarkers, ...newUserMarkers];
+      setVideosCache(newVideoMarkers);
+      setUsersCache(newUserMarkers);
+      setAllMarkers(combined);
+      setMarkers(combined);
     };
 
     loadMarkers();
   }, []);
+
+  useEffect(() => {
+    const lowerSearch = search.toLowerCase();
+
+    let filtered: MarkerData[] = [];
+
+    if (selectedFilter === "users") {
+      filtered = usersCache.filter((user) =>
+        user.title.toLowerCase().includes(lowerSearch)
+      );
+    } else if (
+      selectedFilter === "flash" ||
+      selectedFilter === "place" ||
+      selectedFilter === "store" ||
+      selectedFilter === "product"
+    ) {
+      const filterKey = {
+        flash: "isFlash",
+        place: "isPlace",
+        store: "isStore",
+        product: "isProduct",
+      }[selectedFilter] as keyof VideoData;
+
+      filtered = videosCache.filter(
+        (video) =>
+          video[filterKey] === true &&
+          video.title.toLowerCase().includes(lowerSearch)
+      );
+    } else {
+      filtered = allMarkers.filter((marker) =>
+        marker.title.toLowerCase().includes(lowerSearch)
+      );
+    }
+
+    setMarkers(filtered);
+  }, [search, selectedFilter, allMarkers, videosCache, usersCache]);
 
   const handleNavigate = (path: string) => router.push(path);
 
@@ -137,7 +195,6 @@ export default function HomePage() {
         options={{
           tilt: 45,
           heading: 45,
-          //styles: darkThemeStyleArray,
           backgroundColor: "#000000",
           mapTypeControl: false,
           keyboardShortcuts: false,
@@ -147,13 +204,62 @@ export default function HomePage() {
           gestureHandling: "greedy",
         }}
       >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.title}
-          />
-        ))}
+        {markers.map((marker) => {
+          const videoMarker = videosCache.find((v) => v.id === marker.id);
+          const imgSrc =
+            videoMarker?.thumbnailUrl ??
+            usersCache.find((u) => u.id === marker.id)?.image ??
+            "";
+
+          return (
+            <OverlayView
+              key={marker.id}
+              position={{ lat: marker.lat, lng: marker.lng }}
+              mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
+            >
+              <div
+                style={{
+                  width: 50,
+                  height: 50,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "2px solid white",
+                  boxShadow: "0 0 4px rgba(0,0,0,0.3)",
+                  cursor: "pointer",
+                  backgroundColor: "#eee",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+                title={marker.title}
+                onClick={() => {
+                  // Exemplo: navegue para o perfil ou detalhe do vídeo aqui
+                  console.log("Clicou em", marker.title);
+                }}
+              >
+                {imgSrc ? (
+                  <img
+                    src={imgSrc}
+                    alt={marker.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      backgroundColor: "#ccc",
+                    }}
+                  />
+                )}
+              </div>
+            </OverlayView>
+          );
+        })}
       </GoogleMap>
 
       <div
@@ -167,8 +273,8 @@ export default function HomePage() {
           display: "flex",
           alignItems: "center",
           gap: "1vw",
-          flexWrap: "wrap",
-          overflowX: "auto",
+          flexWrap: "nowrap", // 👈 impede que quebre de linha
+          overflowX: "auto", // 👈 permite scroll lateral
           zIndex: 10,
         }}
       >
