@@ -135,10 +135,16 @@ export default function HomePage() {
         center={defaultCenter}
         zoom={5}
         options={{
-          gestureHandling: "greedy",
+          tilt: 45,
+          heading: 45,
+          //styles: darkThemeStyleArray,
+          backgroundColor: "#000000",
+          mapTypeControl: false,
+          keyboardShortcuts: false,
           fullscreenControl: false,
-          streetViewControl: false,
-          zoomControl: true,
+          disableDefaultUI: true,
+          clickableIcons: false,
+          gestureHandling: "greedy",
         }}
       >
         {markers.map((marker) => (
@@ -243,12 +249,11 @@ export default function HomePage() {
           left: 0,
           height: NAVBAR_HEIGHT,
           width: "100%",
-          background: "rgba(0, 0, 0, 0.6)",
-          backdropFilter: "blur(12px)",
+          background:
+            "linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0,0,0,0.4), transparent)",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "center",
-          borderTop: "1px solid #444",
           zIndex: 10,
         }}
       >
@@ -295,7 +300,7 @@ function NavIcon({
         alignItems: "center",
         background: "none",
         border: "none",
-        color: "#fff",
+        color: "black",
         fontSize: "0.875rem",
         cursor: "pointer",
         flexShrink: 0,
