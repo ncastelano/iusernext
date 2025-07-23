@@ -54,36 +54,41 @@ export function FilteredList({
         position: "fixed",
         top: 80,
         zIndex: 1000,
-        display: "flex",
-        justifyContent: "center",
-        gap: "16px",
+        width: "100%",
+        maxWidth: "100vw",
+        boxSizing: "border-box",
+        padding: "0 12px", // padding horizontal para evitar corte
         overflowX: "auto",
-        padding: "1px 1px",
+        display: "flex",
+        gap: "clamp(8px, 2vw, 16px)",
         backgroundColor: "transparent",
         borderRadius: "12px",
-        maxWidth: "100vw",
-        width: "100%",
         scrollbarWidth: "none",
+        whiteSpace: "nowrap", // para itens na horizontal
       }}
     >
       <style>{`
-        @keyframes marquee {
-          0% { transform: translateX(100%); }
-          100% { transform: translateX(-100%); }
-        }
-        .marquee-container {
-          width: 60px;
-          overflow: hidden;
-          white-space: nowrap;
-          position: relative;
-          text-align: center;
-        }
-        .marquee-text {
-          display: inline-block;
-          animation: marquee 6s linear infinite;
-          padding-left: 100%;
-        }
-      `}</style>
+      @keyframes marquee {
+        0% { transform: translateX(100%); }
+        100% { transform: translateX(-100%); }
+      }
+      .marquee-container {
+        width: 60px;
+        overflow: hidden;
+        white-space: nowrap;
+        position: relative;
+        text-align: center;
+      }
+      .marquee-text {
+        display: inline-block;
+        animation: marquee 6s linear infinite;
+        padding-left: 100%;
+      }
+      /* Oculta scrollbar no Webkit */
+      div::-webkit-scrollbar {
+        display: none;
+      }
+    `}</style>
 
       {items.map((item) =>
         filter === "users" ? (
@@ -104,6 +109,7 @@ export function FilteredList({
               gap: "6px",
               cursor: "pointer",
               minWidth: 60,
+              flexShrink: 0, // importante para evitar encolhimento
             }}
           >
             <div
@@ -164,6 +170,7 @@ export function FilteredList({
                   alignItems: "center",
                   cursor: "pointer",
                   minWidth: 60,
+                  flexShrink: 0, // evita encolhimento
                 }}
               >
                 <div

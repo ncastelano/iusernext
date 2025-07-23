@@ -91,21 +91,22 @@ export function FilterMap({
       style={{
         position: "fixed",
         top: 20,
-        left: "50%",
-        transform: "translateX(-50%)",
+        left: 0,
         zIndex: 1000,
-        padding: "5px",
+        padding: "5px 12px",
         borderRadius: "16px",
         display: "flex",
         flexDirection: "row",
         alignItems: "center",
-        gap: "12px",
+        gap: "clamp(6px, 2vw, 12px)",
         background: "transparent",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
         border: "transparent",
         boxShadow: "transparent",
-        maxWidth: "95vw",
+        maxWidth: "100vw",
+        boxSizing: "border-box",
+        overflowX: "auto",
       }}
     >
       {/* Campo de busca com botão X */}
@@ -114,9 +115,9 @@ export function FilterMap({
           position: "relative",
           display: "flex",
           alignItems: "center",
+          flexShrink: 0,
         }}
       >
-        {/* Ícone Search do Lucide */}
         <Search
           size={18}
           style={{
@@ -144,7 +145,6 @@ export function FilterMap({
           }}
         />
 
-        {/* Botão "X" */}
         {search && (
           <button
             onClick={handleClearSearch}
@@ -201,6 +201,7 @@ export function FilterMap({
                 transition: "all 0.2s ease-in-out",
                 fontSize: "14px",
                 whiteSpace: "nowrap",
+                flexShrink: 0,
               }}
             >
               {option.label}
@@ -210,14 +211,14 @@ export function FilterMap({
       </div>
 
       <style>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    `}</style>
     </div>
   );
 }

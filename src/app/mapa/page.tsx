@@ -72,7 +72,7 @@ export default function Mapa() {
   const [deferredPrompt, setDeferredPrompt] =
     useState<BeforeInstallPromptEvent | null>(null);
   const { user: currentUser } = useUser();
-
+  const [gpsError, setGpsError] = useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = useState<
     "users" | "flash" | "store" | "place" | "product"
   >("users");
@@ -110,12 +110,36 @@ export default function Mapa() {
         (position) => {
           const { latitude, longitude } = position.coords;
           goToLocationWithZoom({ lat: latitude, lng: longitude });
+          setGpsError(null); // Limpa erro caso tenha sido exibido antes
         },
         (error) => {
           console.error("Erro ao obter localização atual:", error);
+
+          switch (error.code) {
+            case error.PERMISSION_DENIED:
+              setGpsError(
+                "Permissão negada. Por favor, habilite o GPS para mostrar o mapa."
+              );
+              break;
+            case error.POSITION_UNAVAILABLE:
+              setGpsError(
+                "Localização indisponível. Ative o GPS para visualizar o mapa."
+              );
+              break;
+            case error.TIMEOUT:
+              setGpsError(
+                "Tempo esgotado para obter localização. Tente novamente."
+              );
+              break;
+            default:
+              setGpsError("Erro desconhecido ao obter localização.");
+              break;
+          }
         },
         { enableHighAccuracy: true, timeout: 10000 }
       );
+    } else {
+      setGpsError("Geolocalização não suportada pelo seu navegador.");
     }
   }, []);
 
@@ -202,6 +226,27 @@ export default function Mapa() {
         }}
       >
         Explorando território...
+        {gpsError && (
+          <div
+            style={{
+              position: "fixed",
+              top: 20,
+              left: "50%",
+              transform: "translateX(-50%)",
+              backgroundColor: "#ff4444",
+              color: "white",
+              padding: "12px 24px",
+              borderRadius: "8px",
+              zIndex: 2000,
+              boxShadow: "0 4px 10px rgba(0,0,0,0.3)",
+              maxWidth: "90vw",
+              textAlign: "center",
+              fontWeight: "bold",
+            }}
+          >
+            {gpsError}
+          </div>
+        )}
         <style>{`
           @keyframes pulse {
             0% { opacity: 1; }
