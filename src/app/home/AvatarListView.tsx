@@ -36,7 +36,7 @@ export default function AvatarListView({
         className="no-scrollbar"
         style={{
           position: "fixed",
-          bottom: 170,
+          bottom: 185,
           left: 0,
           width: "100%",
           padding: "0 4vw",
@@ -44,7 +44,7 @@ export default function AvatarListView({
           display: "flex",
           gap: "1rem",
           zIndex: 11,
-          maxHeight: 60,
+          maxHeight: 120,
         }}
       >
         {items.map((item) => (
