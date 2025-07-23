@@ -5,8 +5,8 @@ import "./globals.css";
 import "leaflet/dist/leaflet.css"; // Importa o CSS do Leaflet globalmente
 import "leaflet-draw/dist/leaflet.draw.css"; // Importa o CSS do leaflet-draw globalmente
 import { UserProvider } from "./components/UserContext";
-// import Navbar from './components/Navbar'
-import NavigationBar from "./components/NavigationBar";
+
+//import NavigationBar from "./components/NavigationBar";
 // import ConditionalUI from './components/ConditionalUI'
 
 export const metadata: Metadata = {
