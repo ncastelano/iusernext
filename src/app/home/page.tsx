@@ -18,7 +18,6 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const NAVBAR_HEIGHT = 60;
-const FILTER_HEIGHT = 80;
 
 const defaultCenter = {
   lat: -16.843212,
