@@ -64,7 +64,6 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("flash");
   const [markers, setMarkers] = useState<MarkerData[]>([]);
-  const [scale, setScale] = useState(1);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
@@ -73,9 +72,9 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    // Apenas para ajustar o tamanho da fonte globalmente, se quiser
     const newScale =
       window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
-    setScale(newScale);
     document.body.style.fontSize = `${newScale}rem`;
   }, []);
 
@@ -119,7 +118,7 @@ export default function HomePage() {
 
   if (!isLoaded) return <div>Carregando mapa...</div>;
 
-  const inputFontSize = 40; // Tamanho base do input e do ícone
+  const inputFontSize = 40;
   const inputHeight = inputFontSize * 1.5;
 
   return (
