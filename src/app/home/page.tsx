@@ -3,15 +3,12 @@
 import React, { useEffect, useState } from "react";
 import { GoogleMap, OverlayView, useJsApiLoader } from "@react-google-maps/api";
 import { User, Zap, Store, Package, Landmark } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import BottomBar from "../components/Bottombar";
 import FilterMap from "../components/FilterMap";
 import AvatarListView from "../components/AvatarListView";
-
-// Altura da navbar fixa no rodapé
-const NAVBAR_HEIGHT = 90;
 
 // Posição padrão do mapa
 const defaultCenter = {
@@ -67,8 +64,6 @@ type VideoData = MarkerData & {
 };
 
 export default function HomePage() {
-  const router = useRouter();
-
   // ------------------------------
   // ESTADOS GERAIS DO COMPONENTE
   // ------------------------------
@@ -250,14 +245,12 @@ export default function HomePage() {
                 }}
               >
                 {imgSrc ? (
-                  <img
+                  <Image
                     src={imgSrc}
                     alt={marker.title}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
+                    width={50}
+                    height={50}
+                    style={{ borderRadius: "50%", objectFit: "cover" }}
                   />
                 ) : (
                   <div
@@ -309,8 +302,8 @@ export default function HomePage() {
         setSelectedFilter={setSelectedFilter}
         search={search}
         setSearch={setSearch}
-        inputFontSize={40}
-        inputHeight={60}
+        inputFontSize={inputFontSize}
+        inputHeight={inputHeight}
       />
 
       {/* ========================================
