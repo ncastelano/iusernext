@@ -17,16 +17,16 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
-const NAVBAR_HEIGHT = 60; // altura da navbar fixa em px
+const NAVBAR_HEIGHT = 60;
 
 const mapContainerStyle = {
   width: "100vw",
-  height: `calc(100vh - ${NAVBAR_HEIGHT}px)`, // ajuste para o mapa preencher até acima da navbar
+  height: `calc(100vh - ${NAVBAR_HEIGHT * 2}px)`,
 };
 
 const defaultCenter = {
-  lat: -23.55052,
-  lng: -46.633308,
+  lat: -16.843212,
+  lng: -53.905319,
 };
 
 const filters = [
@@ -97,73 +97,81 @@ export default function HomePage() {
   if (!isLoaded) return <div>Carregando mapa...</div>;
 
   return (
-    <div style={{ height: "100vh", width: "100vw", overflow: "hidden" }}>
-      <GoogleMap
-        mapContainerStyle={mapContainerStyle}
-        center={defaultCenter}
-        zoom={14}
-      >
-        {markers.map((marker) => (
-          <Marker
-            key={marker.id}
-            position={{ lat: marker.lat, lng: marker.lng }}
-            title={marker.title}
-          />
-        ))}
-      </GoogleMap>
-
+    <div
+      style={{
+        height: "100vh",
+        width: "100vw",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+      }}
+    >
+      {/* Filtros e Input */}
       <div
         style={{
-          position: "fixed",
-          bottom: 0,
-          left: 0,
-          width: "100%",
-          background: "rgba(0, 0, 0, 0.6)",
-          backdropFilter: "blur(12px)",
+          background: "black",
           padding: "10px 16px",
-          zIndex: 1000,
+          display: "flex",
+          alignItems: "center",
+          gap: "8px",
+          flexWrap: "wrap",
+          overflowX: "auto",
         }}
       >
         <div
           style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            marginBottom: "8px",
-            flexWrap: "wrap",
+            position: "relative",
+            flexGrow: 1,
+            minWidth: 0,
+            maxWidth: "300px",
+            background: "rgba(255, 255, 255, 0.6)",
+            borderRadius: "8px",
+            backdropFilter: "blur(8px)",
           }}
         >
-          <div style={{ position: "relative", flex: 1 }}>
-            <Search
-              size={16}
-              style={{
-                position: "absolute",
-                top: "50%",
-                left: 8,
-                transform: "translateY(-50%)",
-                color: "#aaa",
-              }}
-            />
-            <input
-              type="text"
-              placeholder="Buscar..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{
-                padding: "8px 8px 8px 28px",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-                width: "100%",
-                fontSize: "14px",
-              }}
-            />
-          </div>
+          <Search
+            size={16}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: 8,
+              transform: "translateY(-50%)",
+              color: "black",
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Buscar..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            style={{
+              padding: "8px 8px 8px 28px",
+              borderRadius: "8px",
+              border: "none",
+              width: "100%",
+              fontSize: "14px",
+              minWidth: 0,
+              boxSizing: "border-box",
+              background: "transparent",
+              color: "black",
+            }}
+          />
+        </div>
 
+        <style>{`
+        input::placeholder {
+          color: black;
+          opacity: 0.7;
+        }
+      `}</style>
+
+        <div style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
           {filters.map((f) => (
             <button
               key={f.key}
               onClick={() => setSelectedFilter(f.key)}
               style={{
+                flexShrink: 0,
                 backgroundColor: selectedFilter === f.key ? "#fff" : "#222",
                 color: selectedFilter === f.key ? "#000" : "#fff",
                 border: "none",
@@ -174,6 +182,7 @@ export default function HomePage() {
                 alignItems: "center",
                 gap: "4px",
                 cursor: "pointer",
+                whiteSpace: "nowrap",
               }}
             >
               {f.icon}
@@ -181,37 +190,60 @@ export default function HomePage() {
             </button>
           ))}
         </div>
+      </div>
 
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-around",
-            alignItems: "center",
-            paddingTop: "6px",
-            borderTop: "1px solid #444",
-          }}
+      {/* Mapa cresce para ocupar altura restante */}
+      <div style={{ flexGrow: 1 }}>
+        <GoogleMap
+          mapContainerStyle={{ width: "100%", height: "100%" }}
+          center={defaultCenter}
+          zoom={4}
         >
-          <NavIcon
-            icon={<Home size={24} />}
-            label="Home"
-            onClick={() => handleNavigate("/home")}
-          />
-          <NavIcon
-            icon={<MapPin size={24} />}
-            label="Mapa"
-            onClick={() => handleNavigate("/mapa")}
-          />
-          <NavIcon
-            icon={<User size={24} />}
-            label="Perfil"
-            onClick={() => handleNavigate("/me")}
-          />
-          <NavIcon
-            icon={<Plus size={24} />}
-            label="Upload"
-            onClick={() => handleNavigate("/upload")}
-          />
-        </div>
+          {markers.map((marker) => (
+            <Marker
+              key={marker.id}
+              position={{ lat: marker.lat, lng: marker.lng }}
+              title={marker.title}
+            />
+          ))}
+        </GoogleMap>
+      </div>
+
+      {/* Navbar */}
+      <div
+        style={{
+          height: NAVBAR_HEIGHT,
+          background: "rgba(0, 0, 0, 0.6)",
+          backdropFilter: "blur(12px)",
+          padding: "6px 0",
+          display: "flex",
+          justifyContent: "space-around",
+          alignItems: "center",
+          borderTop: "1px solid #444",
+          overflow: "hidden",
+          flexShrink: 0,
+        }}
+      >
+        <NavIcon
+          icon={<Home size={24} />}
+          label="Home"
+          onClick={() => handleNavigate("/home")}
+        />
+        <NavIcon
+          icon={<MapPin size={24} />}
+          label="Mapa"
+          onClick={() => handleNavigate("/mapa")}
+        />
+        <NavIcon
+          icon={<User size={24} />}
+          label="Perfil"
+          onClick={() => handleNavigate("/me")}
+        />
+        <NavIcon
+          icon={<Plus size={24} />}
+          label="Upload"
+          onClick={() => handleNavigate("/upload")}
+        />
       </div>
     </div>
   );
@@ -238,6 +270,8 @@ function NavIcon({
         color: "#fff",
         fontSize: "12px",
         cursor: "pointer",
+        flexShrink: 0,
+        padding: "6px 12px",
       }}
     >
       {icon}

@@ -90,7 +90,7 @@ export default function CadastroPage() {
         namePage: trimmedPage,
       });
 
-      router.push("/mapa");
+      router.push("/home");
     } catch (err) {
       alert(err instanceof Error ? err.message : "Erro ao cadastrar.");
     }
