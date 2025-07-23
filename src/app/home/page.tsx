@@ -64,6 +64,7 @@ export default function HomePage() {
   const [search, setSearch] = useState("");
   const [selectedFilter, setSelectedFilter] = useState("flash");
   const [markers, setMarkers] = useState<MarkerData[]>([]);
+  const [scale, setScale] = useState(1);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
@@ -108,9 +109,10 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    const scale =
+    const newScale =
       window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
-    document.body.style.fontSize = `${scale}rem`;
+    setScale(newScale);
+    document.body.style.fontSize = `${newScale}rem`;
   }, []);
 
   const handleNavigate = (path: string) => router.push(path);
@@ -193,7 +195,7 @@ export default function HomePage() {
               borderRadius: "0.5rem",
               border: "none",
               width: "100%",
-              fontSize: "40px", // <-- aqui
+              fontSize: "40px",
               minWidth: 0,
               boxSizing: "border-box",
               background: "transparent",
@@ -206,20 +208,6 @@ export default function HomePage() {
           input::placeholder {
             color: black;
             opacity: 0.7;
-          }
-          @media (min-width: 1080px) {
-            input {
-              font-size: 1.2rem !important;
-              padding: 1rem 1rem 1rem 2.5rem !important;
-            }
-            button {
-              font-size: 1rem !important;
-              padding: 0.8rem 1.2rem !important;
-            }
-            .lucide-icon {
-              width: 28px;
-              height: 28px;
-            }
           }
         `}</style>
 
@@ -234,11 +222,11 @@ export default function HomePage() {
                 color: selectedFilter === f.key ? "#000" : "#fff",
                 border: "none",
                 borderRadius: "0.5rem",
-                padding: "0.5rem 1rem",
-                fontSize: "0.875rem",
+                padding: `${0.4 * scale}rem ${0.8 * scale}rem`,
+                fontSize: `${0.7 * scale}rem`,
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5rem",
+                gap: `${0.5 * scale}rem`,
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
@@ -270,21 +258,25 @@ export default function HomePage() {
           icon={<Home size={24} />}
           label="Home"
           onClick={() => handleNavigate("/home")}
+          scale={scale}
         />
         <NavIcon
           icon={<MapPin size={24} />}
           label="Mapa"
           onClick={() => handleNavigate("/mapa")}
+          scale={scale}
         />
         <NavIcon
           icon={<User size={24} />}
           label="Perfil"
           onClick={() => handleNavigate("/me")}
+          scale={scale}
         />
         <NavIcon
           icon={<Plus size={24} />}
           label="Upload"
           onClick={() => handleNavigate("/upload")}
+          scale={scale}
         />
       </div>
     </div>
@@ -295,10 +287,12 @@ function NavIcon({
   icon,
   label,
   onClick,
+  scale,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  scale: number;
 }) {
   return (
     <button
@@ -310,10 +304,10 @@ function NavIcon({
         background: "none",
         border: "none",
         color: "#fff",
-        fontSize: "0.875rem",
+        fontSize: `${0.75 * scale}rem`,
         cursor: "pointer",
         flexShrink: 0,
-        padding: "0.5rem 0.75rem",
+        padding: `${0.4 * scale}rem ${0.6 * scale}rem`,
       }}
     >
       {icon}
