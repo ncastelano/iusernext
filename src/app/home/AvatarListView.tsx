@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import Image from "next/image";
 
 type AvatarItem = {
   id: string;
@@ -67,10 +67,12 @@ export default function AvatarListView({
             onClick={() => onAvatarClick?.(item)}
           >
             {item.image ? (
-              <img
+              <Image
                 src={item.image}
                 alt={item.title}
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                width={50}
+                height={50}
+                style={{ objectFit: "cover" }}
               />
             ) : (
               <div style={{ width: "100%", height: "100%" }} />

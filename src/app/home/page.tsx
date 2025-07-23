@@ -8,7 +8,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import BottomBar from "../components/Bottombar";
 import FilterMap from "../components/FilterMap";
-import AvatarListView from "../components/AvatarListView";
+import AvatarListView from "./AvatarListView";
 import CustomInfoWindowUser from "./CustomInfoWindowUser";
 import CustomInfoWindowFlash from "./CustomInfoWindowFlash";
 import CustomInfoWindowStore from "./CustomInfoWindowStore";
@@ -186,7 +186,6 @@ export default function HomePage() {
   };
 
   const inputFontSize = 40;
-  const inputHeight = inputFontSize * 1.5;
 
   const handleMapLoad = (map: google.maps.Map): void => {
     mapRef.current = map;
