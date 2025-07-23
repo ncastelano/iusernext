@@ -73,6 +73,13 @@ export default function HomePage() {
   });
 
   useEffect(() => {
+    const newScale =
+      window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
+    setScale(newScale);
+    document.body.style.fontSize = `${newScale}rem`;
+  }, []);
+
+  useEffect(() => {
     const loadMarkers = async () => {
       const newMarkers: MarkerData[] = [];
 
@@ -108,16 +115,12 @@ export default function HomePage() {
     loadMarkers();
   }, []);
 
-  useEffect(() => {
-    const newScale =
-      window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
-    setScale(newScale);
-    document.body.style.fontSize = `${newScale}rem`;
-  }, []);
-
   const handleNavigate = (path: string) => router.push(path);
 
   if (!isLoaded) return <div>Carregando mapa...</div>;
+
+  const inputFontSize = 40; // Tamanho base do input e do ícone
+  const inputHeight = inputFontSize * 1.5;
 
   return (
     <div
@@ -173,10 +176,11 @@ export default function HomePage() {
             background: "rgba(255, 255, 255, 0.6)",
             borderRadius: "0.5rem",
             backdropFilter: "blur(8px)",
+            height: `${inputHeight}px`,
           }}
         >
           <Search
-            size={16}
+            size={inputFontSize}
             style={{
               position: "absolute",
               top: "50%",
@@ -191,25 +195,19 @@ export default function HomePage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              padding: "0.8rem 0.8rem 0.8rem 2rem",
+              padding: `0.4rem 0.8rem 0.4rem ${inputFontSize + 12}px`,
               borderRadius: "0.5rem",
               border: "none",
               width: "100%",
-              fontSize: "40px",
+              fontSize: `${inputFontSize}px`,
               minWidth: 0,
               boxSizing: "border-box",
               background: "transparent",
               color: "black",
+              height: `${inputHeight}px`,
             }}
           />
         </div>
-
-        <style>{`
-          input::placeholder {
-            color: black;
-            opacity: 0.7;
-          }
-        `}</style>
 
         <div style={{ display: "flex", gap: "0.8vw", overflowX: "auto" }}>
           {filters.map((f) => (
@@ -222,11 +220,12 @@ export default function HomePage() {
                 color: selectedFilter === f.key ? "#000" : "#fff",
                 border: "none",
                 borderRadius: "0.5rem",
-                padding: `${0.4 * scale}rem ${0.8 * scale}rem`,
-                fontSize: `${0.7 * scale}rem`,
+                height: `${inputHeight}px`,
+                padding: `0 1rem`,
+                fontSize: `${inputFontSize * 0.5}px`,
                 display: "flex",
                 alignItems: "center",
-                gap: `${0.5 * scale}rem`,
+                gap: "0.5rem",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
@@ -258,25 +257,21 @@ export default function HomePage() {
           icon={<Home size={24} />}
           label="Home"
           onClick={() => handleNavigate("/home")}
-          scale={scale}
         />
         <NavIcon
           icon={<MapPin size={24} />}
           label="Mapa"
           onClick={() => handleNavigate("/mapa")}
-          scale={scale}
         />
         <NavIcon
           icon={<User size={24} />}
           label="Perfil"
           onClick={() => handleNavigate("/me")}
-          scale={scale}
         />
         <NavIcon
           icon={<Plus size={24} />}
           label="Upload"
           onClick={() => handleNavigate("/upload")}
-          scale={scale}
         />
       </div>
     </div>
@@ -287,12 +282,10 @@ function NavIcon({
   icon,
   label,
   onClick,
-  scale,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
-  scale: number;
 }) {
   return (
     <button
@@ -304,10 +297,10 @@ function NavIcon({
         background: "none",
         border: "none",
         color: "#fff",
-        fontSize: `${0.75 * scale}rem`,
+        fontSize: "0.875rem",
         cursor: "pointer",
         flexShrink: 0,
-        padding: `${0.4 * scale}rem ${0.6 * scale}rem`,
+        padding: "0.5rem 0.75rem",
       }}
     >
       {icon}
