@@ -50,8 +50,10 @@ export default function HomePage() {
   const [selectedFilter, setSelectedFilter] = useState("flash");
   const [markers, setMarkers] = useState<MarkerData[]>([]);
 
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
-    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!,
+    googleMapsApiKey: apiKey ?? "",
+    libraries: ["places"],
   });
 
   useEffect(() => {
