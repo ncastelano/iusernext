@@ -18,6 +18,7 @@ import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
 const NAVBAR_HEIGHT = 60;
+const FILTER_HEIGHT = 80;
 
 const defaultCenter = {
   lat: -16.843212,
@@ -96,21 +97,40 @@ export default function HomePage() {
       style={{
         height: "100vh",
         width: "100vw",
-        display: "flex",
-        flexDirection: "column",
+        position: "relative",
         overflow: "hidden",
       }}
     >
-      {/* Filtros e Input */}
+      {/* Mapa ocupa a tela inteira por trás */}
+      <GoogleMap
+        mapContainerStyle={{ width: "100%", height: "100%" }}
+        center={defaultCenter}
+        zoom={4}
+      >
+        {markers.map((marker) => (
+          <Marker
+            key={marker.id}
+            position={{ lat: marker.lat, lng: marker.lng }}
+            title={marker.title}
+          />
+        ))}
+      </GoogleMap>
+
+      {/* Filtros fixos acima da navbar */}
       <div
         style={{
-          background: "black",
+          position: "fixed",
+          bottom: NAVBAR_HEIGHT,
+          left: 0,
+          width: "100%",
+          background: "transparent",
           padding: "10px 16px",
           display: "flex",
           alignItems: "center",
           gap: "8px",
           flexWrap: "wrap",
           overflowX: "auto",
+          zIndex: 10,
         }}
       >
         <div
@@ -154,11 +174,11 @@ export default function HomePage() {
         </div>
 
         <style>{`
-        input::placeholder {
-          color: black;
-          opacity: 0.7;
-        }
-      `}</style>
+          input::placeholder {
+            color: black;
+            opacity: 0.7;
+          }
+        `}</style>
 
         <div style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
           {filters.map((f) => (
@@ -187,36 +207,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Mapa cresce para ocupar altura restante */}
-      <div style={{ flexGrow: 1 }}>
-        <GoogleMap
-          mapContainerStyle={{ width: "100%", height: "100%" }}
-          center={defaultCenter}
-          zoom={4}
-        >
-          {markers.map((marker) => (
-            <Marker
-              key={marker.id}
-              position={{ lat: marker.lat, lng: marker.lng }}
-              title={marker.title}
-            />
-          ))}
-        </GoogleMap>
-      </div>
-
-      {/* Navbar */}
+      {/* Navbar fixa no rodapé */}
       <div
         style={{
+          position: "fixed",
+          bottom: 0,
+          left: 0,
           height: NAVBAR_HEIGHT,
+          width: "100%",
           background: "rgba(0, 0, 0, 0.6)",
           backdropFilter: "blur(12px)",
-          padding: "6px 0",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "center",
           borderTop: "1px solid #444",
-          overflow: "hidden",
-          flexShrink: 0,
+          zIndex: 10,
         }}
       >
         <NavIcon
