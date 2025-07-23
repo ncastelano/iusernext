@@ -261,6 +261,61 @@ export default function HomePage() {
           );
         })}
       </GoogleMap>
+      {(selectedFilter === "users" ? usersCache : markers).length > 0 && (
+        <div
+          className="avatar-scroll"
+          style={{
+            position: "fixed",
+            bottom: NAVBAR_HEIGHT + inputHeight + 40,
+            left: 0,
+            width: "100%",
+            padding: "0 2vw",
+            overflowX: "auto",
+            display: "flex",
+            gap: "0.8rem",
+            zIndex: 11,
+          }}
+        >
+          {(selectedFilter === "users" ? usersCache : markers).map((item) => {
+            const imgSrc =
+              selectedFilter === "users"
+                ? item.image
+                : videosCache.find((v) => v.id === item.id)?.thumbnailUrl;
+
+            return (
+              <div
+                key={item.id}
+                style={{
+                  flexShrink: 0,
+                  width: 50,
+                  height: 50,
+                  borderRadius: "50%",
+                  overflow: "hidden",
+                  border: "2px solid white",
+                  backgroundColor: "#ccc",
+                  cursor: "pointer",
+                }}
+                title={item.title}
+                onClick={() => console.log("Clicou em:", item.title)}
+              >
+                {imgSrc ? (
+                  <img
+                    src={imgSrc}
+                    alt={item.title}
+                    style={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                ) : (
+                  <div style={{ width: "100%", height: "100%" }} />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       <div
         style={{
@@ -384,6 +439,19 @@ export default function HomePage() {
           onClick={() => handleNavigate("/upload")}
         />
       </div>
+
+      {/* Estilo CSS puro para esconder scrollbar, embutido diretamente na página */}
+      <style>
+        {`
+          .avatar-scroll {
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE e Edge */
+          }
+          .avatar-scroll::-webkit-scrollbar {
+            display: none; /* Chrome, Safari */
+          }
+        `}
+      </style>
     </div>
   );
 }
