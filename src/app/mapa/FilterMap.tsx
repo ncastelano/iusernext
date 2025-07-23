@@ -45,6 +45,20 @@ export function FilterMap({
   const [initialOrder, setInitialOrder] =
     useState<typeof initialOptions>(initialOptions);
 
+  const handleWheel = (e: React.WheelEvent<HTMLInputElement>) => {
+    // Se estiver segurando Ctrl e rolando, previne zoom da página
+    if (e.ctrlKey) {
+      e.preventDefault();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Se Ctrl + '+' ou Ctrl + '-' ou Ctrl + '=' (tecla de zoom) forem pressionadas, previne zoom
+    if (e.ctrlKey && (e.key === "+" || e.key === "-" || e.key === "=")) {
+      e.preventDefault();
+    }
+  };
+
   useEffect(() => {
     const saved = localStorage.getItem(CLICK_STORAGE_KEY);
     if (saved) {
@@ -133,6 +147,8 @@ export function FilterMap({
           value={search}
           onChange={handleInputChange}
           placeholder="Procurar"
+          onWheel={handleWheel}
+          onKeyDown={handleKeyDown}
           style={{
             padding: "6px 36px 6px 32px",
             borderRadius: "10px",
