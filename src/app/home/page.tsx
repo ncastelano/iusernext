@@ -105,6 +105,12 @@ export default function HomePage() {
         mapContainerStyle={{ width: "100%", height: "100%" }}
         center={defaultCenter}
         zoom={4}
+        options={{
+          gestureHandling: "greedy", // ou "cooperative" se quiser limitar o zoom
+          fullscreenControl: false,
+          streetViewControl: false,
+          mapTypeControl: false,
+        }}
       >
         {markers.map((marker) => (
           <Marker
