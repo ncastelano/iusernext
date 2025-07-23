@@ -25,11 +25,31 @@ const defaultCenter = {
 };
 
 const filters = [
-  { label: "Flash", icon: <Zap size={16} />, key: "flash" },
-  { label: "Usuários", icon: <User size={16} />, key: "users" },
-  { label: "Lojas", icon: <Store size={16} />, key: "store" },
-  { label: "Produtos", icon: <Package size={16} />, key: "product" },
-  { label: "Lugares", icon: <Landmark size={16} />, key: "place" },
+  {
+    label: "Flash",
+    icon: <Zap size={16} className="lucide-icon" />,
+    key: "flash",
+  },
+  {
+    label: "Usuários",
+    icon: <User size={16} className="lucide-icon" />,
+    key: "users",
+  },
+  {
+    label: "Lojas",
+    icon: <Store size={16} className="lucide-icon" />,
+    key: "store",
+  },
+  {
+    label: "Produtos",
+    icon: <Package size={16} className="lucide-icon" />,
+    key: "product",
+  },
+  {
+    label: "Lugares",
+    icon: <Landmark size={16} className="lucide-icon" />,
+    key: "place",
+  },
 ];
 
 type MarkerData = {
@@ -87,6 +107,12 @@ export default function HomePage() {
     loadMarkers();
   }, []);
 
+  useEffect(() => {
+    const scale =
+      window.innerWidth < 400 ? 1 : window.innerWidth < 768 ? 1.2 : 1.5;
+    document.body.style.fontSize = `${scale}rem`;
+  }, []);
+
   const handleNavigate = (path: string) => router.push(path);
 
   if (!isLoaded) return <div>Carregando mapa...</div>;
@@ -100,16 +126,15 @@ export default function HomePage() {
         overflow: "hidden",
       }}
     >
-      {/* Mapa ocupa a tela inteira por trás */}
       <GoogleMap
         mapContainerStyle={{ width: "100%", height: "100%" }}
         center={defaultCenter}
-        zoom={4}
+        zoom={5}
         options={{
-          gestureHandling: "greedy", // ou "cooperative" se quiser limitar o zoom
+          gestureHandling: "greedy",
           fullscreenControl: false,
           streetViewControl: false,
-          mapTypeControl: false,
+          zoomControl: true,
         }}
       >
         {markers.map((marker) => (
@@ -121,7 +146,6 @@ export default function HomePage() {
         ))}
       </GoogleMap>
 
-      {/* Filtros fixos acima da navbar */}
       <div
         style={{
           position: "fixed",
@@ -129,10 +153,10 @@ export default function HomePage() {
           left: 0,
           width: "100%",
           background: "transparent",
-          padding: "10px 16px",
+          padding: "1vh 2vw",
           display: "flex",
           alignItems: "center",
-          gap: "8px",
+          gap: "1vw",
           flexWrap: "wrap",
           overflowX: "auto",
           zIndex: 10,
@@ -143,9 +167,9 @@ export default function HomePage() {
             position: "relative",
             flexGrow: 1,
             minWidth: 0,
-            maxWidth: "300px",
+            maxWidth: "80vw",
             background: "rgba(255, 255, 255, 0.6)",
-            borderRadius: "8px",
+            borderRadius: "0.5rem",
             backdropFilter: "blur(8px)",
           }}
         >
@@ -165,11 +189,11 @@ export default function HomePage() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
-              padding: "8px 8px 8px 28px",
-              borderRadius: "8px",
+              padding: "0.8rem 0.8rem 0.8rem 2rem",
+              borderRadius: "0.5rem",
               border: "none",
               width: "100%",
-              fontSize: "14px",
+              fontSize: "1rem",
               minWidth: 0,
               boxSizing: "border-box",
               background: "transparent",
@@ -183,9 +207,23 @@ export default function HomePage() {
             color: black;
             opacity: 0.7;
           }
+          @media (min-width: 1080px) {
+            input {
+              font-size: 1.2rem !important;
+              padding: 1rem 1rem 1rem 2.5rem !important;
+            }
+            button {
+              font-size: 1rem !important;
+              padding: 0.8rem 1.2rem !important;
+            }
+            .lucide-icon {
+              width: 28px;
+              height: 28px;
+            }
+          }
         `}</style>
 
-        <div style={{ display: "flex", gap: "8px", overflowX: "auto" }}>
+        <div style={{ display: "flex", gap: "0.8vw", overflowX: "auto" }}>
           {filters.map((f) => (
             <button
               key={f.key}
@@ -195,12 +233,12 @@ export default function HomePage() {
                 backgroundColor: selectedFilter === f.key ? "#fff" : "#222",
                 color: selectedFilter === f.key ? "#000" : "#fff",
                 border: "none",
-                borderRadius: "8px",
-                padding: "6px 10px",
-                fontSize: "12px",
+                borderRadius: "0.5rem",
+                padding: "0.5rem 1rem",
+                fontSize: "0.875rem",
                 display: "flex",
                 alignItems: "center",
-                gap: "4px",
+                gap: "0.5rem",
                 cursor: "pointer",
                 whiteSpace: "nowrap",
               }}
@@ -212,7 +250,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Navbar fixa no rodapé */}
       <div
         style={{
           position: "fixed",
@@ -273,10 +310,10 @@ function NavIcon({
         background: "none",
         border: "none",
         color: "#fff",
-        fontSize: "12px",
+        fontSize: "0.875rem",
         cursor: "pointer",
         flexShrink: 0,
-        padding: "6px 12px",
+        padding: "0.5rem 0.75rem",
       }}
     >
       {icon}
