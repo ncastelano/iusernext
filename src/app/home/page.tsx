@@ -254,22 +254,22 @@ export default function HomePage() {
         }}
       >
         <NavIcon
-          icon={<Home size={24} />}
+          icon={<Home size={40} />}
           label="Home"
           onClick={() => handleNavigate("/home")}
         />
         <NavIcon
-          icon={<MapPin size={24} />}
+          icon={<MapPin size={40} />}
           label="Mapa"
           onClick={() => handleNavigate("/mapa")}
         />
         <NavIcon
-          icon={<User size={24} />}
+          icon={<User size={40} />}
           label="Perfil"
           onClick={() => handleNavigate("/me")}
         />
         <NavIcon
-          icon={<Plus size={24} />}
+          icon={<Plus size={40} />}
           label="Upload"
           onClick={() => handleNavigate("/upload")}
         />
