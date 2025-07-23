@@ -2,12 +2,9 @@
 
 import type { Metadata } from "next";
 import "./globals.css";
-import "leaflet/dist/leaflet.css"; // Importa o CSS do Leaflet globalmente
-import "leaflet-draw/dist/leaflet.draw.css"; // Importa o CSS do leaflet-draw globalmente
+import "leaflet/dist/leaflet.css";
+import "leaflet-draw/dist/leaflet.draw.css";
 import { UserProvider } from "./components/UserContext";
-
-//import NavigationBar from "./components/NavigationBar";
-// import ConditionalUI from './components/ConditionalUI'
 
 export const metadata: Metadata = {
   title: "iUser",
@@ -17,10 +14,7 @@ export const metadata: Metadata = {
     icon: "/icon/icon_blackbg_512x512.png",
     apple: "/icon/icon_blackbg_512x512.png",
   },
-};
-
-export const viewport = {
-  themeColor: "#0f172a",
+  themeColor: "#6B21A8", // <- Roxo (você pode trocar por outro tom também)
 };
 
 export default function RootLayout({
