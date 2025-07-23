@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { Search } from "lucide-react"; // <-- Importa o ícone de lupa
 
 type FilterOption = "users" | "flash" | "store" | "place" | "product";
 
@@ -31,6 +32,8 @@ export function FilterMap({
   onSearchChange,
 }: FilterMapProps) {
   const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
   const [clickCounts, setClickCounts] = useState<Record<FilterOption, number>>({
     users: 0,
     flash: 0,
@@ -69,6 +72,12 @@ export function FilterMap({
     onSearchChange?.(value);
   };
 
+  const handleClearSearch = () => {
+    setSearch("");
+    onSearchChange?.("");
+    inputRef.current?.blur();
+  };
+
   const handleFilterClick = (key: FilterOption) => {
     setClickCounts((prev) => ({
       ...prev,
@@ -99,7 +108,7 @@ export function FilterMap({
         maxWidth: "95vw",
       }}
     >
-      {/* Campo de busca */}
+      {/* Campo de busca com botão X */}
       <div
         style={{
           position: "relative",
@@ -107,35 +116,56 @@ export function FilterMap({
           alignItems: "center",
         }}
       >
-        <span
+        {/* Ícone Search do Lucide */}
+        <Search
+          size={18}
           style={{
             position: "absolute",
             left: 10,
-            color: "#888",
-            fontSize: "16px",
+            color: "#000",
           }}
-        >
-          🔍
-        </span>
+        />
+
         <input
+          ref={inputRef}
           type="text"
           value={search}
           onChange={handleInputChange}
           placeholder="Procurar"
           style={{
-            padding: "6px 12px 6px 32px",
+            padding: "6px 36px 6px 32px",
             borderRadius: "10px",
             border: "1px solid #ccc",
-            fontSize: "20px",
+            fontSize: "16px",
             outline: "none",
             width: "180px",
             color: "#000",
             backgroundColor: "#fff",
           }}
         />
+
+        {/* Botão "X" */}
+        {search && (
+          <button
+            onClick={handleClearSearch}
+            style={{
+              position: "absolute",
+              right: 10,
+              background: "transparent",
+              border: "none",
+              fontSize: "18px",
+              color: "red",
+              cursor: "pointer",
+              padding: 0,
+            }}
+            aria-label="Limpar busca"
+          >
+            ✖
+          </button>
+        )}
       </div>
 
-      {/* Botões com scroll horizontal */}
+      {/* Botões de filtro */}
       <div
         style={{
           display: "flex",
@@ -145,10 +175,9 @@ export function FilterMap({
           whiteSpace: "nowrap",
           justifyContent: "flex-start",
           maxWidth: "60vw",
-          scrollbarWidth: "none" /* Firefox */,
-          msOverflowStyle: "none" /* IE/Edge */,
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
         }}
-        // Esconde a scrollbar no Chrome/Safari
         className="no-scrollbar"
       >
         {initialOrder.map((option) => {
@@ -180,7 +209,6 @@ export function FilterMap({
         })}
       </div>
 
-      {/* CSS para esconder scrollbar inline */}
       <style>{`
         .no-scrollbar::-webkit-scrollbar {
           display: none;
