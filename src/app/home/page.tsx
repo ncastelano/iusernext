@@ -185,8 +185,6 @@ export default function HomePage() {
     }
   };
 
-  const inputFontSize = 40;
-
   const handleMapLoad = (map: google.maps.Map): void => {
     mapRef.current = map;
   };
