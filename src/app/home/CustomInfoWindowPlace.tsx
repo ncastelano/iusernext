@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { VideoData } from "types/markerTypes";
 
 interface Props {
@@ -10,18 +10,24 @@ interface Props {
 }
 
 export default function CustomInfoWindowPlace({ video, onClose }: Props) {
+  const router = useRouter();
+
+  const handleGoToProfile = () => {
+    router.push(`/${video.namePage.toLowerCase()}`);
+  };
+
   return (
     <div
       style={{
         position: "relative",
         backdropFilter: "blur(12px)",
         WebkitBackdropFilter: "blur(12px)",
-        background: "rgba(255, 255, 255, 0.15)",
+        background: "rgba(255, 255, 255, 0.25)",
         borderRadius: 16,
-        padding: 12,
-        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.25)",
+        padding: 16,
+        boxShadow: "0 8px 32px rgba(0, 0, 0, 0.3)",
         border: "1px solid rgba(255, 255, 255, 0.3)",
-        width: 240,
+        width: 260,
         textAlign: "center",
         color: "#000",
         fontFamily: "sans-serif",
@@ -34,77 +40,95 @@ export default function CustomInfoWindowPlace({ video, onClose }: Props) {
           position: "absolute",
           top: 8,
           right: 8,
-          background: "rgba(255, 0, 0, 0.15)",
-          border: "1px solid rgba(255, 0, 0, 0.4)",
+          background: "rgba(255, 0, 0, 0.1)",
+          backdropFilter: "blur(4px)",
+          border: "1px solid rgba(255, 0, 0, 0.3)",
+          color: "red",
           borderRadius: "50%",
-          padding: 4,
           width: 28,
           height: 28,
+          fontWeight: "bold",
+          fontSize: 18,
           cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          color: "red",
-          backdropFilter: "blur(6px)",
-          WebkitBackdropFilter: "blur(6px)",
-          borderWidth: 1,
-          borderStyle: "solid",
         }}
         aria-label="Fechar"
       >
-        <X size={16} color="red" />
+        ×
       </button>
 
-      {/* Imagem */}
+      {/* Avatar + namePage (clicável) */}
+      <div
+        onClick={handleGoToProfile}
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: 12,
+          marginBottom: 12,
+          cursor: "pointer",
+        }}
+      >
+        <div
+          style={{
+            width: 40,
+            height: 40,
+            borderRadius: "50%",
+            overflow: "hidden",
+            border: "2px solid white",
+            backgroundColor: "#ccc",
+            boxShadow: "0 0 4px rgba(0,0,0,0.2)",
+            flexShrink: 0,
+          }}
+        >
+          {video.userProfileImage && (
+            <Image
+              src={video.userProfileImage}
+              alt={video.namePage}
+              width={40}
+              height={40}
+              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+            />
+          )}
+        </div>
+        <p
+          style={{
+            fontWeight: 600,
+            fontSize: "1rem",
+            margin: 0,
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+          }}
+        >
+          {video.namePage}
+        </p>
+      </div>
+
+      {/* Thumbnail */}
       {video.thumbnailUrl ? (
         <Image
           src={video.thumbnailUrl}
-          alt={video.namePage}
-          width={100}
-          height={60}
+          alt={video.thumbnailUrl}
+          width={200}
+          height={120}
+          onClick={() => router.push(`/${video.namePage}/${video.videoID}`)}
           style={{
             borderRadius: 12,
             objectFit: "cover",
-            marginBottom: 8,
             border: "1px solid rgba(255, 255, 255, 0.3)",
+            cursor: "pointer",
+            transition: "transform 0.2s ease",
           }}
         />
       ) : (
         <div
           style={{
-            width: 100,
-            height: 60,
-            backgroundColor: "#ccc",
+            width: 200,
+            height: 120,
+            backgroundColor: "#ddd",
             borderRadius: 12,
-            marginBottom: 8,
           }}
         />
-      )}
-
-      {/* Título */}
-      <p
-        style={{
-          fontWeight: 600,
-          fontSize: "1rem",
-          margin: "0 0 6px 0",
-          color: "#000",
-        }}
-      >
-        {video.namePage}
-      </p>
-
-      {/* Descrição - se quiser usar algum campo para descrição, pode ser o artistSongName ou outro */}
-      {video.artistSongName && (
-        <p
-          style={{
-            fontWeight: 400,
-            fontSize: "0.85rem",
-            color: "#222",
-            margin: 0,
-          }}
-        >
-          {video.artistSongName}
-        </p>
       )}
     </div>
   );

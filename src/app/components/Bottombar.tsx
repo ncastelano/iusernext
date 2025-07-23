@@ -1,13 +1,22 @@
+"use client";
+
 import React from "react";
-import { Home, MapPin, User, Plus } from "lucide-react";
+import { Home, MapPin, User, Plus, Zap } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/app/components/UserContext";
+import Image from "next/image";
 
 const NAVBAR_HEIGHT = 90;
 
 export default function BottomBar() {
   const router = useRouter();
+  const { user } = useUser();
 
   const handleNavigate = (path: string) => router.push(path);
+
+  const handleUserClick = () => {
+    router.push(user?.namePage ? `/${user.namePage.toLowerCase()}` : "/login");
+  };
 
   return (
     <div
@@ -25,26 +34,74 @@ export default function BottomBar() {
         zIndex: 10,
       }}
     >
+      {/* Home */}
       <NavIcon
-        icon={<Home size={40} />}
+        icon={<Home size={32} />}
         label="Home"
         onClick={() => handleNavigate("/home")}
       />
+
+      {/* Mapa */}
       <NavIcon
-        icon={<MapPin size={40} />}
+        icon={<MapPin size={32} />}
         label="Mapa"
         onClick={() => handleNavigate("/mapa")}
       />
+
+      {/* Flash */}
       <NavIcon
-        icon={<User size={40} />}
-        label="Perfil"
-        onClick={() => handleNavigate("/me")}
+        icon={<Zap size={32} />}
+        label="Flash"
+        onClick={() => handleNavigate("/flash")}
       />
+
+      {/* Upload */}
       <NavIcon
-        icon={<Plus size={40} />}
+        icon={<Plus size={32} />}
         label="Upload"
         onClick={() => handleNavigate("/upload")}
       />
+
+      {/* Perfil */}
+      <button
+        onClick={handleUserClick}
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          background: "none",
+          border: "none",
+          color: "white",
+          fontSize: "0.75rem",
+          cursor: "pointer",
+          flexShrink: 0,
+          padding: "0.5rem 0.75rem",
+        }}
+      >
+        {user?.image ? (
+          <div
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "2px solid white",
+              marginBottom: 4,
+            }}
+          >
+            <Image
+              src={user.image}
+              alt={user.namePage || "User"}
+              width={32}
+              height={32}
+              style={{ objectFit: "cover", width: "100%", height: "100%" }}
+            />
+          </div>
+        ) : (
+          <User size={32} />
+        )}
+        <span>{user?.namePage ? "Perfil" : "Login"}</span>
+      </button>
     </div>
   );
 }
@@ -68,7 +125,7 @@ function NavIcon({
         background: "none",
         border: "none",
         color: "white",
-        fontSize: "0.875rem",
+        fontSize: "0.75rem",
         cursor: "pointer",
         flexShrink: 0,
         padding: "0.5rem 0.75rem",
