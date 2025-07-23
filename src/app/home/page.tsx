@@ -19,11 +19,6 @@ import { collection, getDocs } from "firebase/firestore";
 
 const NAVBAR_HEIGHT = 60;
 
-const mapContainerStyle = {
-  width: "100vw",
-  height: `calc(100vh - ${NAVBAR_HEIGHT * 2}px)`,
-};
-
 const defaultCenter = {
   lat: -16.843212,
   lng: -53.905319,
