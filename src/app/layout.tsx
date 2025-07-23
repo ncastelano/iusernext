@@ -34,7 +34,7 @@ export default function RootLayout({
         <UserProvider>
           {/* <ConditionalUI /> */}
           {/* <Navbar /> */}
-          <NavigationBar />
+
           {children}
         </UserProvider>
       </body>

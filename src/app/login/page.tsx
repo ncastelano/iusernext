@@ -119,7 +119,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (!loading && user) {
-      router.replace("/mapa");
+      router.replace("/home");
     }
   }, [user, loading, router]);
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await signInWithEmailAndPassword(auth, email, senha);
-      router.push("/mapa");
+      router.push("/home");
     } catch (error: unknown) {
       if (error instanceof Error) {
         alert(error.message);
