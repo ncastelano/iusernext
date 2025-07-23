@@ -47,8 +47,9 @@ function NavigationBar() {
       style={{
         position: "fixed",
         bottom: 70,
-        left: "50%",
-        transform: "translateX(-50%)",
+        left: 0,
+        right: 0,
+        margin: "0 auto",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
@@ -56,11 +57,12 @@ function NavigationBar() {
         padding: "12px 24px",
         borderRadius: 60,
         zIndex: 1000,
-        background: "transparent",
+        background: "rgba(0,0,0,0.3)",
         backdropFilter: "blur(10px)",
         WebkitBackdropFilter: "blur(10px)",
-        border: "transparent",
-        boxShadow: "transparent",
+        border: "1px solid rgba(255,255,255,0.2)",
+        maxWidth: "min(95vw, 480px)",
+        boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
       }}
     >
       {/* Avatar ou ícone do usuário */}
