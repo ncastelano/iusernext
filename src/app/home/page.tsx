@@ -17,7 +17,7 @@ import { useRouter } from "next/navigation";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 
-const NAVBAR_HEIGHT = 60;
+const NAVBAR_HEIGHT = 90;
 
 const defaultCenter = {
   lat: -16.843212,
@@ -159,7 +159,7 @@ export default function HomePage() {
       <div
         style={{
           position: "fixed",
-          bottom: NAVBAR_HEIGHT,
+          bottom: NAVBAR_HEIGHT + 20,
           left: 0,
           width: "100%",
           background: "transparent",
@@ -250,7 +250,7 @@ export default function HomePage() {
           height: NAVBAR_HEIGHT,
           width: "100%",
           background:
-            "linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0,0,0,0.4), transparent)",
+            "linear-gradient(to top, rgba(0, 0, 0, 1.0), rgba(0, 0, 0, 0.8), rgba(0,0,0, 0.5), transparent)",
           display: "flex",
           justifyContent: "space-around",
           alignItems: "center",
@@ -300,7 +300,7 @@ function NavIcon({
         alignItems: "center",
         background: "none",
         border: "none",
-        color: "black",
+        color: "white",
         fontSize: "0.875rem",
         cursor: "pointer",
         flexShrink: 0,
