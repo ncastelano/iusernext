@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { Search } from "lucide-react";
 
 type Filter = {
@@ -24,13 +24,59 @@ export default function FilterMap({
   search,
   setSearch,
 }: FilterMapProps) {
-  // Valores dinâmicos
   const inputFontSize = "clamp(16px, 4vw, 40px)";
   const inputHeight = "clamp(40px, 7vh, 60px)";
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    let isDown = false;
+    let startX = 0;
+    let scrollLeft = 0;
+
+    const handleMouseDown = (e: MouseEvent) => {
+      isDown = true;
+      el.classList.add("dragging");
+      startX = e.pageX - el.offsetLeft;
+      scrollLeft = el.scrollLeft;
+    };
+
+    const handleMouseLeave = () => {
+      isDown = false;
+      el.classList.remove("dragging");
+    };
+
+    const handleMouseUp = () => {
+      isDown = false;
+      el.classList.remove("dragging");
+    };
+
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isDown) return;
+      e.preventDefault();
+      const x = e.pageX - el.offsetLeft;
+      const walk = (x - startX) * 1;
+      el.scrollLeft = scrollLeft - walk;
+    };
+
+    el.addEventListener("mousedown", handleMouseDown);
+    el.addEventListener("mouseleave", handleMouseLeave);
+    el.addEventListener("mouseup", handleMouseUp);
+    el.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      el.removeEventListener("mousedown", handleMouseDown);
+      el.removeEventListener("mouseleave", handleMouseLeave);
+      el.removeEventListener("mouseup", handleMouseUp);
+      el.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
   return (
     <>
-      {/* Estilos responsivos */}
       <style>{`
         .no-scrollbar {
           scrollbar-width: none;
@@ -40,9 +86,14 @@ export default function FilterMap({
           display: none;
         }
 
+        .dragging {
+          cursor: grabbing !important;
+          user-select: none;
+        }
+
         .filter-bar {
           position: fixed;
-         bottom: calc(clamp(60px, 10vh, 90px) + 1.5vh);
+          bottom: calc(clamp(60px, 10vh, 90px) + 1.5vh);
           left: 0;
           width: 100%;
           background: transparent;
@@ -98,7 +149,6 @@ export default function FilterMap({
       `}</style>
 
       <div className="filter-bar no-scrollbar">
-        {/* Campo de busca */}
         <div className="filter-input" style={{ height: inputHeight }}>
           <Search
             style={{
@@ -128,10 +178,18 @@ export default function FilterMap({
           />
         </div>
 
-        {/* Botões de filtro */}
         <div
+          ref={scrollRef}
           className="no-scrollbar"
-          style={{ display: "flex", gap: "1vw", overflowX: "auto" }}
+          style={{
+            display: "flex",
+            gap: "1vw",
+            overflowX: "auto",
+            cursor: "grab",
+            minWidth: "fit-content",
+            maxWidth: "100%", // Garante que ele respeita a largura da tela
+            flexShrink: 0, // Evita encolhimento
+          }}
         >
           {filters.map((f) => (
             <button
