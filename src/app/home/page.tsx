@@ -9,12 +9,8 @@ import { collection, getDocs } from "firebase/firestore";
 import BottomBar from "../components/Bottombar";
 import FilterMap from "../components/FilterMap";
 import AvatarListView from "./AvatarListView";
-import CustomInfoWindowUser from "./CustomInfoWindowUser";
-import CustomInfoWindowFlash from "./CustomInfoWindowFlash";
-import CustomInfoWindowStore from "./CustomInfoWindowStore";
-import CustomInfoWindowProduct from "./CustomInfoWindowProduct";
-import CustomInfoWindowPlace from "./CustomInfoWindowPlace";
 import { MarkerData, VideoData } from "types/markerTypes";
+import DynamicInfoWindows from "./DynamicInfoWindow";
 
 const defaultCenter = {
   lat: -16.843212,
@@ -37,6 +33,27 @@ export default function HomePage() {
   const [videosCache, setVideosCache] = useState<VideoData[]>([]);
   const [usersCache, setUsersCache] = useState<MarkerData[]>([]);
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  const clearMarker = (type: string) => {
+    switch (type) {
+      case "user":
+        setSelectedUserMarker(null);
+        break;
+      case "flash":
+        setSelectedFlashMarker(null);
+        break;
+      case "store":
+        setSelectedStoreMarker(null);
+        break;
+      case "product":
+        setSelectedProductMarker(null);
+        break;
+      case "place":
+        setSelectedPlaceMarker(null);
+        break;
+    }
+  };
+
   const [selectedUserMarker, setSelectedUserMarker] =
     useState<MarkerData | null>(null);
   const [selectedFlashMarker, setSelectedFlashMarker] =
@@ -246,54 +263,51 @@ export default function HomePage() {
                 }}
                 title={marker.namePage}
                 onClick={() => {
-                  if (selectedFilter === "users") {
-                    const clickedUser = usersCache.find(
-                      (u) => u.id === marker.id
-                    );
-                    if (clickedUser) {
-                      setSelectedUserMarker(clickedUser);
-                      setSelectedFlashMarker(null);
-                      setSelectedStoreMarker(null);
+                  // Limpar todos os markers primeiro
+                  setSelectedUserMarker(null);
+                  setSelectedFlashMarker(null);
+                  setSelectedStoreMarker(null);
+                  setSelectedProductMarker(null);
+                  setSelectedPlaceMarker(null);
+
+                  const markerId = marker.id;
+
+                  switch (selectedFilter) {
+                    case "users": {
+                      const clickedUser = usersCache.find(
+                        (u) => u.id === markerId
+                      );
+                      if (clickedUser) setSelectedUserMarker(clickedUser);
+                      break;
                     }
-                  } else if (selectedFilter === "flash") {
-                    const clickedVideo = videosCache.find(
-                      (v) => v.id === marker.id
-                    );
-                    if (clickedVideo) {
-                      setSelectedFlashMarker(clickedVideo);
-                      setSelectedUserMarker(null);
-                      setSelectedStoreMarker(null);
+                    case "flash": {
+                      const clickedVideo = videosCache.find(
+                        (v) => v.id === markerId
+                      );
+                      if (clickedVideo) setSelectedFlashMarker(clickedVideo);
+                      break;
                     }
-                  } else if (selectedFilter === "store") {
-                    const clickedStore = videosCache.find(
-                      (v) => v.id === marker.id && v.isStore
-                    );
-                    if (clickedStore) {
-                      setSelectedStoreMarker(clickedStore);
-                      setSelectedUserMarker(null);
-                      setSelectedFlashMarker(null);
+                    case "store": {
+                      const clickedStore = videosCache.find(
+                        (v) => v.id === markerId && v.isStore
+                      );
+                      if (clickedStore) setSelectedStoreMarker(clickedStore);
+                      break;
                     }
-                  } else if (selectedFilter === "product") {
-                    const clickedProduct = videosCache.find(
-                      (v) => v.id === marker.id && v.isProduct
-                    );
-                    if (clickedProduct) {
-                      setSelectedProductMarker(clickedProduct);
-                      setSelectedUserMarker(null);
-                      setSelectedFlashMarker(null);
-                      setSelectedStoreMarker(null);
+                    case "product": {
+                      const clickedProduct = videosCache.find(
+                        (v) => v.id === markerId && v.isProduct
+                      );
+                      if (clickedProduct)
+                        setSelectedProductMarker(clickedProduct);
+                      break;
                     }
-                  }
-                  if (selectedFilter === "place") {
-                    const clickedPlace = videosCache.find(
-                      (v) => v.id === marker.id && v.isPlace
-                    );
-                    if (clickedPlace) {
-                      setSelectedPlaceMarker(clickedPlace);
-                      setSelectedUserMarker(null);
-                      setSelectedFlashMarker(null);
-                      setSelectedStoreMarker(null);
-                      setSelectedProductMarker(null);
+                    case "place": {
+                      const clickedPlace = videosCache.find(
+                        (v) => v.id === markerId && v.isPlace
+                      );
+                      if (clickedPlace) setSelectedPlaceMarker(clickedPlace);
+                      break;
                     }
                   }
                 }}
@@ -320,76 +334,14 @@ export default function HomePage() {
           );
         })}
 
-        {selectedUserMarker && (
-          <OverlayView
-            position={{
-              lat: selectedUserMarker.latitude,
-              lng: selectedUserMarker.longitude,
-            }}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-          >
-            <CustomInfoWindowUser
-              user={selectedUserMarker}
-              onClose={() => setSelectedUserMarker(null)}
-            />
-          </OverlayView>
-        )}
-        {selectedFlashMarker && (
-          <OverlayView
-            position={{
-              lat: selectedFlashMarker.latitude,
-              lng: selectedFlashMarker.longitude,
-            }}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-          >
-            <CustomInfoWindowFlash
-              video={selectedFlashMarker}
-              onClose={() => setSelectedFlashMarker(null)}
-            />
-          </OverlayView>
-        )}
-        {selectedStoreMarker && (
-          <OverlayView
-            position={{
-              lat: selectedStoreMarker.latitude,
-              lng: selectedStoreMarker.longitude,
-            }}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-          >
-            <CustomInfoWindowStore
-              video={selectedStoreMarker}
-              onClose={() => setSelectedStoreMarker(null)}
-            />
-          </OverlayView>
-        )}
-        {selectedProductMarker && (
-          <OverlayView
-            position={{
-              lat: selectedProductMarker.latitude,
-              lng: selectedProductMarker.longitude,
-            }}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-          >
-            <CustomInfoWindowProduct
-              video={selectedProductMarker}
-              onClose={() => setSelectedProductMarker(null)}
-            />
-          </OverlayView>
-        )}
-        {selectedPlaceMarker && (
-          <OverlayView
-            position={{
-              lat: selectedPlaceMarker.latitude,
-              lng: selectedPlaceMarker.longitude,
-            }}
-            mapPaneName={OverlayView.OVERLAY_MOUSE_TARGET}
-          >
-            <CustomInfoWindowPlace
-              video={selectedPlaceMarker}
-              onClose={() => setSelectedPlaceMarker(null)}
-            />
-          </OverlayView>
-        )}
+        <DynamicInfoWindows
+          selectedUserMarker={selectedUserMarker}
+          selectedFlashMarker={selectedFlashMarker}
+          selectedStoreMarker={selectedStoreMarker}
+          selectedProductMarker={selectedProductMarker}
+          selectedPlaceMarker={selectedPlaceMarker}
+          clearMarker={clearMarker}
+        />
       </GoogleMap>
 
       <AvatarListView
