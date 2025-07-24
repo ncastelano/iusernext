@@ -36,7 +36,9 @@ export default function AvatarListView({
         className="no-scrollbar"
         style={{
           position: "fixed",
-          bottom: 185,
+          bottom:
+            "calc(clamp(60px, 10vh, 90px) + clamp(40px, 7vh, 60px) + max(2.5vh, 20px))",
+
           left: 0,
           width: "100%",
           padding: "0 4vw",

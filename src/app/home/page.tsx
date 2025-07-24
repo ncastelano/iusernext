@@ -7,7 +7,7 @@ import Image from "next/image";
 import { db } from "@/lib/firebase";
 import { collection, getDocs } from "firebase/firestore";
 import BottomBar from "../components/Bottombar";
-import FilterMap from "../components/FilterMap";
+import FilterMap from "./FilterMap";
 import AvatarListView from "./AvatarListView";
 import { MarkerData, VideoData } from "types/markerTypes";
 import DynamicInfoWindows from "./DynamicInfoWindow";
