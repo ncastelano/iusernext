@@ -1,4 +1,7 @@
 // app/personal/page.tsx
+
+"use client";
+
 import React from "react";
 import { FaWhatsapp, FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
 import { motion } from "framer-motion";
