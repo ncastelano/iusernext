@@ -65,7 +65,7 @@ const PersonalPage: React.FC = () => {
         variants={item} // entrada fade+slide
       >
         <motion.div
-          animate={{ y: [0, -5, 0, 5, 0] }} // flutuação contínua
+          animate={{ y: [0, 5, 0, 5, 0] }} // flutuação contínua
           transition={{
             delay: 0.6, // espera terminar a entrada
             duration: 4,
