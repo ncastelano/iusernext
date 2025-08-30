@@ -20,7 +20,8 @@ const personalData: PersonalProfileProps = {
   name: "João Silva",
   age: 28,
   profession: "Personal Trainer",
-  photoUrl: "/images/personal.jpg",
+  photoUrl:
+    "https://i.pinimg.com/736x/de/9a/30/de9a30541e46b1ba789732de6e415a1c.jpg",
   socialLinks: {
     whatsapp: "https://wa.me/559999999999",
     facebook: "https://facebook.com/usuario",
