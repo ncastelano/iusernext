@@ -22,7 +22,7 @@ export default function Inicio() {
       {/* Section: Download */}
       <section className="flex justify-center gap-6 mt-8">
         <button className="backdrop-blur-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white rounded-2xl px-6 py-3 text-lg transition">
-          📱 Baixar para Android
+          📱 Baixar para teste
         </button>
         <button
           disabled

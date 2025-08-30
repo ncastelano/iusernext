@@ -39,55 +39,53 @@ const alunos: Aluno[] = [
 
 const PersonalHome: React.FC = () => {
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold mb-6 text-gray-800">
-        Bem-vindo, Personal!
-      </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 p-6 text-white">
+      <h1 className="text-3xl font-bold mb-6">Bem-vindo, Personal!</h1>
 
       {/* Seção de cards principais */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <div className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center">
-          <FaUserFriends size={32} className="text-blue-500 mb-2" />
+        <div className="bg-gray-800 p-4 rounded-xl shadow-lg flex flex-col items-center hover:scale-105 transition-transform">
+          <FaUserFriends size={32} className="text-blue-400 mb-2" />
           <h2 className="font-bold text-lg mb-1">Alunos</h2>
           <p>{alunos.length} alunos ativos</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center">
-          <FaClock size={32} className="text-green-500 mb-2" />
+        <div className="bg-gray-800 p-4 rounded-xl shadow-lg flex flex-col items-center hover:scale-105 transition-transform">
+          <FaClock size={32} className="text-green-400 mb-2" />
           <h2 className="font-bold text-lg mb-1">Horários</h2>
           <p>Agenda do dia disponível</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center">
-          <FaEnvelope size={32} className="text-purple-500 mb-2" />
+        <div className="bg-gray-800 p-4 rounded-xl shadow-lg flex flex-col items-center hover:scale-105 transition-transform">
+          <FaEnvelope size={32} className="text-purple-400 mb-2" />
           <h2 className="font-bold text-lg mb-1">Enviar Convite</h2>
           <p>Convide novos alunos facilmente</p>
         </div>
 
-        <div className="bg-white p-4 rounded-xl shadow-md flex flex-col items-center">
-          <FaDollarSign size={32} className="text-yellow-500 mb-2" />
+        <div className="bg-gray-800 p-4 rounded-xl shadow-lg flex flex-col items-center hover:scale-105 transition-transform">
+          <FaDollarSign size={32} className="text-yellow-400 mb-2" />
           <h2 className="font-bold text-lg mb-1">Financeiro</h2>
           <p>Resumo de pagamentos</p>
         </div>
       </div>
 
       {/* Lista de alunos */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-2xl font-bold mb-4 text-gray-800">Meus Alunos</h2>
+      <div className="bg-gray-800 rounded-xl shadow-lg p-6">
+        <h2 className="text-2xl font-bold mb-4">Meus Alunos</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {alunos.map((aluno) => (
             <div
               key={aluno.id}
-              className="flex items-center bg-gray-50 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow"
+              className="flex items-center bg-gray-700 p-3 rounded-lg shadow-sm hover:shadow-md transition-shadow"
             >
               <img
                 src={aluno.photoUrl}
                 alt={aluno.name}
-                className="w-12 h-12 rounded-full mr-3"
+                className="w-12 h-12 rounded-full mr-3 border-2 border-white"
               />
               <div>
                 <p className="font-semibold">{aluno.name}</p>
-                <p className="text-gray-500 text-sm">{aluno.horario}</p>
+                <p className="text-gray-300 text-sm">{aluno.horario}</p>
               </div>
             </div>
           ))}
