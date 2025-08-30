@@ -63,7 +63,16 @@ const PersonalPage: React.FC = () => {
       {/* Foto do perfil */}
       <motion.div
         className="w-44 h-44 rounded-full border-4 border-white overflow-hidden mb-4 shadow-lg"
-        variants={item}
+        variants={item} // animação de entrada
+        initial="hidden"
+        animate={{ y: [0, -5, 0, 5, 0] }} // animação de flutuação
+        transition={{
+          delay: 0.6, // espera terminar a entrada (mesma duração do fade in)
+          duration: 4, // duração do ciclo completo
+          repeat: Infinity, // repetir para sempre
+          repeatType: "loop", // vai do 0 → -5 → 0 → 5 → 0 repetidamente
+          ease: "easeInOut", // suaviza o movimento
+        }}
       >
         <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
       </motion.div>
