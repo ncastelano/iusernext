@@ -44,13 +44,28 @@
     "@types/leaflet": "^1.9.18",
     "@types/lodash.debounce": "^4.0.9",
     "@types/next": "^8.0.7",
-    "@types/node": "^20",
+    "@types/node": "^20.19.11",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/webpack": "^5.28.5",
     "eslint": "^9",
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4",
-    "typescript": "^5"
-  }
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  },
+  "description": "This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).",
+  "main": "tailwind.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ncastelano/iusernext.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/ncastelano/iusernext/issues"
+  },
+  "homepage": "https://github.com/ncastelano/iusernext#readme"
 }
