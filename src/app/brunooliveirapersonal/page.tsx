@@ -1,6 +1,7 @@
 // app/personal/page.tsx
 import React from "react";
 import { FaWhatsapp, FaFacebook, FaInstagram, FaYoutube } from "react-icons/fa";
+import { motion } from "framer-motion";
 
 interface PersonalProfileProps {
   name: string;
@@ -27,81 +28,95 @@ const personalData: PersonalProfileProps = {
     facebook: "https://facebook.com/usuario",
     instagram: "https://instagram.com/usuario",
     youtube: "https://youtube.com/usuario",
-    x: "https://twitter.com/usuario",
   },
 };
 
 const PersonalPage: React.FC = () => {
   const { name, age, profession, photoUrl, socialLinks } = personalData;
 
+  // Variants para animação sequencial
+  const container = {
+    hidden: {},
+    show: {
+      transition: {
+        staggerChildren: 0.2, // cada filho entra com delay de 0.2s
+      },
+    },
+  };
+
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+  };
+
   return (
-    <div
+    <motion.div
       className="flex flex-col items-center justify-center min-h-screen p-6
       bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white"
+      variants={container}
+      initial="hidden"
+      animate="show"
     >
       {/* Foto do perfil */}
-      <div className="w-44 h-44 rounded-full border-4 border-white overflow-hidden mb-4 shadow-lg">
+      <motion.div
+        className="w-44 h-44 rounded-full border-4 border-white overflow-hidden mb-4 shadow-lg"
+        variants={item}
+      >
         <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
-      </div>
+      </motion.div>
 
       {/* Nome e descrição */}
-      <h1 className="text-4xl font-bold mb-2">{name}</h1>
-      <p className="text-gray-300 mb-4">
+      <motion.h1 className="text-4xl font-bold mb-2" variants={item}>
+        {name}
+      </motion.h1>
+      <motion.p className="text-gray-300 mb-4" variants={item}>
         {age} anos - {profession}
-      </p>
+      </motion.p>
 
       {/* Redes sociais */}
-      <div className="flex space-x-6 mt-4">
+      <motion.div className="flex space-x-6 mt-4" variants={item}>
         {socialLinks.whatsapp && (
-          <a
+          <motion.a
             href={socialLinks.whatsapp}
             target="_blank"
             rel="noopener noreferrer"
+            whileHover={{ scale: 1.2 }}
           >
-            <FaWhatsapp
-              size={30}
-              className="text-green-400 hover:scale-110 transition-transform"
-            />
-          </a>
+            <FaWhatsapp size={30} className="text-green-400" />
+          </motion.a>
         )}
         {socialLinks.facebook && (
-          <a
+          <motion.a
             href={socialLinks.facebook}
             target="_blank"
             rel="noopener noreferrer"
+            whileHover={{ scale: 1.2 }}
           >
-            <FaFacebook
-              size={30}
-              className="text-blue-500 hover:scale-110 transition-transform"
-            />
-          </a>
+            <FaFacebook size={30} className="text-blue-500" />
+          </motion.a>
         )}
         {socialLinks.instagram && (
-          <a
+          <motion.a
             href={socialLinks.instagram}
             target="_blank"
             rel="noopener noreferrer"
+            whileHover={{ scale: 1.2 }}
           >
-            <FaInstagram
-              size={30}
-              className="text-pink-400 hover:scale-110 transition-transform"
-            />
-          </a>
+            <FaInstagram size={30} className="text-pink-400" />
+          </motion.a>
         )}
         {socialLinks.youtube && (
-          <a
+          <motion.a
             href={socialLinks.youtube}
             target="_blank"
             rel="noopener noreferrer"
+            whileHover={{ scale: 1.2 }}
           >
-            <FaYoutube
-              size={30}
-              className="text-red-500 hover:scale-110 transition-transform"
-            />
-          </a>
+            <FaYoutube size={30} className="text-red-500" />
+          </motion.a>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
