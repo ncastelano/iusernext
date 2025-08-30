@@ -20,7 +20,7 @@ const personalData: PersonalProfileProps = {
   name: "João Silva",
   age: 28,
   profession: "Personal Trainer",
-  photoUrl: "/images/personal.jpg", // coloque sua imagem na pasta public/images
+  photoUrl: "/images/personal.jpg",
   socialLinks: {
     whatsapp: "https://wa.me/559999999999",
     facebook: "https://facebook.com/usuario",
@@ -34,22 +34,23 @@ const PersonalPage: React.FC = () => {
   const { name, age, profession, photoUrl, socialLinks } = personalData;
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+    <div
+      className="flex flex-col items-center justify-center min-h-screen p-6
+      bg-gradient-to-br from-gray-900 via-gray-800 to-gray-700 text-white"
+    >
       {/* Foto do perfil */}
-      <img
-        src={photoUrl}
-        alt={name}
-        className="w-40 h-40 rounded-full border-4 border-indigo-500 object-cover mb-4"
-      />
+      <div className="w-44 h-44 rounded-full border-4 border-white overflow-hidden mb-4 shadow-lg">
+        <img src={photoUrl} alt={name} className="w-full h-full object-cover" />
+      </div>
 
       {/* Nome e descrição */}
-      <h1 className="text-3xl font-bold mb-2">{name}</h1>
-      <p className="text-gray-700 mb-2">
+      <h1 className="text-4xl font-bold mb-2">{name}</h1>
+      <p className="text-gray-300 mb-4">
         {age} anos - {profession}
       </p>
 
       {/* Redes sociais */}
-      <div className="flex space-x-4 mt-4">
+      <div className="flex space-x-6 mt-4">
         {socialLinks.whatsapp && (
           <a
             href={socialLinks.whatsapp}
@@ -57,8 +58,8 @@ const PersonalPage: React.FC = () => {
             rel="noopener noreferrer"
           >
             <FaWhatsapp
-              size={28}
-              className="text-green-500 hover:scale-110 transition-transform"
+              size={30}
+              className="text-green-400 hover:scale-110 transition-transform"
             />
           </a>
         )}
@@ -69,8 +70,8 @@ const PersonalPage: React.FC = () => {
             rel="noopener noreferrer"
           >
             <FaFacebook
-              size={28}
-              className="text-blue-600 hover:scale-110 transition-transform"
+              size={30}
+              className="text-blue-500 hover:scale-110 transition-transform"
             />
           </a>
         )}
@@ -81,8 +82,8 @@ const PersonalPage: React.FC = () => {
             rel="noopener noreferrer"
           >
             <FaInstagram
-              size={28}
-              className="text-pink-500 hover:scale-110 transition-transform"
+              size={30}
+              className="text-pink-400 hover:scale-110 transition-transform"
             />
           </a>
         )}
@@ -93,8 +94,8 @@ const PersonalPage: React.FC = () => {
             rel="noopener noreferrer"
           >
             <FaYoutube
-              size={28}
-              className="text-red-600 hover:scale-110 transition-transform"
+              size={30}
+              className="text-red-500 hover:scale-110 transition-transform"
             />
           </a>
         )}
