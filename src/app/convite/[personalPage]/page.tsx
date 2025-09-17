@@ -32,7 +32,6 @@ export default function ConvitePage() {
 
   const [personal, setPersonal] = useState<Personal | null>(null);
   const [loading, setLoading] = useState(true);
-  const [studentPage, setStudentPage] = useState("");
 
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -46,6 +45,7 @@ export default function ConvitePage() {
 
   const [bgPosition, setBgPosition] = useState(0);
 
+  // Carregar dados do personal
   useEffect(() => {
     const fetchPersonal = async () => {
       if (!personalPage) return;
@@ -65,7 +65,7 @@ export default function ConvitePage() {
     fetchPersonal();
   }, [personalPage]);
 
-  // Background animation
+  // Animação de background
   useEffect(() => {
     const interval = setInterval(() => {
       setBgPosition((prev) => (prev >= 100 ? 0 : prev + 0.1));
@@ -116,7 +116,7 @@ export default function ConvitePage() {
         createdAt: new Date(),
         role: "aluno",
         statusPersonal: "pendente",
-        studentPage,
+        studentPage: personalPage,
       };
 
       await setDoc(doc(db, "training", uid), alunoData);
