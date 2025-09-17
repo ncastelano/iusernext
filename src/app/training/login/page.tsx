@@ -6,7 +6,19 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  DocumentData,
+} from "firebase/firestore";
+
+interface UserData {
+  role?: string;
+  studentPage?: string;
+  uid?: string;
+}
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -42,19 +54,23 @@ export default function LoginPage() {
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
-        const userData = snapshot.docs[0].data() as any;
-        if (userData.role === "aluno") {
-          const studentPage = userData.studentPage;
-          router.push(`/aluno/${encodeURIComponent(studentPage)}`);
+        const userData = snapshot.docs[0].data() as UserData;
+
+        if (userData.role === "aluno" && userData.studentPage) {
+          router.push(`/aluno/${encodeURIComponent(userData.studentPage)}`);
         } else {
           router.push("/personal_home");
         }
       } else {
         router.push("/personal_home");
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error(err);
-      setError(err.message);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Erro desconhecido ao tentar entrar.");
+      }
     } finally {
       setLoading(false);
     }
@@ -74,6 +90,7 @@ export default function LoginPage() {
         boxSizing: "border-box",
       }}
     >
+      {/* Background gradient animado */}
       <div
         style={{
           position: "absolute",
@@ -94,6 +111,7 @@ export default function LoginPage() {
           zIndex: 2,
         }}
       />
+
       <div
         style={{
           position: "relative",

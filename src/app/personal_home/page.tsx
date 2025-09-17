@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
-import { useRouter } from "next/navigation";
 import PersonalAvatar from "@/app/components/PersonalAvatar";
 import AddOrMyLink from "@/app/components/AddOrMyLink";
 import AlunosPendentes from "@/app/components/StudentsPending";
