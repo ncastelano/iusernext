@@ -1,26 +1,197 @@
-@import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=Bangers&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&display=swap");
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Reset básico */
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100dvh; /* ocupa sempre toda a tela visível */
+  width: 100%;
+  font-family: system-ui, sans-serif;
+  background-color: #000;
+  color: #fff;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+/* Links padrão */
+a {
+  color: #22c55e;
+  text-decoration: none;
+  transition: color 0.3s ease;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+a:hover {
+  color: #16a34a;
+}
+
+a:active {
+  color: #f6f33b;
+}
+
+/* Centralização de conteúdo quando necessário */
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+}
+
+/* Fundo geral (Login / Home / etc) */
+.background,
+.login-container {
+  position: relative;
+  min-height: 100dvh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  /* Espaçamento das bordas da tela */
+  padding: 3rem; /* você pode ajustar, ex: 2rem para mais espaçamento */
+  box-sizing: border-box; /* garante que o padding não aumente o tamanho total */
+}
+
+/* Fundo degradê animado */
+.background {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #0f5976, #0f766e, #0f7646, #0f7625);
+  background-size: 400% 400%;
+  animation: gradientFlow 5s ease infinite;
+  z-index: 1;
+}
+
+@keyframes gradientFlow {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Overlay preto semi-transparente */
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 2;
+}
+
+/* Conteúdo principal */
+.content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  color: white;
+}
+
+/* Card com glassmorphism */
+.login-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px) saturate(180%);
+  -webkit-backdrop-filter: blur(15px) saturate(180%);
+  padding: 2rem 1.5rem;
+  border-radius: 16px;
+  width: 300px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.login-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.8);
+}
+
+.input-wrapper {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  font-size: 1rem;
+  outline: none;
+  box-sizing: border-box;
+  transition: 0.3s;
+}
+
+.login-card input:focus {
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 2px #22c55e;
+}
+
+/* Botão Entrar */
+.login-card button {
+  width: 100%;
+  padding: 12px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  color: white;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s, transform 0.2s;
+}
+
+.login-card button:hover {
+  background: #16a34a;
+  transform: scale(1.02);
+}
+
+/* Textos extras */
+.error-text {
+  margin-top: 0.5rem;
+  color: #f97316;
+  font-size: 0.9rem;
+}
+
+.register-text {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.register-link {
+  color: #22c55e;
+  font-weight: 600;
+  text-decoration: none;
+}
+.register-link:hover {
+  text-decoration: underline;
+}
+
+/* Input de senha com ícone */
+.password-wrapper {
+  position: relative;
+}
+.password-wrapper input {
+  padding-right: 40px;
+}
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #fff;
+  font-size: 1.2rem;
 }

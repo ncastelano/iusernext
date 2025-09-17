@@ -8,13 +8,13 @@ import Image from "next/image";
 import { CustomInfoWindowVideo } from "@/app/mapa/CustomInfoWindow";
 import { darkThemeStyleArray } from "@/lib/darkThemeStyleArray";
 import { Video } from "types/video";
-import { User } from "types/user";
 import { FilterMap } from "@/app/mapa/FilterMap";
 import { VideoMarker } from "../components/VideoMaker";
 import { CustomInfoWindowUser } from "@/app/mapa/CustomInfoWindowUser";
 import { FilteredList } from "@/app/mapa/FilteredList";
 import { SendOrDeleteLocation } from "./SendOrDeleteLocation";
 import { useUser } from "../components/UserContext";
+import { User } from "types/users";
 
 const containerStyle = {
   width: "100%",

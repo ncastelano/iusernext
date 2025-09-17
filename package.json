@@ -10,9 +10,12 @@
   },
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.10.1",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@react-google-maps/api": "^2.20.6",
     "bootstrap": "^5.3.7",
     "browser-image-compression": "^2.0.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "ffmpeg-static": "^5.2.0",
     "firebase": "^11.8.1",
@@ -36,7 +39,9 @@
     "react-swipeable": "^7.0.2",
     "swiper": "^11.2.8",
     "swr": "^2.3.3",
-    "tailwind-scrollbar": "^4.0.2"
+    "tailwind-merge": "^3.3.1",
+    "tailwind-scrollbar": "^4.0.2",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

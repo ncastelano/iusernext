@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import "leaflet/dist/leaflet.css";
 import "leaflet-draw/dist/leaflet.draw.css";
-import "./home/responsive.css"; // ✅ Importando o CSS com variáveis
+import "./home/responsive.css";
 import { UserProvider } from "./components/UserContext";
+import NavbarTrainingWrapper from "./components/NavbarTrainingWrapper";
 
 export const metadata: Metadata = {
   title: "iUser",
@@ -13,7 +14,6 @@ export const metadata: Metadata = {
     icon: "/icon/icon_blackbg_512x512.png",
     apple: "/icon/icon_blackbg_512x512.png",
   },
-  themeColor: "#6B21A8", // Roxo
 };
 
 export default function RootLayout({
@@ -30,7 +30,11 @@ export default function RootLayout({
         />
       </head>
       <body>
-        <UserProvider>{children}</UserProvider>
+        <UserProvider>
+          {/* NavbarTraining agora é client component e decide internamente se mostra ou não */}
+          <NavbarTrainingWrapper />
+          {children}
+        </UserProvider>
       </body>
     </html>
   );
