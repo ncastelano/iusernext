@@ -26,8 +26,6 @@ export default function PersonalHome() {
   const [telefone, setTelefone] = useState("");
   const [anamneseOption, setAnamneseOption] = useState("");
 
-  const router = useRouter();
-
   useEffect(() => {
     const hour = new Date().getHours();
     if (hour >= 5 && hour < 12) setGreeting("Bom dia");

@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 
 interface Personal {
   uid: string;
   name: string;
   email: string;
   image: string;
-  personalPage: string; // precisamos do personalPage para montar a URL
+  personalPage: string;
 }
 
 interface PersonalAvatarProps {
@@ -30,7 +31,7 @@ export default function PersonalAvatar({
           zIndex: 10,
           width: "100%",
           maxWidth: "400px",
-          cursor: "pointer", // indica que é clicável
+          cursor: "pointer",
         }}
       >
         <div
@@ -57,12 +58,14 @@ export default function PersonalAvatar({
               border: "2px solid white",
               overflow: "hidden",
               flexShrink: 0,
+              position: "relative",
             }}
           >
-            <img
+            <Image
               src={personal.image}
               alt={personal.name}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              fill
+              style={{ objectFit: "cover", borderRadius: "50%" }}
             />
           </div>
 

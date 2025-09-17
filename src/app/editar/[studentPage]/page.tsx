@@ -11,6 +11,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db, auth } from "@/lib/firebase";
+import Image from "next/image";
 
 interface Exercicio {
   nome: string;
@@ -164,7 +165,7 @@ export default function EditarAluno() {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* Botão de voltar no canto esquerdo */}
+      {/* Botão de voltar */}
       <div
         style={{
           width: "100%",
@@ -209,12 +210,14 @@ export default function EditarAluno() {
             overflow: "hidden",
             border: "3px solid white",
             marginBottom: "1rem",
+            position: "relative",
           }}
         >
-          <img
+          <Image
             src={aluno.image}
             alt={aluno.nome}
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            fill
+            style={{ objectFit: "cover", borderRadius: "50%" }}
           />
         </div>
       )}
