@@ -12,7 +12,6 @@ import {
   doc,
 } from "firebase/firestore";
 import Image from "next/image";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { db, auth, storage } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
@@ -34,7 +33,6 @@ export default function ConvitePage() {
   const [personal, setPersonal] = useState<Personal | null>(null);
   const [loading, setLoading] = useState(true);
   const [studentPage, setStudentPage] = useState("");
-  const [showInfoCard, setShowInfoCard] = useState(false);
 
   const [nome, setNome] = useState("");
   const [whatsapp, setWhatsapp] = useState("");
@@ -42,13 +40,10 @@ export default function ConvitePage() {
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [senha2, setSenha2] = useState("");
-  const [showSenha, setShowSenha] = useState(false);
-  const [showSenha2, setShowSenha2] = useState(false);
 
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
 
-  const [submitting, setSubmitting] = useState(false);
   const [bgPosition, setBgPosition] = useState(0);
 
   useEffect(() => {
@@ -78,34 +73,6 @@ export default function ConvitePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const formatDateInput = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 8);
-    if (digits.length >= 5)
-      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(
-        4,
-        8
-      )}`;
-    if (digits.length >= 3)
-      return `${digits.slice(0, 2)}/${digits.slice(2, 4)}`;
-    return digits;
-  };
-
-  const maskWhatsapp = (value: string) => {
-    let digits = value.replace(/\D/g, "").slice(0, 13);
-    if (!digits.startsWith("55")) digits = "55" + digits;
-    if (digits.length >= 13)
-      return `+${digits.slice(0, 2)} (${digits.slice(2, 4)}) ${digits.slice(
-        4,
-        9
-      )}-${digits.slice(9)}`;
-    if (digits.length >= 7)
-      return `+${digits.slice(0, 2)} (${digits.slice(2, 4)}) ${digits.slice(
-        4
-      )}`;
-    if (digits.length >= 4) return `+${digits.slice(0, 2)} (${digits.slice(2)}`;
-    return `+${digits}`;
-  };
-
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -130,7 +97,6 @@ export default function ConvitePage() {
     }
 
     try {
-      setSubmitting(true);
       const userCred = await createUserWithEmailAndPassword(auth, email, senha);
       const uid = userCred.user.uid;
 
@@ -155,6 +121,8 @@ export default function ConvitePage() {
 
       await setDoc(doc(db, "training", uid), alunoData);
       alert("Cadastro realizado com sucesso!");
+
+      // Reset form
       setNome("");
       setWhatsapp("");
       setIdade("");
@@ -163,6 +131,7 @@ export default function ConvitePage() {
       setSenha2("");
       setImageFile(null);
       setPreview(null);
+
       router.push("/training/login");
     } catch (err: unknown) {
       console.error("Erro ao cadastrar:", err);
@@ -171,8 +140,6 @@ export default function ConvitePage() {
       } else {
         alert("Erro ao cadastrar");
       }
-    } finally {
-      setSubmitting(false);
     }
   };
 
@@ -201,6 +168,7 @@ export default function ConvitePage() {
         color: "white",
       }}
     >
+      {/* Background */}
       <div
         style={{
           position: "absolute",
@@ -331,10 +299,7 @@ export default function ConvitePage() {
                   src={preview}
                   alt="Preview"
                   fill
-                  style={{
-                    objectFit: "cover",
-                    borderRadius: "50%",
-                  }}
+                  style={{ objectFit: "cover", borderRadius: "50%" }}
                 />
               ) : (
                 <>
@@ -350,8 +315,79 @@ export default function ConvitePage() {
               />
             </label>
 
-            {/* Resto dos campos... */}
-            {/* Mantém todos os inputs como estão */}
+            {/* Inputs */}
+            {[
+              {
+                placeholder: "Nome",
+                value: nome,
+                setter: setNome,
+                type: "text",
+              },
+              {
+                placeholder: "Whatsapp",
+                value: whatsapp,
+                setter: setWhatsapp,
+                type: "text",
+              },
+              {
+                placeholder: "Idade",
+                value: idade,
+                setter: setIdade,
+                type: "text",
+              },
+              {
+                placeholder: "Email",
+                value: email,
+                setter: setEmail,
+                type: "email",
+              },
+              {
+                placeholder: "Senha",
+                value: senha,
+                setter: setSenha,
+                type: "password",
+              },
+              {
+                placeholder: "Confirmar senha",
+                value: senha2,
+                setter: setSenha2,
+                type: "password",
+              },
+            ].map((input, idx) => (
+              <input
+                key={idx}
+                type={input.type}
+                placeholder={input.placeholder}
+                value={input.value}
+                onChange={(e) => input.setter(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  border: "none",
+                  marginBottom: 12,
+                  background: "rgba(255,255,255,0.1)",
+                  color: "white",
+                }}
+              />
+            ))}
+
+            <button
+              type="submit"
+              style={{
+                width: "100%",
+                padding: "12px",
+                background: "#22c55e",
+                border: "none",
+                borderRadius: 8,
+                fontWeight: 700,
+                color: "white",
+                cursor: "pointer",
+              }}
+            >
+              Cadastrar
+            </button>
           </form>
         </div>
 

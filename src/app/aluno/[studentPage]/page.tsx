@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import {
   collection,
   getDocs,
@@ -9,6 +9,7 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
+import Image from "next/image";
 import { db } from "@/lib/firebase";
 
 interface Exercicio {
@@ -27,14 +28,13 @@ interface Aluno {
   personalPage?: string;
   studentPage?: string;
   whatsapp?: string;
-  createdAt?: any; // Timestamp ou string
+  createdAt?: Timestamp | string;
   treino?: Treino;
   personalUID: string;
 }
 
 export default function AlunoPage() {
   const { studentPage } = useParams();
-  const router = useRouter();
   const [aluno, setAluno] = useState<Aluno | null>(null);
   const [loading, setLoading] = useState(true);
   const [personalImage, setPersonalImage] = useState<string | null>(null);
@@ -108,7 +108,7 @@ export default function AlunoPage() {
       </p>
     );
 
-  const formatarDataCompleta = (createdAt: any) => {
+  const formatarDataCompleta = (createdAt?: Timestamp | string) => {
     if (!createdAt) return "";
     const date =
       createdAt instanceof Timestamp ? createdAt.toDate() : new Date(createdAt);
@@ -121,7 +121,7 @@ export default function AlunoPage() {
     });
   };
 
-  const tempoDecorrido = (createdAt: any) => {
+  const tempoDecorrido = (createdAt?: Timestamp | string) => {
     if (!createdAt) return "";
     const date =
       createdAt instanceof Timestamp ? createdAt.toDate() : new Date(createdAt);
@@ -177,12 +177,14 @@ export default function AlunoPage() {
               overflow: "hidden",
               border: "3px solid #22c55e",
               boxShadow: "0 0 15px rgba(34, 197, 94, 0.5)",
+              position: "relative",
             }}
           >
-            <img
+            <Image
               src={aluno.image}
               alt={aluno.nome}
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              fill
+              style={{ objectFit: "cover" }}
             />
           </div>
         )}
@@ -259,16 +261,14 @@ export default function AlunoPage() {
                     overflow: "hidden",
                     border: "3px solid rgba(255,255,255,0.8)",
                     boxShadow: "0 0 10px rgba(255,255,255,0.5)",
+                    position: "relative",
                   }}
                 >
-                  <img
+                  <Image
                     src={personalImage}
                     alt={aluno.personalPage}
-                    style={{
-                      width: "100%",
-                      height: "100%",
-                      objectFit: "cover",
-                    }}
+                    fill
+                    style={{ objectFit: "cover" }}
                   />
                 </div>
                 <div>

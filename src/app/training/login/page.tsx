@@ -6,13 +6,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  DocumentData,
-} from "firebase/firestore";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface UserData {
   role?: string;

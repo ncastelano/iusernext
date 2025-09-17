@@ -1,5 +1,5 @@
 "use client";
-
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import {
   collection,
@@ -144,12 +144,14 @@ export default function AlunosPendentes() {
                   overflow: "hidden",
                   margin: "0 auto 0.5rem",
                   border: "3px solid #22c55e",
+                  position: "relative", // necessário para Image fill
                 }}
               >
-                <img
+                <Image
                   src={aluno.image}
                   alt={aluno.nome}
-                  style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  fill
+                  style={{ objectFit: "cover", borderRadius: "50%" }}
                 />
               </div>
             )}
