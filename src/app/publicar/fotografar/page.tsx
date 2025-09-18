@@ -39,25 +39,44 @@ export default function Fotografar() {
     }
   }, []);
 
-  // inicia câmera
+  // inicia câmera com tratamento de falha
   const startCamera = useCallback(
     async (deviceId?: string | null) => {
       setError(null);
       setLoadingCamera(true);
+
       try {
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((t) => t.stop());
           streamRef.current = null;
         }
 
-        const constraints: MediaStreamConstraints = {
-          video: deviceId
-            ? { deviceId: { exact: deviceId } }
-            : { facingMode: { ideal: "environment" } },
-          audio: false,
-        };
+        let constraints: MediaStreamConstraints;
 
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        if (deviceId) {
+          constraints = {
+            video: { deviceId: { ideal: deviceId } },
+            audio: false,
+          };
+        } else {
+          constraints = {
+            video: { facingMode: { ideal: "environment" } },
+            audio: false,
+          };
+        }
+
+        let stream: MediaStream | null = null;
+
+        try {
+          stream = await navigator.mediaDevices.getUserMedia(constraints);
+        } catch {
+          // fallback se deviceId falhar
+          stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: { ideal: "environment" } },
+            audio: false,
+          });
+        }
+
         streamRef.current = stream;
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -65,6 +84,7 @@ export default function Fotografar() {
         }
         setIsCameraOn(true);
         setLoadingCamera(false);
+
         await enumerateVideoDevices();
       } catch (err) {
         console.error("Erro ao iniciar câmera:", err);
@@ -146,15 +166,11 @@ export default function Fotografar() {
   useEffect(() => {
     enumerateVideoDevices();
     startCamera(selectedDeviceId ?? null);
-    return () => {
-      stopCamera();
-    };
+    return () => stopCamera();
   }, [enumerateVideoDevices, startCamera, stopCamera, selectedDeviceId]);
 
   useEffect(() => {
-    if (selectedDeviceId) {
-      startCamera(selectedDeviceId);
-    }
+    if (selectedDeviceId) startCamera(selectedDeviceId);
   }, [selectedDeviceId, startCamera]);
 
   return (
