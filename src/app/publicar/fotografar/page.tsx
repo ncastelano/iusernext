@@ -28,7 +28,6 @@ export default function Fotografar() {
     "environment"
   );
 
-  // Inicia a câmera
   const startCamera = useCallback(async () => {
     setError(null);
     setLoadingCamera(true);
@@ -120,7 +119,6 @@ export default function Fotografar() {
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   }, []);
 
-  // Reinicia câmera sempre que facingMode mudar
   useEffect(() => {
     startCamera();
     return () => stopCamera();
@@ -168,26 +166,6 @@ export default function Fotografar() {
         </button>
 
         <div style={{ fontWeight: 700, fontSize: 90 }}>Fotografar</div>
-
-        <div style={{ marginLeft: "auto", display: "flex", gap: 40 }}>
-          <button
-            onClick={toggleFacingMode}
-            style={{
-              padding: "40px 50px",
-              borderRadius: 40,
-              border: "none",
-              background: "rgba(255,255,255,0.06)",
-              color: "#fff",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              fontSize: 80,
-            }}
-          >
-            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
-          </button>
-        </div>
       </div>
 
       {/* Main area */}
@@ -196,17 +174,143 @@ export default function Fotografar() {
           flex: 1,
           position: "relative",
           display: "flex",
-          flexDirection: "column",
+          flexDirection: "row",
+          paddingBottom: 100, // espaço extra
         }}
       >
+        {/* Botões em coluna esquerda */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: 40,
+            padding: 40,
+          }}
+        >
+          <button
+            onClick={toggleFacingMode}
+            style={{
+              padding: "30px",
+              borderRadius: 30,
+              border: "none",
+              background: "rgba(255,255,255,0.06)",
+              color: "#fff",
+              fontSize: 60,
+              display: "flex",
+              alignItems: "center",
+              gap: 10,
+              cursor: "pointer",
+            }}
+          >
+            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
+          </button>
+
+          {!previewDataUrl && (
+            <button
+              onClick={takePhoto}
+              style={{
+                padding: "30px",
+                borderRadius: 30,
+                border: "none",
+                background: "linear-gradient(180deg,#22c55e,#16a34a)",
+                color: "#000",
+                fontSize: 80,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: "pointer",
+              }}
+            >
+              <FaCamera /> Tirar Foto
+            </button>
+          )}
+
+          {previewDataUrl && (
+            <>
+              <button
+                onClick={retake}
+                style={{
+                  padding: "30px",
+                  borderRadius: 30,
+                  border: "none",
+                  background: "rgba(255,255,255,0.06)",
+                  color: "#fff",
+                  fontSize: 60,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                }}
+              >
+                <FaRedo /> Refazer
+              </button>
+
+              <button
+                onClick={downloadPhoto}
+                style={{
+                  padding: "30px",
+                  borderRadius: 30,
+                  border: "none",
+                  background: "#22c55e",
+                  color: "#000",
+                  fontSize: 60,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                }}
+              >
+                <FaDownload /> Baixar
+              </button>
+
+              <button
+                onClick={() => alert("Foto aceita — implementar upload.")}
+                style={{
+                  padding: "30px",
+                  borderRadius: 30,
+                  border: "none",
+                  background: "#2563eb",
+                  color: "#fff",
+                  fontSize: 60,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                }}
+              >
+                <FaCamera /> Aceitar
+              </button>
+
+              <button
+                onClick={() => setPreviewDataUrl(null)}
+                style={{
+                  padding: "30px",
+                  borderRadius: 30,
+                  border: "1px solid rgba(255,255,255,0.06)",
+                  background: "transparent",
+                  color: "#fff",
+                  fontSize: 60,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 10,
+                  cursor: "pointer",
+                }}
+              >
+                <FaTrash /> Apagar
+              </button>
+            </>
+          )}
+        </div>
+
+        {/* Vídeo / preview */}
         <div
           style={{
             flex: 1,
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            background: "#111",
             position: "relative",
+            background: "#111",
           }}
         >
           {!previewDataUrl && (
@@ -269,131 +373,6 @@ export default function Fotografar() {
               Carregando câmera...
             </div>
           )}
-        </div>
-
-        {/* Controls */}
-        <div
-          style={{
-            height: 400,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            gap: 60,
-            padding: "60px",
-            boxSizing: "border-box",
-            background:
-              "linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.6))",
-          }}
-        >
-          <div />
-
-          <div style={{ display: "flex", gap: 60, alignItems: "center" }}>
-            {previewDataUrl ? (
-              <>
-                <button
-                  onClick={retake}
-                  style={{
-                    padding: "40px 50px",
-                    borderRadius: 40,
-                    border: "none",
-                    background: "rgba(255,255,255,0.06)",
-                    color: "#fff",
-                    fontSize: 80,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaRedo /> Refazer
-                </button>
-
-                <button
-                  onClick={downloadPhoto}
-                  style={{
-                    padding: "40px 50px",
-                    borderRadius: 40,
-                    border: "none",
-                    background: "#22c55e",
-                    color: "#000",
-                    fontWeight: 700,
-                    fontSize: 80,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaDownload /> Baixar
-                </button>
-
-                <button
-                  onClick={() => alert("Foto aceita — implementar upload.")}
-                  style={{
-                    padding: "40px 50px",
-                    borderRadius: 40,
-                    border: "none",
-                    background: "#2563eb",
-                    color: "#fff",
-                    fontWeight: 700,
-                    fontSize: 80,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaCamera /> Aceitar
-                </button>
-
-                <button
-                  onClick={() => setPreviewDataUrl(null)}
-                  style={{
-                    padding: "30px",
-                    borderRadius: 30,
-                    border: "1px solid rgba(255,255,255,0.06)",
-                    background: "transparent",
-                    color: "#fff",
-                    fontSize: 80,
-                    cursor: "pointer",
-                  }}
-                >
-                  <FaTrash />
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={takePhoto}
-                  style={{
-                    width: 250,
-                    height: 250,
-                    borderRadius: "50%",
-                    background: "linear-gradient(180deg,#22c55e,#16a34a)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    border: "none",
-                    boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
-                    cursor: "pointer",
-                    fontSize: 120,
-                    color: "#000",
-                  }}
-                >
-                  <FaCamera />
-                </button>
-
-                <button
-                  onClick={() => {
-                    if (isCameraOn) stopCamera();
-                    else startCamera();
-                  }}
-                  style={{
-                    padding: "40px 50px",
-                    borderRadius: 40,
-                    border: "none",
-                    background: "rgba(255,255,255,0.06)",
-                    color: "#fff",
-                    fontSize: 80,
-                    cursor: "pointer",
-                  }}
-                >
-                  {isCameraOn ? "Desligar" : "Ligar câmera"}
-                </button>
-              </>
-            )}
-          </div>
         </div>
       </div>
 
