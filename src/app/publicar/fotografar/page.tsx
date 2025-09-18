@@ -20,7 +20,6 @@ export default function Fotografar() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const [isCameraOn, setIsCameraOn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [loadingCamera, setLoadingCamera] = useState(false);
@@ -28,6 +27,7 @@ export default function Fotografar() {
     "environment"
   );
 
+  // Inicia a câmera
   const startCamera = useCallback(async () => {
     setError(null);
     setLoadingCamera(true);
@@ -49,7 +49,6 @@ export default function Fotografar() {
         await videoRef.current.play().catch(() => {});
       }
 
-      setIsCameraOn(true);
       setLoadingCamera(false);
     } catch (err) {
       console.error("Erro ao iniciar câmera:", err);
@@ -66,7 +65,6 @@ export default function Fotografar() {
       streamRef.current.getTracks().forEach((t) => t.stop());
       streamRef.current = null;
     }
-    setIsCameraOn(false);
   }, []);
 
   const takePhoto = useCallback(() => {
@@ -119,6 +117,7 @@ export default function Fotografar() {
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   }, []);
 
+  // Reinicia câmera sempre que facingMode mudar
   useEffect(() => {
     startCamera();
     return () => stopCamera();
@@ -143,7 +142,6 @@ export default function Fotografar() {
           alignItems: "center",
           padding: "0 80px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
-          gap: 60,
           background: "rgba(0,0,0,0.7)",
           fontSize: 90,
         }}
@@ -160,6 +158,7 @@ export default function Fotografar() {
             color: "#fff",
             fontSize: 90,
             cursor: "pointer",
+            marginRight: 40,
           }}
         >
           <FaArrowLeft />
@@ -172,74 +171,52 @@ export default function Fotografar() {
       <div
         style={{
           flex: 1,
-          position: "relative",
           display: "flex",
-          flexDirection: "row",
-          paddingBottom: 100, // espaço extra
         }}
       >
-        {/* Botões em coluna esquerda */}
+        {/* Botões em coluna */}
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            gap: 40,
-            padding: 40,
+            gap: 60,
+            padding: "60px 40px 100px 40px", // padding embaixo 100
+            minWidth: 300,
           }}
         >
           <button
             onClick={toggleFacingMode}
             style={{
               padding: "30px",
-              borderRadius: 30,
+              borderRadius: 40,
               border: "none",
               background: "rgba(255,255,255,0.06)",
               color: "#fff",
-              fontSize: 60,
               display: "flex",
               alignItems: "center",
-              gap: 10,
+              gap: 20,
+              fontSize: 50,
               cursor: "pointer",
             }}
           >
             <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
           </button>
 
-          {!previewDataUrl && (
-            <button
-              onClick={takePhoto}
-              style={{
-                padding: "30px",
-                borderRadius: 30,
-                border: "none",
-                background: "linear-gradient(180deg,#22c55e,#16a34a)",
-                color: "#000",
-                fontSize: 80,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                cursor: "pointer",
-              }}
-            >
-              <FaCamera /> Tirar Foto
-            </button>
-          )}
-
-          {previewDataUrl && (
+          {previewDataUrl ? (
             <>
               <button
                 onClick={retake}
                 style={{
                   padding: "30px",
-                  borderRadius: 30,
+                  borderRadius: 40,
                   border: "none",
                   background: "rgba(255,255,255,0.06)",
                   color: "#fff",
-                  fontSize: 60,
+                  fontSize: 50,
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  cursor: "pointer",
                 }}
               >
                 <FaRedo /> Refazer
@@ -249,15 +226,16 @@ export default function Fotografar() {
                 onClick={downloadPhoto}
                 style={{
                   padding: "30px",
-                  borderRadius: 30,
+                  borderRadius: 40,
                   border: "none",
                   background: "#22c55e",
                   color: "#000",
-                  fontSize: 60,
+                  fontWeight: 700,
+                  fontSize: 50,
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  cursor: "pointer",
                 }}
               >
                 <FaDownload /> Baixar
@@ -267,15 +245,16 @@ export default function Fotografar() {
                 onClick={() => alert("Foto aceita — implementar upload.")}
                 style={{
                   padding: "30px",
-                  borderRadius: 30,
+                  borderRadius: 40,
                   border: "none",
                   background: "#2563eb",
                   color: "#fff",
-                  fontSize: 60,
+                  fontWeight: 700,
+                  fontSize: 50,
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  cursor: "pointer",
                 }}
               >
                 <FaCamera /> Aceitar
@@ -285,32 +264,51 @@ export default function Fotografar() {
                 onClick={() => setPreviewDataUrl(null)}
                 style={{
                   padding: "30px",
-                  borderRadius: 30,
+                  borderRadius: 40,
                   border: "1px solid rgba(255,255,255,0.06)",
                   background: "transparent",
                   color: "#fff",
-                  fontSize: 60,
+                  fontSize: 50,
+                  cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
-                  cursor: "pointer",
                 }}
               >
-                <FaTrash /> Apagar
+                <FaTrash /> Excluir
               </button>
             </>
+          ) : (
+            <button
+              onClick={takePhoto}
+              style={{
+                padding: "50px",
+                borderRadius: "50%",
+                background: "linear-gradient(180deg,#22c55e,#16a34a)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                border: "none",
+                boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
+                cursor: "pointer",
+                fontSize: 80,
+                color: "#000",
+              }}
+            >
+              <FaCamera />
+            </button>
           )}
         </div>
 
-        {/* Vídeo / preview */}
+        {/* Preview / Video */}
         <div
           style={{
             flex: 1,
+            position: "relative",
+            background: "#111",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            position: "relative",
-            background: "#111",
           }}
         >
           {!previewDataUrl && (
@@ -319,12 +317,7 @@ export default function Fotografar() {
               playsInline
               muted
               autoPlay
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                background: "#000",
-              }}
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
           )}
 
@@ -346,9 +339,9 @@ export default function Fotografar() {
                 left: 20,
                 background: "#ff4d4f",
                 color: "#fff",
-                padding: "30px 50px",
+                padding: "20px 30px",
                 borderRadius: 30,
-                fontSize: 60,
+                fontSize: 40,
                 zIndex: 50,
               }}
             >
@@ -367,7 +360,7 @@ export default function Fotografar() {
                 background: "rgba(0,0,0,0.6)",
                 padding: 50,
                 borderRadius: 30,
-                fontSize: 60,
+                fontSize: 40,
               }}
             >
               Carregando câmera...
