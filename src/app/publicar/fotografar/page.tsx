@@ -154,7 +154,7 @@ export default function Fotografar() {
         <div style={{ fontWeight: 700, fontSize: 90 }}>Fotografar</div>
       </div>
 
-      {/* Video + Botões Stack */}
+      {/* Video + Stack */}
       <div
         style={{
           flex: 1,
@@ -165,6 +165,7 @@ export default function Fotografar() {
           justifyContent: "center",
         }}
       >
+        {/* Video ou Preview */}
         {!previewDataUrl && (
           <video
             ref={videoRef}
@@ -184,36 +185,41 @@ export default function Fotografar() {
           />
         )}
 
-        {/* Stack de botões sobrepostos */}
+        {/* Botão alternar câmera canto superior direito */}
+        <button
+          onClick={toggleFacingMode}
+          style={{
+            position: "absolute",
+            top: 40,
+            right: 40,
+            padding: "20px",
+            borderRadius: 40,
+            border: "none",
+            background: "rgba(0,0,0,0.5)",
+            color: "#fff",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 40,
+            cursor: "pointer",
+            backdropFilter: "blur(6px)",
+          }}
+        >
+          <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
+        </button>
+
+        {/* Botões principais no canto inferior central */}
         <div
           style={{
             position: "absolute",
-            top: 60,
-            left: 60,
+            bottom: 60,
+            left: "50%",
+            transform: "translateX(-50%)",
             display: "flex",
-            flexDirection: "column",
-            gap: 40,
-            paddingBottom: 100,
+            gap: 30,
+            alignItems: "center",
           }}
         >
-          <button
-            onClick={toggleFacingMode}
-            style={{
-              padding: "20px",
-              borderRadius: 40,
-              border: "none",
-              background: "rgba(255,255,255,0.06)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              gap: 15,
-              fontSize: 40,
-              cursor: "pointer",
-            }}
-          >
-            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
-          </button>
-
           {previewDataUrl ? (
             <>
               <button
@@ -222,13 +228,14 @@ export default function Fotografar() {
                   padding: "20px",
                   borderRadius: 40,
                   border: "none",
-                  background: "rgba(255,255,255,0.06)",
+                  background: "rgba(255,255,255,0.2)",
                   color: "#fff",
-                  fontSize: 40,
+                  fontSize: 30,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
+                  backdropFilter: "blur(6px)",
                 }}
               >
                 <FaRedo /> Refazer
@@ -242,7 +249,7 @@ export default function Fotografar() {
                   background: "#22c55e",
                   color: "#000",
                   fontWeight: 700,
-                  fontSize: 40,
+                  fontSize: 30,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -260,7 +267,7 @@ export default function Fotografar() {
                   background: "#2563eb",
                   color: "#fff",
                   fontWeight: 700,
-                  fontSize: 40,
+                  fontSize: 30,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
@@ -274,14 +281,15 @@ export default function Fotografar() {
                 style={{
                   padding: "20px",
                   borderRadius: 40,
-                  border: "1px solid rgba(255,255,255,0.06)",
+                  border: "1px solid rgba(255,255,255,0.3)",
                   background: "transparent",
                   color: "#fff",
-                  fontSize: 40,
+                  fontSize: 30,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
                   gap: 10,
+                  backdropFilter: "blur(6px)",
                 }}
               >
                 <FaTrash /> Excluir
@@ -291,16 +299,14 @@ export default function Fotografar() {
             <button
               onClick={takePhoto}
               style={{
-                padding: "40px",
+                width: 100,
+                height: 100,
                 borderRadius: "50%",
                 background: "linear-gradient(180deg,#22c55e,#16a34a)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 border: "none",
                 boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
                 cursor: "pointer",
-                fontSize: 60,
+                fontSize: 40,
                 color: "#000",
               }}
             >
@@ -309,6 +315,7 @@ export default function Fotografar() {
           )}
         </div>
 
+        {/* Error */}
         {error && (
           <div
             style={{
@@ -327,6 +334,7 @@ export default function Fotografar() {
           </div>
         )}
 
+        {/* Loading */}
         {loadingCamera && (
           <div
             style={{
