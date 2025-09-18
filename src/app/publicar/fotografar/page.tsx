@@ -11,6 +11,7 @@ import {
   FaSyncAlt,
   FaArrowLeft,
 } from "react-icons/fa";
+import Image from "next/image";
 
 /**
  * Página Fotografar — captura de foto usando a câmera do dispositivo.
@@ -295,15 +296,12 @@ export default function FotografarPage() {
 
           {/* Preview imagem capturada */}
           {previewDataUrl && (
-            <img
+            <Image
               src={previewDataUrl}
               alt="Preview da foto"
-              style={{
-                width: "100%",
-                height: "100%",
-                objectFit: "cover",
-                display: "block",
-              }}
+              fill
+              unoptimized
+              style={{ objectFit: "cover" }}
             />
           )}
 
