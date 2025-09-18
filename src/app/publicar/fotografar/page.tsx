@@ -20,83 +20,47 @@ export default function Fotografar() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
 
-  const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
-  const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [loadingCamera, setLoadingCamera] = useState(false);
-
-  // lista devices
-  const enumerateVideoDevices = useCallback(async () => {
-    try {
-      const all = await navigator.mediaDevices.enumerateDevices();
-      const videoInputs = all.filter((d) => d.kind === "videoinput");
-      setDevices(videoInputs);
-    } catch (err) {
-      console.error("Erro enumerando dispositivos:", err);
-      setDevices([]);
-    }
-  }, []);
-
-  // inicia câmera com tratamento de falha
-  const startCamera = useCallback(
-    async (deviceId?: string | null) => {
-      setError(null);
-      setLoadingCamera(true);
-
-      try {
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach((t) => t.stop());
-          streamRef.current = null;
-        }
-
-        let constraints: MediaStreamConstraints;
-
-        if (deviceId) {
-          constraints = {
-            video: { deviceId: { ideal: deviceId } },
-            audio: false,
-          };
-        } else {
-          constraints = {
-            video: { facingMode: { ideal: "environment" } },
-            audio: false,
-          };
-        }
-
-        let stream: MediaStream | null = null;
-
-        try {
-          stream = await navigator.mediaDevices.getUserMedia(constraints);
-        } catch {
-          // fallback se deviceId falhar
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: { ideal: "environment" } },
-            audio: false,
-          });
-        }
-
-        streamRef.current = stream;
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(() => {});
-        }
-        setIsCameraOn(true);
-        setLoadingCamera(false);
-
-        await enumerateVideoDevices();
-      } catch (err) {
-        console.error("Erro ao iniciar câmera:", err);
-        setLoadingCamera(false);
-        setError(
-          (err as Error)?.message ||
-            "Não foi possível acessar a câmera. Verifique permissões."
-        );
-      }
-    },
-    [enumerateVideoDevices]
+  const [facingMode, setFacingMode] = useState<"user" | "environment">(
+    "environment"
   );
+
+  // Inicia a câmera
+  const startCamera = useCallback(async () => {
+    setError(null);
+    setLoadingCamera(true);
+
+    try {
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach((t) => t.stop());
+        streamRef.current = null;
+      }
+
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode },
+        audio: false,
+      });
+
+      streamRef.current = stream;
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        await videoRef.current.play().catch(() => {});
+      }
+
+      setIsCameraOn(true);
+      setLoadingCamera(false);
+    } catch (err) {
+      console.error("Erro ao iniciar câmera:", err);
+      setLoadingCamera(false);
+      setError(
+        (err as Error)?.message ||
+          "Não foi possível acessar a câmera. Verifique permissões."
+      );
+    }
+  }, [facingMode]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -127,11 +91,11 @@ export default function Fotografar() {
     stopCamera();
   }, [stopCamera]);
 
-  const retake = useCallback(async () => {
+  const retake = useCallback(() => {
     setPreviewDataUrl(null);
     setError(null);
-    await startCamera(selectedDeviceId ?? null);
-  }, [startCamera, selectedDeviceId]);
+    startCamera();
+  }, [startCamera]);
 
   const downloadPhoto = useCallback(async () => {
     if (!previewDataUrl) return;
@@ -152,26 +116,15 @@ export default function Fotografar() {
     }
   }, [previewDataUrl]);
 
-  const cycleCamera = useCallback(async () => {
-    if (devices.length <= 1) return;
-    const currentIndex = devices.findIndex(
-      (d) => d.deviceId === selectedDeviceId
-    );
-    const nextIndex = (currentIndex + 1) % devices.length;
-    const nextDeviceId = devices[nextIndex].deviceId;
-    setSelectedDeviceId(nextDeviceId);
-    await startCamera(nextDeviceId);
-  }, [devices, selectedDeviceId, startCamera]);
+  const toggleFacingMode = useCallback(() => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  }, []);
 
+  // Reinicia câmera sempre que facingMode mudar
   useEffect(() => {
-    enumerateVideoDevices();
-    startCamera(selectedDeviceId ?? null);
+    startCamera();
     return () => stopCamera();
-  }, [enumerateVideoDevices, startCamera, stopCamera, selectedDeviceId]);
-
-  useEffect(() => {
-    if (selectedDeviceId) startCamera(selectedDeviceId);
-  }, [selectedDeviceId, startCamera]);
+  }, [facingMode, startCamera, stopCamera]);
 
   return (
     <div
@@ -218,23 +171,21 @@ export default function Fotografar() {
 
         <div style={{ marginLeft: "auto", display: "flex", gap: 40 }}>
           <button
-            onClick={cycleCamera}
-            disabled={devices.length <= 1}
+            onClick={toggleFacingMode}
             style={{
               padding: "40px 50px",
               borderRadius: 40,
               border: "none",
               background: "rgba(255,255,255,0.06)",
               color: "#fff",
-              cursor: devices.length > 1 ? "pointer" : "not-allowed",
+              cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: 40,
+              gap: 20,
               fontSize: 80,
             }}
           >
-            <FaSyncAlt />
-            <span>{devices.length > 1 ? "Trocar" : "1"}</span>
+            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
           </button>
         </div>
       </div>
@@ -334,29 +285,7 @@ export default function Fotografar() {
               "linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.6))",
           }}
         >
-          <div>
-            {devices.length > 0 && (
-              <select
-                value={selectedDeviceId ?? ""}
-                onChange={(e) => setSelectedDeviceId(e.target.value || null)}
-                style={{
-                  background: "rgba(255,255,255,0.04)",
-                  color: "#fff",
-                  padding: "30px",
-                  borderRadius: 30,
-                  border: "1px solid rgba(255,255,255,0.06)",
-                  fontSize: 60,
-                }}
-              >
-                <option value="">Padrão (rear/front)</option>
-                {devices.map((d) => (
-                  <option key={d.deviceId} value={d.deviceId}>
-                    {d.label || `Câmera ${d.deviceId}`}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+          <div />
 
           <div style={{ display: "flex", gap: 60, alignItems: "center" }}>
             {previewDataUrl ? (
@@ -448,7 +377,7 @@ export default function Fotografar() {
                 <button
                   onClick={() => {
                     if (isCameraOn) stopCamera();
-                    else startCamera(selectedDeviceId ?? null);
+                    else startCamera();
                   }}
                   style={{
                     padding: "40px 50px",
