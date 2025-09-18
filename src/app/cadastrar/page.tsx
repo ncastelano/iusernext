@@ -7,6 +7,7 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, setDoc } from "firebase/firestore";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import Image from "next/image";
 
 export default function CadastroPage() {
   const [name, setName] = useState("");
@@ -75,9 +76,14 @@ export default function CadastroPage() {
 
       alert("Cadastro realizado com sucesso!");
       window.location.href = "/training/login";
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Erro ao cadastrar usuário:", error);
-      alert(error.message);
+
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Erro desconhecido ao cadastrar usuário.");
+      }
     }
   };
 
@@ -185,12 +191,12 @@ export default function CadastroPage() {
             }}
           >
             {preview ? (
-              <img
+              <Image
                 src={preview}
                 alt="Profile"
+                width={120}
+                height={120}
                 style={{
-                  width: "100%",
-                  height: "100%",
                   objectFit: "cover",
                   borderRadius: "50%",
                 }}
