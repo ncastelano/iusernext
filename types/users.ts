@@ -7,8 +7,8 @@ export interface User {
   email?: string;
   image?: string;
   bio?: string;
-  latitude?: number | null;
-  longitude?: number | null;
+  latitude: number | null;
+  longitude: number | null;
   visible?: boolean;
   createdAt?: Date;
 }

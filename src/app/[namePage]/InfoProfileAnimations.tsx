@@ -15,7 +15,6 @@ import {
   UserPlus as LucideUserPlus,
   UserMinus as LucideUserMinus,
 } from "lucide-react";
-import { User } from "types/user";
 import { auth, db } from "@/lib/firebase";
 import {
   doc,
@@ -25,6 +24,7 @@ import {
   getDocs,
   collection,
 } from "firebase/firestore";
+import { User } from "types/users";
 
 export default function InfoProfileAnimations({
   safeUser,
