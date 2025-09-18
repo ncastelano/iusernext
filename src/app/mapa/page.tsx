@@ -455,7 +455,7 @@ export default function Mapa() {
                     }}
                   >
                     <Image
-                      src={user.image}
+                      src={user.image || "/default-avatar.png"}
                       alt={user.namePage}
                       width={60}
                       height={60}

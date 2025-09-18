@@ -3,7 +3,7 @@
 import React from "react";
 import Image from "next/image";
 import { Video } from "types/video";
-import { User } from "types/user";
+import { User } from "types/users";
 
 type FilterOption = "users" | "flash" | "store" | "place" | "product";
 
@@ -124,7 +124,7 @@ export function FilteredList({
               }}
             >
               <Image
-                src={(item as User).image}
+                src={(item as User).image || "/default-avatar.png"}
                 alt={(item as User).namePage}
                 fill
                 style={{ objectFit: "cover" }}

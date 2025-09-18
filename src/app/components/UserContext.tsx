@@ -7,8 +7,8 @@ import {
   getRedirectResult,
   User as FirebaseUser,
 } from "firebase/auth";
-import { User } from "types/user";
 import { getUserFromFirestore } from "src/app/components/GetUserFromFirestore";
+import { User } from "types/users";
 
 interface UserContextType {
   user: User | null;

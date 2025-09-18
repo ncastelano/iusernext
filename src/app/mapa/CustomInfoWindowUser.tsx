@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { User } from "types/user";
+import { User } from "types/users";
 import Image from "next/image";
 import Link from "next/link";
 import { MapPin, UserPlus, UserMinus } from "lucide-react";
@@ -136,7 +136,7 @@ export const CustomInfoWindowUser = ({
             }}
           >
             <Image
-              src={user.image}
+              src={user.image || "/default-avatar.png"}
               alt={user.namePage}
               width={60}
               height={60}
