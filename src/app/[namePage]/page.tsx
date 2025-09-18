@@ -2,13 +2,13 @@
 
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { User } from "types/user";
 import { Video } from "types/video";
 import { notFound } from "next/navigation";
 import UserProfileAnimations from "./UserProfileAnimation";
 import InfoProfileAnimations from "./InfoProfileAnimations";
 import VideosProfileAnimations from "./VideoProfileAnimations";
 import CommentProfile from "./CommentProfile";
+import { User } from "types/users";
 
 export default async function UserProfilePage({
   params,
