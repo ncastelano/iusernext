@@ -19,7 +19,6 @@ export default function Fotografar() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const startCameraAbortRef = useRef<number | null>(null);
 
   const [devices, setDevices] = useState<MediaDeviceInfo[]>([]);
   const [selectedDeviceId, setSelectedDeviceId] = useState<string | null>(null);
@@ -46,12 +45,6 @@ export default function Fotografar() {
       setError(null);
       setLoadingCamera(true);
 
-      // cancela chamadas anteriores
-      if (startCameraAbortRef.current) {
-        clearTimeout(startCameraAbortRef.current);
-        startCameraAbortRef.current = null;
-      }
-
       try {
         if (streamRef.current) {
           streamRef.current.getTracks().forEach((t) => t.stop());
@@ -62,7 +55,7 @@ export default function Fotografar() {
 
         if (deviceId) {
           constraints = {
-            video: { deviceId: { exact: deviceId } },
+            video: { deviceId: { ideal: deviceId } },
             audio: false,
           };
         } else {
@@ -76,24 +69,22 @@ export default function Fotografar() {
 
         try {
           stream = await navigator.mediaDevices.getUserMedia(constraints);
-        } catch (err) {
-          console.warn("Câmera falhou, tentando fallback environment:", err);
+        } catch {
           // fallback se deviceId falhar
           stream = await navigator.mediaDevices.getUserMedia({
-            video: { facingMode: "environment" },
+            video: { facingMode: { ideal: "environment" } },
             audio: false,
           });
         }
 
         streamRef.current = stream;
-
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play().catch(() => {});
         }
-
         setIsCameraOn(true);
         setLoadingCamera(false);
+
         await enumerateVideoDevices();
       } catch (err) {
         console.error("Erro ao iniciar câmera:", err);
@@ -169,11 +160,7 @@ export default function Fotografar() {
     const nextIndex = (currentIndex + 1) % devices.length;
     const nextDeviceId = devices[nextIndex].deviceId;
     setSelectedDeviceId(nextDeviceId);
-
-    // small delay para evitar conflito de streams
-    startCameraAbortRef.current = window.setTimeout(() => {
-      startCamera(nextDeviceId);
-    }, 100);
+    await startCamera(nextDeviceId);
   }, [devices, selectedDeviceId, startCamera]);
 
   useEffect(() => {
