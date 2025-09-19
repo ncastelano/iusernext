@@ -51,7 +51,7 @@ export default function PersonalHome() {
 
   const handleEnviarWhatsapp = () => {
     if (!personal || !telefone) return;
-    const mensagem = `Olá, estou te convidando para ser meu aluno. Link: http://192.168.1.4:3000/convite/${
+    const mensagem = `Olá, estou te convidando para ser meu aluno. Link: https://www.iuser.com.br/convite/${
       personal.email
     }\nOpção de Anamnese: ${anamneseOption || "Nenhuma"}`;
     const numero = telefone.replace(/\D/g, "");
