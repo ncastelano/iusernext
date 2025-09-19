@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
 import { FaPlus, FaSync, FaTimes, FaClock } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
@@ -15,13 +14,20 @@ interface Song {
   songDuration: number;
 }
 
-export default function EnviarImagem() {
-  const searchParams = useSearchParams();
-  const imageSrc = searchParams.get("image") || ""; // pega a imagem da query
+interface EnviarImagemProps {
+  imageSrc: string; // base64 vindo do Fotografar
+}
 
+export default function EnviarImagem({ imageSrc }: EnviarImagemProps) {
+  const [isClient, setIsClient] = useState(false);
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [totalSongDuration, setTotalSongDuration] = useState<number>(0);
   const [songs, setSongs] = useState<Song[]>([]);
+
+  // Garantir que só renderize a imagem no client
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   // Buscar músicas do Firestore
   useEffect(() => {
@@ -83,24 +89,7 @@ export default function EnviarImagem() {
     );
   };
 
-  if (!imageSrc) {
-    return (
-      <div
-        style={{
-          width: "100vw",
-          height: "100dvh",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          backgroundColor: "#000",
-          color: "#fff",
-          fontFamily: "Inter, sans-serif",
-        }}
-      >
-        Nenhuma imagem encontrada.
-      </div>
-    );
-  }
+  if (!isClient) return null;
 
   return (
     <div
@@ -118,6 +107,7 @@ export default function EnviarImagem() {
         src={imageSrc}
         alt="Imagem selecionada"
         fill
+        unoptimized
         style={{ objectFit: "cover" }}
       />
 

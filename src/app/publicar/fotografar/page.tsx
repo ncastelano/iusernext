@@ -1,3 +1,4 @@
+// app/publicar/fotografar/page.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -72,9 +73,17 @@ export default function Fotografar() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, w, h);
-    setPreviewDataUrl(canvas.toDataURL("image/jpeg", 0.92));
+    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
+    setPreviewDataUrl(dataUrl);
     stopCamera();
   }, [stopCamera]);
+
+  const acceptPhoto = useCallback(() => {
+    if (!previewDataUrl) return;
+    // Encodar o base64 para passar como query param
+    const encoded = encodeURIComponent(previewDataUrl);
+    router.push(`/publicar/fotografar/enviar_imagem?image=${encoded}`);
+  }, [previewDataUrl, router]);
 
   const retake = useCallback(() => {
     setPreviewDataUrl(null);
@@ -153,7 +162,7 @@ export default function Fotografar() {
         <div style={{ fontWeight: 700, fontSize: 60 }}>Fotografar</div>
       </div>
 
-      {/* Video + Preview */}
+      {/* Video + Stack */}
       <div
         style={{
           flex: 1,
@@ -183,7 +192,7 @@ export default function Fotografar() {
           />
         )}
 
-        {/* Botão alternar câmera */}
+        {/* Alternar câmera */}
         <button
           onClick={toggleFacingMode}
           style={{
@@ -257,14 +266,7 @@ export default function Fotografar() {
                 <FaDownload /> Baixar
               </button>
               <button
-                onClick={() =>
-                  previewDataUrl &&
-                  router.push(
-                    `/publicar/fotografar/enviar_imagem?image=${encodeURIComponent(
-                      previewDataUrl
-                    )}`
-                  )
-                }
+                onClick={acceptPhoto}
                 style={{
                   padding: "20px",
                   borderRadius: 40,
