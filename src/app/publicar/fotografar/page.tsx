@@ -1,4 +1,3 @@
-// app/fotografar/page.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -154,7 +153,7 @@ export default function Fotografar() {
         <div style={{ fontWeight: 700, fontSize: 60 }}>Fotografar</div>
       </div>
 
-      {/* Video + Stack */}
+      {/* Video + Preview */}
       <div
         style={{
           flex: 1,
@@ -165,7 +164,6 @@ export default function Fotografar() {
           justifyContent: "center",
         }}
       >
-        {/* Video ou Preview */}
         {!previewDataUrl && (
           <video
             ref={videoRef}
@@ -185,7 +183,7 @@ export default function Fotografar() {
           />
         )}
 
-        {/* Botão alternar câmera canto superior direito */}
+        {/* Botão alternar câmera */}
         <button
           onClick={toggleFacingMode}
           style={{
@@ -208,7 +206,7 @@ export default function Fotografar() {
           <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
         </button>
 
-        {/* Botões principais no canto inferior central */}
+        {/* Botões inferiores */}
         <div
           style={{
             position: "absolute",
@@ -259,7 +257,14 @@ export default function Fotografar() {
                 <FaDownload /> Baixar
               </button>
               <button
-                onClick={() => alert("Foto aceita — implementar upload.")}
+                onClick={() =>
+                  previewDataUrl &&
+                  router.push(
+                    `/publicar/fotografar/enviar_imagem?image=${encodeURIComponent(
+                      previewDataUrl
+                    )}`
+                  )
+                }
                 style={{
                   padding: "20px",
                   borderRadius: 40,

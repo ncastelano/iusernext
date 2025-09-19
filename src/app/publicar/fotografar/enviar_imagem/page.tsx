@@ -1,10 +1,10 @@
-// app/enviar_imagem/page.tsx
+// app/publicar/fotografar/enviar_imagem/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
+import { useSearchParams } from "next/navigation";
 import { FaPlus, FaSync, FaTimes, FaClock } from "react-icons/fa";
-
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
@@ -15,44 +15,43 @@ interface Song {
   songDuration: number;
 }
 
-interface EnviarImagemProps {
-  imageSrc: string; // a imagem capturada pelo Fotografar
-}
+export default function EnviarImagem() {
+  const searchParams = useSearchParams();
+  const imageSrc = searchParams.get("image") || ""; // pega a imagem da query
 
-export default function EnviarImagem({ imageSrc }: EnviarImagemProps) {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [totalSongDuration, setTotalSongDuration] = useState<number>(0);
   const [songs, setSongs] = useState<Song[]>([]);
-  const [searchQuery] = useState("");
 
   // Buscar músicas do Firestore
-  const fetchSongs = async () => {
-    const querySnapshot = await getDocs(collection(db, "publications"));
-    const docs = querySnapshot.docs.map((doc) => {
-      const data = doc.data();
-      return {
-        id: doc.id,
-        songName: data.songName || "Sem nome",
-        imageUrl:
-          data.imageUrl ||
-          "https://via.placeholder.com/100x100.png?text=No+Thumb",
-        songDuration: data.songDuration || 0,
-      } as Song;
-    });
-    setSongs(docs);
-  };
+  useEffect(() => {
+    const fetchSongs = async () => {
+      const querySnapshot = await getDocs(collection(db, "publications"));
+      const docs = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          songName: data.songName || "Sem nome",
+          imageUrl:
+            data.imageUrl ||
+            "https://via.placeholder.com/100x100.png?text=No+Thumb",
+          songDuration: data.songDuration || 0,
+        } as Song;
+      });
+      setSongs(docs);
+    };
+    fetchSongs();
+  }, []);
 
   const handleAddSound = () => {
-    fetchSongs();
-    const filtered = songs.filter((s) =>
-      s.songName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-
+    if (songs.length === 0) {
+      alert("Nenhuma música disponível.");
+      return;
+    }
     const songName = prompt(
       "Digite o nome da música ou selecione uma:\n" +
-        filtered.map((s) => s.songName).join("\n")
+        songs.map((s) => s.songName).join("\n")
     );
-
     const selected = songs.find((s) => s.songName === songName);
     if (selected) {
       setSelectedSong(selected);
@@ -83,6 +82,25 @@ export default function EnviarImagem({ imageSrc }: EnviarImagemProps) {
       { enableHighAccuracy: true }
     );
   };
+
+  if (!imageSrc) {
+    return (
+      <div
+        style={{
+          width: "100vw",
+          height: "100dvh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "#000",
+          color: "#fff",
+          fontFamily: "Inter, sans-serif",
+        }}
+      >
+        Nenhuma imagem encontrada.
+      </div>
+    );
+  }
 
   return (
     <div
