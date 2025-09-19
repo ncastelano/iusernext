@@ -151,7 +151,7 @@ export default function Fotografar() {
         >
           <FaArrowLeft />
         </button>
-        <div style={{ fontWeight: 700, fontSize: 90 }}>Fotografar</div>
+        <div style={{ fontWeight: 700, fontSize: 90 }}>Tirar Foto</div>
       </div>
 
       {/* Video + Stack */}
