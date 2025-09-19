@@ -28,9 +28,15 @@ export default function AddOrMyLink({
 
   // Formata telefone no input (ex: (69) 99999-3632)
   const formatTelefone = (value: string) => {
-    const digits = value.replace(/\D/g, "");
+    // Remove tudo que não for número
+    let digits = value.replace(/\D/g, "");
+
+    // Limita a 11 dígitos (2 do DDD + 9 do celular)
+    digits = digits.slice(0, 11);
+
     const match = digits.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
     if (!match) return "";
+
     return !match[2]
       ? match[1]
       : `(${match[1]}) ${match[2]}${match[3] ? "-" + match[3] : ""}`;

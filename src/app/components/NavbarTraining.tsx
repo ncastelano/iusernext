@@ -77,10 +77,14 @@ export default function NavbarTraining() {
     }
   };
 
+  // 🔹 Formata telefone e limita a 11 dígitos
   const formatTelefone = (value: string) => {
-    const digits = value.replace(/\D/g, "");
+    let digits = value.replace(/\D/g, "");
+    digits = digits.slice(0, 11); // máximo 11 dígitos
+
     const match = digits.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
     if (!match) return "";
+
     return !match[2]
       ? match[1]
       : `(${match[1]}) ${match[2]}${match[3] ? "-" + match[3] : ""}`;
@@ -94,14 +98,18 @@ export default function NavbarTraining() {
       alert("Preencha o telefone e verifique o email do personal.");
       return;
     }
+
     let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: http://192.168.1.4:3000/convite/${personalEmail}`;
     if (anamneseOption) mensagem += `\nOpção de Anamnese: ${anamneseOption}`;
+
     let numero = telefone.replace(/\D/g, "");
     if (!numero.startsWith("55")) numero = "55" + numero;
+
     window.open(
       `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`,
       "_blank"
     );
+
     alert("Pedido enviado com sucesso!");
     setShowDialog(false);
     setTelefone("");
