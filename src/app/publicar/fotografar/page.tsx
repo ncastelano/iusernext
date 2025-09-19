@@ -144,7 +144,7 @@ export default function Fotografar() {
             background: "transparent",
             border: "none",
             color: "#fff",
-            fontSize: 90,
+            fontSize: 60,
             cursor: "pointer",
             marginRight: 40,
           }}
