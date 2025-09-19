@@ -1,3 +1,4 @@
+// app/fotografar/page.tsx
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -9,6 +10,7 @@ import {
   FaTrash,
   FaSyncAlt,
   FaArrowLeft,
+  FaBolt,
 } from "react-icons/fa";
 import Image from "next/image";
 
@@ -28,7 +30,6 @@ export default function Fotografar() {
   );
   const [flashOn, setFlashOn] = useState(false);
 
-  // Inicia a câmera
   const startCamera = useCallback(async () => {
     setError(null);
     setLoadingCamera(true);
@@ -36,7 +37,6 @@ export default function Fotografar() {
     try {
       if (streamRef.current) {
         streamRef.current.getTracks().forEach((t) => t.stop());
-        streamRef.current = null;
       }
 
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -47,9 +47,6 @@ export default function Fotografar() {
       streamRef.current = stream;
       trackRef.current = stream.getVideoTracks()[0];
 
-      // Se flash estiver ativo, aplica
-      if (flashOn) toggleFlash(true);
-
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         await videoRef.current.play().catch(() => {});
@@ -57,14 +54,14 @@ export default function Fotografar() {
 
       setLoadingCamera(false);
     } catch (err) {
-      console.error("Erro ao iniciar câmera:", err);
-      setLoadingCamera(false);
+      console.error(err);
       setError(
         (err as Error)?.message ||
           "Não foi possível acessar a câmera. Verifique permissões."
       );
+      setLoadingCamera(false);
     }
-  }, [facingMode, flashOn]);
+  }, [facingMode]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -75,23 +72,19 @@ export default function Fotografar() {
   }, []);
 
   const takePhoto = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
+    if (!videoRef.current || !canvasRef.current) return;
 
-    const w = video.videoWidth || 1280;
-    const h = video.videoHeight || 720;
+    const w = videoRef.current.videoWidth || 1280;
+    const h = videoRef.current.videoHeight || 720;
 
-    canvas.width = w;
-    canvas.height = h;
+    canvasRef.current.width = w;
+    canvasRef.current.height = h;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvasRef.current.getContext("2d");
     if (!ctx) return;
 
-    ctx.drawImage(video, 0, 0, w, h);
-
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-    setPreviewDataUrl(dataUrl);
+    ctx.drawImage(videoRef.current, 0, 0, w, h);
+    setPreviewDataUrl(canvasRef.current.toDataURL("image/jpeg", 0.92));
     stopCamera();
   }, [stopCamera]);
 
@@ -115,7 +108,7 @@ export default function Fotografar() {
       a.remove();
       URL.revokeObjectURL(url);
     } catch (err) {
-      console.error("Erro ao baixar imagem:", err);
+      console.error(err);
       setError("Falha ao baixar a imagem.");
     }
   }, [previewDataUrl]);
@@ -124,32 +117,19 @@ export default function Fotografar() {
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
   }, []);
 
-  // Função para ligar/desligar flash real
-  const toggleFlash = useCallback(
-    async (forceState?: boolean) => {
-      if (!trackRef.current) return;
-      const imageCapture = new ImageCapture(trackRef.current);
-      const photoCapabilities = await imageCapture.getPhotoCapabilities();
+  const toggleFlash = useCallback(async () => {
+    if (!trackRef.current) return;
+    try {
+      // Forçar TypeScript a aceitar torch
+      await trackRef.current.applyConstraints({
+        advanced: [{ torch: !flashOn } as any],
+      });
+      setFlashOn((prev) => !prev);
+    } catch (err) {
+      console.warn("Flash não suportado ou não permitido neste dispositivo");
+    }
+  }, [flashOn]);
 
-      if (!photoCapabilities.torch) {
-        console.warn("Flash não suportado neste dispositivo");
-        return;
-      }
-
-      const state = forceState !== undefined ? forceState : !flashOn;
-      try {
-        await trackRef.current.applyConstraints({
-          advanced: [{ torch: state }],
-        });
-        setFlashOn(state);
-      } catch (err) {
-        console.error("Erro ao alternar flash:", err);
-      }
-    },
-    [flashOn]
-  );
-
-  // Reinicia câmera sempre que facingMode mudar
   useEffect(() => {
     startCamera();
     return () => stopCamera();
@@ -204,21 +184,16 @@ export default function Fotografar() {
         style={{
           flex: 1,
           position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
         }}
       >
         {/* Video / Preview */}
-        {!previewDataUrl && (
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            autoPlay
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
-        )}
+        <video
+          ref={videoRef}
+          playsInline
+          muted
+          autoPlay
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
 
         {previewDataUrl && (
           <Image
@@ -230,89 +205,56 @@ export default function Fotografar() {
           />
         )}
 
-        {error && (
-          <div
-            style={{
-              position: "absolute",
-              top: 20,
-              left: 20,
-              background: "#ff4d4f",
-              color: "#fff",
-              padding: "20px 30px",
-              borderRadius: 30,
-              fontSize: 40,
-              zIndex: 50,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {loadingCamera && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%,-50%)",
-              zIndex: 40,
-              background: "rgba(0,0,0,0.6)",
-              padding: 50,
-              borderRadius: 30,
-              fontSize: 40,
-            }}
-          >
-            Carregando câmera...
-          </div>
-        )}
-
         {/* Stack de botões */}
         <div
           style={{
             position: "absolute",
-            top: 40,
+            top: 60,
             left: 40,
             display: "flex",
             flexDirection: "column",
-            gap: 30,
-            zIndex: 50,
+            gap: 40,
+            paddingBottom: 100,
+            zIndex: 60,
           }}
         >
-          <button
-            onClick={toggleFacingMode}
-            style={{
-              padding: "30px",
-              borderRadius: 40,
-              border: "none",
-              background: "rgba(255,255,255,0.06)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              fontSize: 50,
-              cursor: "pointer",
-            }}
-          >
-            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
-          </button>
+          <div style={{ display: "flex", gap: 20 }}>
+            <button
+              onClick={toggleFacingMode}
+              style={{
+                padding: "20px",
+                borderRadius: 40,
+                border: "none",
+                background: "rgba(255,255,255,0.06)",
+                color: "#fff",
+                fontSize: 40,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+              }}
+            >
+              <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
+            </button>
 
-          <button
-            onClick={() => toggleFlash()}
-            style={{
-              padding: "30px",
-              borderRadius: 40,
-              border: "none",
-              background: flashOn ? "#ffe066" : "rgba(255,255,255,0.06)",
-              color: flashOn ? "#000" : "#fff",
-              display: "flex",
-              alignItems: "center",
-              gap: 20,
-              fontSize: 50,
-              cursor: "pointer",
-            }}
-          >
-            ⚡ {flashOn ? "Ligado" : "Desligado"}
-          </button>
+            <button
+              onClick={toggleFlash}
+              style={{
+                padding: "20px",
+                borderRadius: 40,
+                border: "none",
+                background: "rgba(255,255,255,0.06)",
+                color: flashOn ? "#facc15" : "#fff",
+                fontSize: 40,
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                cursor: "pointer",
+              }}
+            >
+              <FaBolt /> Flash
+            </button>
+          </div>
 
           {previewDataUrl ? (
             <>
