@@ -23,7 +23,7 @@ export default function EnviarImagem({ imageSrc }: EnviarImagemProps) {
   const [selectedSong, setSelectedSong] = useState<Song | null>(null);
   const [totalSongDuration, setTotalSongDuration] = useState<number>(0);
   const [songs, setSongs] = useState<Song[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery] = useState("");
 
   // Buscar músicas do Firestore
   const fetchSongs = async () => {
