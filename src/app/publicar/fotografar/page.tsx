@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   FaCamera,
   FaRedo,
@@ -10,23 +11,43 @@ import {
   FaTrash,
   FaSyncAlt,
   FaArrowLeft,
+  FaPlus,
+  FaSync,
+  FaTimes,
+  FaClock,
 } from "react-icons/fa";
-import Image from "next/image";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "@/lib/firebase";
+
+interface Song {
+  id: string;
+  songName: string;
+  imageUrl: string;
+  songDuration: number;
+}
 
 export default function Fotografar() {
   const router = useRouter();
 
+  // Câmera
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-
   const [error, setError] = useState<string | null>(null);
-  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [loadingCamera, setLoadingCamera] = useState(false);
   const [facingMode, setFacingMode] = useState<"user" | "environment">(
     "environment"
   );
 
+  // Preview / Enviar imagem
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
+
+  // Música
+  const [selectedSong, setSelectedSong] = useState<Song | null>(null);
+  const [totalSongDuration, setTotalSongDuration] = useState<number>(0);
+  const [songs, setSongs] = useState<Song[]>([]);
+
+  // --- Câmera ---
   const startCamera = useCallback(async () => {
     setError(null);
     setLoadingCamera(true);
@@ -73,17 +94,9 @@ export default function Fotografar() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.drawImage(video, 0, 0, w, h);
-    const dataUrl = canvas.toDataURL("image/jpeg", 0.92);
-    setPreviewDataUrl(dataUrl);
+    setPreviewDataUrl(canvas.toDataURL("image/jpeg", 0.92));
     stopCamera();
   }, [stopCamera]);
-
-  const acceptPhoto = useCallback(() => {
-    if (!previewDataUrl) return;
-    // Encodar o base64 para passar como query param
-    const encoded = encodeURIComponent(previewDataUrl);
-    router.push(`/publicar/fotografar/enviar_imagem?image=${encoded}`);
-  }, [previewDataUrl, router]);
 
   const retake = useCallback(() => {
     setPreviewDataUrl(null);
@@ -91,6 +104,76 @@ export default function Fotografar() {
     startCamera();
   }, [startCamera]);
 
+  const toggleFacingMode = useCallback(() => {
+    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
+  }, []);
+
+  useEffect(() => {
+    startCamera();
+    return () => stopCamera();
+  }, [facingMode, startCamera, stopCamera]);
+
+  // --- Música ---
+  useEffect(() => {
+    const fetchSongs = async () => {
+      const querySnapshot = await getDocs(collection(db, "publications"));
+      const docs = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          songName: data.songName || "Sem nome",
+          imageUrl:
+            data.imageUrl ||
+            "https://via.placeholder.com/100x100.png?text=No+Thumb",
+          songDuration: data.songDuration || 0,
+        } as Song;
+      });
+      setSongs(docs);
+    };
+    fetchSongs();
+  }, []);
+
+  const handleAddSound = () => {
+    if (songs.length === 0) {
+      alert("Nenhuma música disponível.");
+      return;
+    }
+    const songName = prompt(
+      "Digite o nome da música ou selecione uma:\n" +
+        songs.map((s) => s.songName).join("\n")
+    );
+    const selected = songs.find((s) => s.songName === songName);
+    if (selected) {
+      setSelectedSong(selected);
+      setTotalSongDuration(selected.songDuration);
+      alert(`Selecionou: ${selected.songName} (${selected.songDuration}s)`);
+    }
+  };
+
+  const handleRemoveSong = () => {
+    setSelectedSong(null);
+    setTotalSongDuration(0);
+  };
+
+  const handleAddLocation = () => {
+    if (!navigator.geolocation) {
+      alert("Geolocalização não suportada neste navegador.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        alert(
+          `Latitude: ${pos.coords.latitude}\nLongitude: ${pos.coords.longitude}`
+        );
+      },
+      (err) => {
+        alert("Erro ao obter localização: " + err.message);
+      },
+      { enableHighAccuracy: true }
+    );
+  };
+
+  // --- Download ---
   const downloadPhoto = useCallback(async () => {
     if (!previewDataUrl) return;
     try {
@@ -110,15 +193,7 @@ export default function Fotografar() {
     }
   }, [previewDataUrl]);
 
-  const toggleFacingMode = useCallback(() => {
-    setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
-  }, []);
-
-  useEffect(() => {
-    startCamera();
-    return () => stopCamera();
-  }, [facingMode, startCamera, stopCamera]);
-
+  // --- Render ---
   return (
     <div
       style={{
@@ -162,7 +237,7 @@ export default function Fotografar() {
         <div style={{ fontWeight: 700, fontSize: 60 }}>Fotografar</div>
       </div>
 
-      {/* Video + Stack */}
+      {/* Corpo */}
       <div
         style={{
           flex: 1,
@@ -173,62 +248,201 @@ export default function Fotografar() {
           justifyContent: "center",
         }}
       >
+        {/* Se não tirou foto ainda: Câmera */}
         {!previewDataUrl && (
-          <video
-            ref={videoRef}
-            playsInline
-            muted
-            autoPlay
-            style={{ width: "100%", height: "100%", objectFit: "cover" }}
-          />
+          <>
+            <video
+              ref={videoRef}
+              playsInline
+              muted
+              autoPlay
+              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+            />
+            <button
+              onClick={toggleFacingMode}
+              style={{
+                position: "absolute",
+                top: 40,
+                right: 40,
+                padding: "20px",
+                borderRadius: 40,
+                border: "none",
+                background: "rgba(0,0,0,0.5)",
+                color: "#fff",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                fontSize: 40,
+                cursor: "pointer",
+                backdropFilter: "blur(6px)",
+              }}
+            >
+              <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
+            </button>
+            <button
+              onClick={takePhoto}
+              style={{
+                position: "absolute",
+                bottom: 60,
+                left: "50%",
+                transform: "translateX(-50%)",
+                width: 100,
+                height: 100,
+                borderRadius: "50%",
+                background: "linear-gradient(180deg,#22c55e,#16a34a)",
+                border: "none",
+                boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
+                cursor: "pointer",
+                fontSize: 40,
+                color: "#000",
+              }}
+            >
+              <FaCamera />
+            </button>
+          </>
         )}
+
+        {/* Se tirou foto: EnviarImagem */}
         {previewDataUrl && (
-          <Image
-            src={previewDataUrl}
-            alt="Preview da foto"
-            fill
-            unoptimized
-            style={{ objectFit: "cover" }}
-          />
-        )}
+          <>
+            <Image
+              src={previewDataUrl}
+              alt="Preview da foto"
+              fill
+              unoptimized
+              style={{ objectFit: "cover" }}
+            />
 
-        {/* Alternar câmera */}
-        <button
-          onClick={toggleFacingMode}
-          style={{
-            position: "absolute",
-            top: 40,
-            right: 40,
-            padding: "20px",
-            borderRadius: 40,
-            border: "none",
-            background: "rgba(0,0,0,0.5)",
-            color: "#fff",
-            display: "flex",
-            alignItems: "center",
-            gap: 10,
-            fontSize: 40,
-            cursor: "pointer",
-            backdropFilter: "blur(6px)",
-          }}
-        >
-          <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
-        </button>
+            {/* Música */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 100,
+                left: 20,
+              }}
+            >
+              {!selectedSong ? (
+                <button
+                  onClick={handleAddSound}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    backgroundColor: "green",
+                    color: "#000",
+                    padding: "14px 24px",
+                    border: "none",
+                    borderRadius: 8,
+                    cursor: "pointer",
+                  }}
+                >
+                  <FaPlus /> Adicionar Som
+                </button>
+              ) : (
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <button
+                    onClick={handleAddSound}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 8,
+                      backgroundColor: "green",
+                      color: "#000",
+                      padding: "12px 20px",
+                      border: "none",
+                      borderRadius: 8,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <FaSync /> {selectedSong.songName}
+                  </button>
+                  <button
+                    onClick={handleRemoveSong}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: "red",
+                      color: "#000",
+                      border: "none",
+                      borderRadius: "50%",
+                      width: 40,
+                      height: 40,
+                      cursor: "pointer",
+                    }}
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+              )}
+            </div>
 
-        {/* Botões inferiores */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 60,
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            gap: 30,
-            alignItems: "center",
-          }}
-        >
-          {previewDataUrl ? (
-            <>
+            {/* Localização */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 40,
+                left: 20,
+              }}
+            >
+              <button
+                onClick={handleAddLocation}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  backgroundColor: "green",
+                  color: "#000",
+                  padding: "14px 24px",
+                  border: "none",
+                  borderRadius: 8,
+                  cursor: "pointer",
+                }}
+              >
+                <FaPlus /> Adicionar Localidade
+              </button>
+            </div>
+
+            {/* Duração da música */}
+            {selectedSong && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: 20,
+                  right: 20,
+                }}
+              >
+                <button
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    backgroundColor: "green",
+                    color: "#000",
+                    padding: "14px 24px",
+                    border: "none",
+                    borderRadius: 8,
+                  }}
+                >
+                  <FaClock />{" "}
+                  {totalSongDuration > 0
+                    ? `${totalSongDuration}s`
+                    : "Duração não disponível"}
+                </button>
+              </div>
+            )}
+
+            {/* Ações */}
+            <div
+              style={{
+                position: "absolute",
+                bottom: 60,
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                gap: 30,
+              }}
+            >
               <button
                 onClick={retake}
                 style={{
@@ -266,7 +480,7 @@ export default function Fotografar() {
                 <FaDownload /> Baixar
               </button>
               <button
-                onClick={acceptPhoto}
+                onClick={() => alert("Foto aceita — implementar upload.")}
                 style={{
                   padding: "20px",
                   borderRadius: 40,
@@ -301,26 +515,12 @@ export default function Fotografar() {
               >
                 <FaTrash /> Excluir
               </button>
-            </>
-          ) : (
-            <button
-              onClick={takePhoto}
-              style={{
-                width: 100,
-                height: 100,
-                borderRadius: "50%",
-                background: "linear-gradient(180deg,#22c55e,#16a34a)",
-                border: "none",
-                boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
-                cursor: "pointer",
-                fontSize: 40,
-                color: "#000",
-              }}
-            >
-              <FaCamera />
-            </button>
-          )}
-        </div>
+            </div>
+          </>
+        )}
+
+        {/* Canvas invisível */}
+        <canvas ref={canvasRef} style={{ display: "none" }} />
 
         {/* Error */}
         {error && (
@@ -360,8 +560,6 @@ export default function Fotografar() {
           </div>
         )}
       </div>
-
-      <canvas ref={canvasRef} style={{ display: "none" }} />
     </div>
   );
 }
