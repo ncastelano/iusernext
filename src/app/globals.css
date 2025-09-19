@@ -12,7 +12,7 @@ body {
   background-color: #000;
   color: #fff;
   box-sizing: border-box;
-  overflow-x: hidden;
+  overflow: hidden; /* não deixa rolar */
 }
 
 /* Links padrão */

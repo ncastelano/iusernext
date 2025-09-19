@@ -73,12 +73,15 @@ export default function PersonalHome() {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100dvh",
+          height: "100vh", // fallback
           color: "#fff",
+          overflow: "hidden",
         }}
       >
         Carregando...
       </div>
     );
+
   if (!personal)
     return (
       <div
@@ -87,7 +90,9 @@ export default function PersonalHome() {
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100dvh",
+          height: "100vh", // fallback
           color: "#fff",
+          overflow: "hidden",
         }}
       >
         Personal não encontrado.
@@ -99,11 +104,13 @@ export default function PersonalHome() {
       style={{
         position: "relative",
         minHeight: "100dvh",
+        height: "100vh", // fallback
         display: "flex",
         flexDirection: "column",
         padding: "2rem 1rem",
         gap: "2rem",
         boxSizing: "border-box",
+        overflow: "hidden", // evita scroll causado pelo gradiente
       }}
     >
       {/* Fundo animado */}
@@ -115,6 +122,7 @@ export default function PersonalHome() {
           backgroundSize: "400% 400%",
           animation: "gradientFlow 60s ease infinite",
           zIndex: 1,
+          overflow: "hidden",
         }}
       />
       <div
