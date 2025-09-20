@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import AnamnesisTemplates from "./AnamnesisTemplates";
-import TrainingTemplates from "./TrainingTemplates";
 import Scheduler from "./Scheduler";
 import CadastroDeTreinos from "./CadastroTreino";
 

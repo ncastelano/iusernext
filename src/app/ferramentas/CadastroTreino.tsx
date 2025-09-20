@@ -7,6 +7,7 @@ import {
   collection,
   getDocs,
   serverTimestamp,
+  Timestamp,
 } from "firebase/firestore";
 
 interface Exercicios {
@@ -19,7 +20,7 @@ interface Treino {
   pacoteDeTreino: string;
   treino: string;
   exercicios: Exercicios[];
-  createdAt?: any;
+  createdAt?: Timestamp; // ⚡ tipo específico
 }
 
 export default function CadastroTreino() {
@@ -30,7 +31,6 @@ export default function CadastroTreino() {
   const [exercicios, setExercicios] = useState<Exercicios[]>([]);
   const [treinos, setTreinos] = useState<Treino[]>([]);
 
-  // ➕ adicionar exercício temporariamente
   const adicionarExercicio = () => {
     if (!exercicioNome || !exercicioPeriodo) return;
     setExercicios([
@@ -41,7 +41,6 @@ export default function CadastroTreino() {
     setExercicioPeriodo("");
   };
 
-  // 💾 salvar treino no Firestore
   const salvarTreino = async () => {
     const uid = auth.currentUser?.uid;
     if (!uid) {
@@ -57,7 +56,6 @@ export default function CadastroTreino() {
     }
 
     try {
-      // Salvar treino
       await addDoc(collection(db, "training", uid, "treinos"), {
         pacoteDeTreino,
         treino,
@@ -66,12 +64,10 @@ export default function CadastroTreino() {
         createdAt: serverTimestamp(),
       });
 
-      // Limpar campos
       setPacoteDeTreino("");
       setTreino("");
       setExercicios([]);
 
-      // Recarregar treinos
       const querySnapshot = await getDocs(
         collection(db, "training", uid, "treinos")
       );
@@ -90,7 +86,6 @@ export default function CadastroTreino() {
     <div className="p-4 space-y-6 bg-gray-900 text-white rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold">Cadastro de Treino</h2>
 
-      {/* Pacote do Treino */}
       <div>
         <label className="block text-sm">Pacote de Treino</label>
         <input
@@ -102,7 +97,6 @@ export default function CadastroTreino() {
         />
       </div>
 
-      {/* Nome do Treino */}
       <div>
         <label className="block text-sm">Nome do Treino</label>
         <input
@@ -110,11 +104,10 @@ export default function CadastroTreino() {
           value={treino}
           onChange={(e) => setTreino(e.target.value)}
           className="w-full p-2 rounded bg-gray-800 border border-gray-700"
-          placeholder="Ex: treino A"
+          placeholder="Ex: Treino A"
         />
       </div>
 
-      {/* Adicionar Exercício */}
       <div className="space-y-2">
         <label className="block text-sm">Adicionar Exercício</label>
         <div className="flex space-x-2">
@@ -142,7 +135,6 @@ export default function CadastroTreino() {
         </div>
       </div>
 
-      {/* Lista de Exercícios */}
       {exercicios.length > 0 && (
         <ul className="list-disc list-inside space-y-1 text-gray-300">
           {exercicios.map((ex, idx) => (
@@ -153,7 +145,6 @@ export default function CadastroTreino() {
         </ul>
       )}
 
-      {/* Botão Salvar */}
       <button
         type="button"
         onClick={salvarTreino}
@@ -162,7 +153,6 @@ export default function CadastroTreino() {
         Salvar Treino
       </button>
 
-      {/* Lista de Treinos já cadastrados */}
       <div className="mt-6">
         <h3 className="text-xl font-semibold mb-2">Treinos Cadastrados</h3>
         {treinos.length === 0 ? (
