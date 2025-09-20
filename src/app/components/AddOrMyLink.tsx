@@ -58,7 +58,7 @@ export default function AddOrMyLink({
     }
 
     // Monta mensagem
-    let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: http://192.168.1.4:3000/convite/${personalPage}`;
+    let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: https://www.iuser.com.br/convite/${personalPage}`;
 
     // Só adiciona anamnese se houver seleção
     if (anamneseOption) {

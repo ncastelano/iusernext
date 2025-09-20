@@ -77,21 +77,19 @@ export default function NavbarTraining() {
     }
   };
 
-  // 🔹 Formata telefone e limita a 11 dígitos
+  // 🔹 Função de formatação com limite de 11 dígitos
   const formatTelefone = (value: string) => {
-    let digits = value.replace(/\D/g, "");
-    digits = digits.slice(0, 11); // máximo 11 dígitos
-
+    const digits = value.replace(/\D/g, "").slice(0, 11); // só 11 números
     const match = digits.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
     if (!match) return "";
-
     return !match[2]
       ? match[1]
       : `(${match[1]}) ${match[2]}${match[3] ? "-" + match[3] : ""}`;
   };
 
-  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+  const handleTelefoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTelefone(formatTelefone(e.target.value));
+  };
 
   const handleEnviarWhatsapp = () => {
     if (!personalEmail || !telefone) {
@@ -99,11 +97,11 @@ export default function NavbarTraining() {
       return;
     }
 
-    let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: http://192.168.1.4:3000/convite/${personalEmail}`;
-    if (anamneseOption) mensagem += `\nOpção de Anamnese: ${anamneseOption}`;
-
     let numero = telefone.replace(/\D/g, "");
     if (!numero.startsWith("55")) numero = "55" + numero;
+
+    let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: https://www.iuser.com.br/convite/${personalEmail}`;
+    if (anamneseOption) mensagem += `\nOpção de Anamnese: ${anamneseOption}`;
 
     window.open(
       `https://wa.me/${numero}?text=${encodeURIComponent(mensagem)}`,
@@ -189,13 +187,7 @@ export default function NavbarTraining() {
         </Link>
 
         {!isMobile && (
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              alignItems: "center",
-            }}
-          >
+          <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
             {links.map((link) => (
               <Link
                 key={link.href}
