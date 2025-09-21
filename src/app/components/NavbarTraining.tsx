@@ -22,7 +22,7 @@ export default function NavbarTraining() {
   const [anamneseOption, setAnamneseOption] = useState("");
   const [personalEmail, setPersonalEmail] = useState("emaildo@personal.com");
   const [isPersonal, setIsPersonal] = useState<boolean | null>(null);
-  const [studentPage, setStudentPage] = useState<string>("");
+  const [alunoPage, setAlunoPage] = useState<string>("");
 
   const pathname = usePathname();
   const router = useRouter();
@@ -52,7 +52,7 @@ export default function NavbarTraining() {
           const data = snap.data();
           if (data.personalUID) {
             setIsPersonal(false);
-            setStudentPage(data.studentPage || "");
+            setAlunoPage(data.alunoPage || "");
           } else {
             setIsPersonal(true);
           }
@@ -77,9 +77,9 @@ export default function NavbarTraining() {
     }
   };
 
-  // 🔹 Função de formatação com limite de 11 dígitos
+  // 🔹 Formatação de telefone
   const formatTelefone = (value: string) => {
-    const digits = value.replace(/\D/g, "").slice(0, 11); // só 11 números
+    const digits = value.replace(/\D/g, "").slice(0, 11);
     const match = digits.match(/^(\d{0,2})(\d{0,5})(\d{0,4})$/);
     if (!match) return "";
     return !match[2]
@@ -114,11 +114,15 @@ export default function NavbarTraining() {
     setAnamneseOption("");
   };
 
+  // 🔹 Só renderiza o link de início quando os dados do usuário estiverem prontos
+  if (!mounted || isPersonal === null) return null;
+
   const inicioLink = isPersonal
     ? "/personal_home"
-    : studentPage
-    ? `/aluno/${studentPage}`
+    : alunoPage
+    ? `/aluno/${alunoPage}`
     : "/";
+
   const links = [{ name: "Início", href: inicioLink }];
 
   const estiloBotaoPadrao: React.CSSProperties = {
@@ -147,8 +151,6 @@ export default function NavbarTraining() {
     ...estiloBotaoPadrao,
     background: "rgba(21, 128, 61, 0.8)",
   };
-
-  if (!mounted) return null;
 
   return (
     <nav

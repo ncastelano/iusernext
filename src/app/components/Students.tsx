@@ -11,7 +11,7 @@ interface Aluno {
   image?: string;
   personalUID: string;
   statusPersonal?: string;
-  studentPage?: string;
+  alunoPage?: string; // Alterado de studentPage
 }
 
 export default function AlunosAceitos() {
@@ -47,9 +47,9 @@ export default function AlunosAceitos() {
     return () => unsubscribe();
   }, []);
 
-  const handleEditarAluno = (studentPage?: string) => {
-    if (!studentPage) return;
-    window.location.href = `/editar/${studentPage}`;
+  const handleEditarAluno = (alunoPage?: string) => {
+    if (!alunoPage) return;
+    window.location.href = `/editar/${alunoPage}`;
   };
 
   if (loading)
@@ -99,7 +99,7 @@ export default function AlunosAceitos() {
       >
         {alunos.map((aluno) => {
           const whatsapp = aluno.whatsapp;
-          const studentPage = aluno.studentPage;
+          const alunoPage = aluno.alunoPage; // Alterado
 
           return (
             <div
@@ -139,12 +139,12 @@ export default function AlunosAceitos() {
                     overflow: "hidden",
                     margin: "0 auto 0.5rem",
                     border: "3px solid #22c55e",
-                    position: "relative", // necessário para Image fill
+                    position: "relative",
                   }}
                 >
                   <Image
-                    src={aluno.image}
-                    alt={aluno.nome}
+                    src={aluno.image || "/default-avatar.png"}
+                    alt={aluno.nome || "Foto do aluno"}
                     fill
                     style={{ objectFit: "cover", borderRadius: "50%" }}
                   />
@@ -176,7 +176,7 @@ export default function AlunosAceitos() {
                       fontSize: "0.9rem",
                       transition: "0.3s",
                     }}
-                    onClick={() => handleEditarAluno(studentPage)}
+                    onClick={() => handleEditarAluno(alunoPage)}
                   >
                     Editar
                   </button>

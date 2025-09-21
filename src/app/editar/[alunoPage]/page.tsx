@@ -27,13 +27,13 @@ interface Aluno {
   nome: string;
   email: string;
   personalUID: string;
-  studentPage: string;
+  alunoPage: string; // alterado
   image?: string;
   treino?: Treino;
 }
 
 export default function EditarAluno() {
-  const { studentPage } = useParams();
+  const { alunoPage } = useParams(); // alterado
   const router = useRouter();
 
   const [aluno, setAluno] = useState<Aluno | null>(null);
@@ -52,17 +52,17 @@ export default function EditarAluno() {
 
   useEffect(() => {
     const fetchAluno = async () => {
-      const studentPageString = Array.isArray(studentPage)
-        ? studentPage[0]
-        : studentPage;
-      if (!studentPageString) return;
+      const alunoPageString = Array.isArray(alunoPage)
+        ? alunoPage[0]
+        : alunoPage;
+      if (!alunoPageString) return;
 
       setLoading(true);
 
       try {
         const q = query(
           collection(db, "training"),
-          where("studentPage", "==", studentPageString)
+          where("alunoPage", "==", alunoPageString) // alterado
         );
         const snapshot = await getDocs(q);
 
@@ -93,7 +93,7 @@ export default function EditarAluno() {
     };
 
     fetchAluno();
-  }, [studentPage, router]);
+  }, [alunoPage, router]);
 
   const handleExercicioChange = (
     dia: string,
@@ -131,7 +131,7 @@ export default function EditarAluno() {
       const alunoRef = doc(db, "training", aluno.uid);
       await updateDoc(alunoRef, { treino });
       alert("Treino atualizado com sucesso!");
-      router.push(`/aluno/${aluno.studentPage}`);
+      router.push(`/aluno/${aluno.alunoPage}`); // alterado
     } catch (err) {
       console.error("Erro ao atualizar treino:", err);
       alert("Erro ao atualizar treino.");
@@ -214,8 +214,8 @@ export default function EditarAluno() {
           }}
         >
           <Image
-            src={aluno.image}
-            alt={aluno.nome}
+            src={aluno.image || "/default-avatar.png"}
+            alt={aluno.nome || "Foto do aluno"} // <- garante string não vazia
             fill
             style={{ objectFit: "cover", borderRadius: "50%" }}
           />

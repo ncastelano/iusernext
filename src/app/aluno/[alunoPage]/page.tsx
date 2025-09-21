@@ -23,10 +23,10 @@ interface Treino {
 
 interface Aluno {
   uid: string;
-  nome: string;
+  name: string;
   image?: string;
   personalPage?: string;
-  studentPage?: string;
+  alunoPage?: string;
   whatsapp?: string;
   createdAt?: Timestamp | string;
   treino?: Treino;
@@ -34,7 +34,7 @@ interface Aluno {
 }
 
 export default function AlunoPage() {
-  const { studentPage } = useParams();
+  const { alunoPage, name } = useParams(); // pegando o parâmetro name
   const [aluno, setAluno] = useState<Aluno | null>(null);
   const [loading, setLoading] = useState(true);
   const [personalImage, setPersonalImage] = useState<string | null>(null);
@@ -50,13 +50,13 @@ export default function AlunoPage() {
   ];
 
   useEffect(() => {
-    if (!studentPage) return;
+    if (!alunoPage) return;
     const fetchAluno = async () => {
       setLoading(true);
       try {
         const q = query(
           collection(db, "training"),
-          where("studentPage", "==", studentPage)
+          where("alunoPage", "==", alunoPage)
         );
         const snapshot = await getDocs(q);
         if (!snapshot.empty) {
@@ -71,7 +71,7 @@ export default function AlunoPage() {
       }
     };
     fetchAluno();
-  }, [studentPage]);
+  }, [alunoPage]);
 
   useEffect(() => {
     if (!aluno?.personalUID) return;
@@ -181,12 +181,26 @@ export default function AlunoPage() {
             }}
           >
             <Image
-              src={aluno.image}
-              alt={aluno.nome}
+              src={aluno.image! || "/default-avatar.png"}
+              alt={aluno.name || "Foto do aluno"}
               fill
               style={{ objectFit: "cover" }}
             />
           </div>
+        )}
+
+        {/* Nome do aluno vindo do parâmetro "name" */}
+        {name && (
+          <h2
+            style={{
+              fontSize: "1.5rem",
+              fontWeight: 600,
+              color: "#fff",
+              marginTop: "0.5rem",
+            }}
+          >
+            {name}
+          </h2>
         )}
 
         <h1
@@ -197,7 +211,7 @@ export default function AlunoPage() {
             marginBottom: "1rem",
           }}
         >
-          {aluno.nome}
+          {aluno.name}
         </h1>
 
         <div
@@ -265,8 +279,8 @@ export default function AlunoPage() {
                   }}
                 >
                   <Image
-                    src={personalImage}
-                    alt={aluno.personalPage}
+                    src={personalImage || "/default-avatar.png"}
+                    alt={aluno.personalPage || "Foto do personal"}
                     fill
                     style={{ objectFit: "cover" }}
                   />

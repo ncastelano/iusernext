@@ -149,7 +149,7 @@ export default function AlunosPendentes() {
               >
                 <Image
                   src={aluno.image}
-                  alt={aluno.nome}
+                  alt={aluno.nome || "Foto do aluno"}
                   fill
                   style={{ objectFit: "cover", borderRadius: "50%" }}
                 />

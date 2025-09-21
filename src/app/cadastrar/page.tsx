@@ -1,16 +1,24 @@
 "use client";
-
+import { FiCamera } from "react-icons/fi";
 import { useState, ChangeEvent, useEffect } from "react";
 import Link from "next/link";
 import { auth, db, storage } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { doc, setDoc } from "firebase/firestore";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import {
+  doc,
+  setDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { FaEye, FaEyeSlash, FaQuestionCircle } from "react-icons/fa";
 import Image from "next/image";
 
 export default function CadastroPage() {
   const [name, setName] = useState("");
+  const [personalPage, setPersonalPage] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [repeatPassword, setRepeatPassword] = useState("");
@@ -20,6 +28,7 @@ export default function CadastroPage() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [bgPosition, setBgPosition] = useState(0);
+  const [showTooltip, setShowTooltip] = useState(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -43,12 +52,22 @@ export default function CadastroPage() {
       return;
     }
 
-    if (!name || !email || !password) {
+    if (!name || !email || !password || !personalPage) {
       alert("Preencha todos os campos!");
       return;
     }
 
     try {
+      const q = query(
+        collection(db, "training"),
+        where("personalPage", "==", personalPage)
+      );
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        alert("Este codinome já está em uso, escolha outro.");
+        return;
+      }
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -68,7 +87,9 @@ export default function CadastroPage() {
 
       await setDoc(doc(db, "training", user.uid), {
         uid: user.uid,
+        personalUID: user.uid,
         name,
+        personalPage,
         email,
         image: imageUrl,
         createdAt: new Date(),
@@ -78,7 +99,6 @@ export default function CadastroPage() {
       window.location.href = "/training/login";
     } catch (error: unknown) {
       console.error("Erro ao cadastrar usuário:", error);
-
       if (error instanceof Error) {
         alert(error.message);
       } else {
@@ -161,15 +181,8 @@ export default function CadastroPage() {
             alignItems: "center",
             transition: "transform 0.3s ease, box-shadow 0.3s ease",
           }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = "translateY(-5px)";
-            e.currentTarget.style.boxShadow = "0 12px 40px rgba(0,0,0,0.8)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = "translateY(0)";
-            e.currentTarget.style.boxShadow = "0 8px 30px rgba(0,0,0,0.6)";
-          }}
         >
+          {/* Imagem de perfil */}
           <label
             style={{
               display: "flex",
@@ -196,16 +209,11 @@ export default function CadastroPage() {
                 alt="Profile"
                 width={120}
                 height={120}
-                style={{
-                  objectFit: "cover",
-                  borderRadius: "50%",
-                }}
+                style={{ objectFit: "cover", borderRadius: "50%" }}
               />
             ) : (
               <>
-                <span style={{ fontSize: "2rem", marginBottom: "0.3rem" }}>
-                  📷
-                </span>
+                <FiCamera size={36} style={{ marginBottom: "0.3rem" }} />
                 <span>Selecionar</span>
               </>
             )}
@@ -218,6 +226,7 @@ export default function CadastroPage() {
           </label>
 
           <form onSubmit={handleSubmit} style={{ width: "100%" }}>
+            {/* Nome */}
             <div style={{ width: "100%", marginBottom: "1rem" }}>
               <input
                 type="text"
@@ -236,15 +245,72 @@ export default function CadastroPage() {
                   boxSizing: "border-box",
                   transition: "0.3s",
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
-                }
-                onBlur={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-                }
               />
             </div>
 
+            {/* Personal Page */}
+            <div
+              style={{
+                width: "100%",
+                marginBottom: "1rem",
+                position: "relative",
+              }}
+            >
+              <input
+                type="text"
+                placeholder=" /SeuPerfil"
+                value={personalPage}
+                onChange={(e) => setPersonalPage(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "12px 40px 12px 16px",
+                  border: "none",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.1)",
+                  color: "white",
+                  fontSize: "1rem",
+                  outline: "none",
+                  boxSizing: "border-box",
+                  transition: "0.3s",
+                }}
+              />
+              <FaQuestionCircle
+                onClick={() => setShowTooltip((prev) => !prev)}
+                style={{
+                  position: "absolute",
+                  right: "12px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "white",
+                  fontSize: "1.2rem",
+                }}
+              />
+              {showTooltip && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "110%",
+                    right: 0,
+                    background: "rgba(0,0,0,0.8)",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    fontSize: "0.75rem",
+                    color: "#fff",
+                    whiteSpace: "normal",
+                    wordBreak: "break-word",
+                    maxWidth: "250px",
+                    zIndex: 20,
+                  }}
+                >
+                  Escolha o link que será do seu perfil:
+                  https://www.iuser.com.br/personal/
+                  <strong>{personalPage || "SeuPerfil"}</strong>
+                </div>
+              )}
+            </div>
+
+            {/* Email */}
             <div style={{ width: "100%", marginBottom: "1rem" }}>
               <input
                 type="email"
@@ -263,12 +329,6 @@ export default function CadastroPage() {
                   boxSizing: "border-box",
                   transition: "0.3s",
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
-                }
-                onBlur={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-                }
               />
             </div>
 
@@ -297,12 +357,6 @@ export default function CadastroPage() {
                   boxSizing: "border-box",
                   transition: "0.3s",
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
-                }
-                onBlur={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-                }
               />
               <span
                 onClick={() => setShowPassword((prev) => !prev)}
@@ -320,7 +374,7 @@ export default function CadastroPage() {
               </span>
             </div>
 
-            {/* Repetir senha */}
+            {/* Repetir Senha */}
             <div
               style={{
                 width: "100%",
@@ -345,12 +399,6 @@ export default function CadastroPage() {
                   boxSizing: "border-box",
                   transition: "0.3s",
                 }}
-                onFocus={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.15)")
-                }
-                onBlur={(e) =>
-                  (e.currentTarget.style.background = "rgba(255,255,255,0.1)")
-                }
               />
               <span
                 onClick={() => setShowRepeatPassword((prev) => !prev)}
@@ -368,6 +416,7 @@ export default function CadastroPage() {
               </span>
             </div>
 
+            {/* Botão */}
             <button
               type="submit"
               style={{
@@ -406,6 +455,14 @@ export default function CadastroPage() {
           </p>
         </div>
       </div>
+
+      {/* ✅ Estilizando todos os placeholders */}
+      <style>{`
+        input::placeholder {
+          color: white;
+          opacity: 1;
+        }
+      `}</style>
     </div>
   );
 }

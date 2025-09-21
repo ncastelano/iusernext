@@ -1,8 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useEffect, useState, ChangeEvent } from "react";
-import { useParams } from "next/navigation";
 import {
   collection,
   getDocs,
@@ -11,10 +10,12 @@ import {
   setDoc,
   doc,
 } from "firebase/firestore";
-import Image from "next/image";
 import { db, auth, storage } from "@/lib/firebase";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Image from "next/image";
+import { FiCamera } from "react-icons/fi";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 interface Personal {
   name: string;
@@ -33,17 +34,16 @@ export default function ConvitePage() {
   const [personal, setPersonal] = useState<Personal | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [nome, setNome] = useState("");
-  const [whatsapp, setWhatsapp] = useState("");
-  const [idade, setIdade] = useState("");
+  const [name, setName] = useState("");
+  const [alunoPage, setAlunoPage] = useState(""); // alterado
   const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [senha2, setSenha2] = useState("");
-
+  const [password, setPassword] = useState("");
+  const [repeatPassword, setRepeatPassword] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
-
   const [bgPosition, setBgPosition] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false);
 
   // Carregar dados do personal
   useEffect(() => {
@@ -83,63 +83,54 @@ export default function ConvitePage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!personal) {
-      alert("Personal não carregado ainda.");
-      return;
-    }
-    if (senha !== senha2) {
-      alert("As senhas não coincidem!");
-      return;
-    }
-    if (!imageFile) {
-      alert("Por favor, selecione uma imagem de perfil.");
-      return;
-    }
+    if (!personal) return alert("Personal não carregado ainda.");
+    if (password !== repeatPassword) return alert("As senhas não coincidem!");
+    if (!imageFile) return alert("Selecione uma imagem de perfil.");
+    if (!alunoPage.trim()) return alert("Escolha o seu link de aluno"); // alterado
 
     try {
-      const userCred = await createUserWithEmailAndPassword(auth, email, senha);
+      // Verifica se o alunoPage já existe
+      const q = query(
+        collection(db, "training"),
+        where("personalPage", "==", alunoPage.trim().toLowerCase()) // alterado
+      );
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty)
+        return alert("Esse link já está em uso, escolha outro!");
+
+      // Criar usuário no Firebase Auth
+      const userCred = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const uid = userCred.user.uid;
 
+      // Upload da imagem
       const storageRef = ref(storage, `imagestraining/${uid}`);
       await uploadBytes(storageRef, imageFile);
       const imageUrl = await getDownloadURL(storageRef);
 
+      // Salvar no Firestore
       const alunoData = {
         uid,
-        nome,
-        whatsapp,
-        idade,
+        name,
         email,
         image: imageUrl,
-        personalPage,
+        alunoPage: alunoPage.trim().toLowerCase(), // alterado
+        personalPage: personal.personalPage,
         personalUID: personal.uid,
         createdAt: new Date(),
         role: "aluno",
         statusPersonal: "pendente",
-        studentPage: personalPage,
       };
 
       await setDoc(doc(db, "training", uid), alunoData);
       alert("Cadastro realizado com sucesso!");
-
-      // Reset form
-      setNome("");
-      setWhatsapp("");
-      setIdade("");
-      setEmail("");
-      setSenha("");
-      setSenha2("");
-      setImageFile(null);
-      setPreview(null);
-
       router.push("/training/login");
     } catch (err: unknown) {
       console.error("Erro ao cadastrar:", err);
-      if (err instanceof Error) {
-        alert("Erro ao cadastrar: " + err.message);
-      } else {
-        alert("Erro ao cadastrar");
-      }
+      alert(err instanceof Error ? err.message : "Erro ao cadastrar");
     }
   };
 
@@ -161,14 +152,16 @@ export default function ConvitePage() {
       style={{
         position: "relative",
         minHeight: "100dvh",
+        width: "100%",
         display: "flex",
+        alignItems: "center",
         justifyContent: "center",
-        alignItems: "flex-start",
-        padding: "2rem",
-        color: "white",
+        overflow: "hidden",
+        padding: "3rem",
+        boxSizing: "border-box",
       }}
     >
-      {/* Background */}
+      {/* Fundo animado */}
       <div
         style={{
           position: "absolute",
@@ -191,187 +184,248 @@ export default function ConvitePage() {
 
       <div
         style={{
-          position: "relative",
-          zIndex: 10,
           display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          textAlign: "center",
-          width: "100%",
-          maxWidth: 500,
           gap: "2rem",
+          zIndex: 10,
+          flexWrap: "wrap",
+          justifyContent: "center",
         }}
       >
-        {/* Personal Card */}
+        {/* Card Personal */}
         <div
           style={{
             background: "rgba(255,255,255,0.08)",
             backdropFilter: "blur(15px) saturate(180%)",
-            padding: "1.5rem",
-            borderRadius: 16,
+            WebkitBackdropFilter: "blur(15px) saturate(180%)",
+            padding: "2rem 1.5rem",
+            borderRadius: "16px",
+            width: "280px",
             border: "1px solid rgba(255,255,255,0.18)",
             boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+            textAlign: "center",
             display: "flex",
-            flexDirection: "row",
+            flexDirection: "column",
             alignItems: "center",
-            width: "100%",
-            gap: "1rem",
           }}
         >
           <div
             style={{
-              position: "relative",
-              width: 80,
-              height: 80,
+              width: 100,
+              height: 100,
+              marginBottom: "1rem",
               borderRadius: "50%",
               overflow: "hidden",
               border: "3px solid #22c55e",
-              flexShrink: 0,
             }}
           >
             <Image
               src={personal.image || "/default-avatar.png"}
               alt={personal.name}
-              fill
+              width={100}
+              height={100}
               style={{ objectFit: "cover" }}
             />
           </div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "flex-start",
-              textAlign: "left",
-            }}
-          >
-            <p style={{ fontSize: 14, color: "#e5f5eb", marginBottom: 4 }}>
-              {personal.bio || "Treine com dedicação e supere seus limites!"}
-            </p>
-            <h2 style={{ fontSize: 20, fontWeight: 600 }}>
-              Venha treinar com{" "}
-              <span style={{ color: "#22c55e" }}>{personal.name}</span> 🚀
-            </h2>
-          </div>
+          <h2 style={{ fontSize: "1.3rem", marginBottom: "0.5rem" }}>
+            {personal.name} convida você a treinar 🚀
+          </h2>
+          <p style={{ fontSize: "0.9rem", color: "#e5f5eb" }}>
+            {personal.bio || "Treine com dedicação e supere seus limites!"}
+          </p>
         </div>
 
-        {/* Form Card */}
+        {/* Card Cadastro */}
         <div
           style={{
             background: "rgba(255,255,255,0.08)",
             backdropFilter: "blur(15px) saturate(180%)",
+            WebkitBackdropFilter: "blur(15px) saturate(180%)",
             padding: "2rem 1.5rem",
-            borderRadius: 16,
+            borderRadius: "16px",
+            width: "320px",
             border: "1px solid rgba(255,255,255,0.18)",
             boxShadow: "0 8px 30px rgba(0,0,0,0.6)",
+            textAlign: "center",
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            width: "100%",
           }}
         >
-          <form
-            style={{ width: "100%", display: "flex", flexDirection: "column" }}
-            onSubmit={handleSubmit}
+          {/* Foto */}
+          <label
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "120px",
+              height: "120px",
+              border: "2px dashed #22c55e",
+              borderRadius: "50%",
+              marginBottom: "1.5rem",
+              cursor: "pointer",
+              color: "#fff",
+              fontSize: "0.9rem",
+              textAlign: "center",
+              overflow: "hidden",
+              background: "rgba(0,0,0,0.4)",
+            }}
           >
-            {/* Image selector */}
-            <label
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                width: 100,
-                height: 100,
-                border: "2px dashed #22c55e",
-                borderRadius: "50%",
-                margin: "0 auto 1rem",
-                cursor: "pointer",
-                color: "#fff",
-                fontSize: 14,
-                textAlign: "center",
-                overflow: "hidden",
-                position: "relative",
-                background: "rgba(0,0,0,0.4)",
-              }}
-            >
-              {preview ? (
-                <Image
-                  src={preview}
-                  alt="Preview"
-                  fill
-                  style={{ objectFit: "cover", borderRadius: "50%" }}
-                />
-              ) : (
-                <>
-                  <span style={{ fontSize: 24, marginBottom: 2 }}>📷</span>
-                  <span>Escolher</span>
-                </>
-              )}
-              <input
-                type="file"
-                accept="image/*"
-                onChange={handleImageChange}
-                style={{ display: "none" }}
+            {preview ? (
+              <Image
+                src={preview}
+                alt="Preview"
+                width={120}
+                height={120}
+                style={{ objectFit: "cover", borderRadius: "50%" }}
               />
-            </label>
+            ) : (
+              <>
+                <FiCamera size={36} style={{ marginBottom: "0.3rem" }} />
+                <span>Selecionar</span>
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              style={{ display: "none" }}
+            />
+          </label>
 
-            {/* Inputs */}
-            {[
-              {
-                placeholder: "Nome",
-                value: nome,
-                setter: setNome,
-                type: "text",
-              },
-              {
-                placeholder: "Whatsapp",
-                value: whatsapp,
-                setter: setWhatsapp,
-                type: "text",
-              },
-              {
-                placeholder: "Idade",
-                value: idade,
-                setter: setIdade,
-                type: "text",
-              },
-              {
-                placeholder: "Email",
-                value: email,
-                setter: setEmail,
-                type: "email",
-              },
-              {
-                placeholder: "Senha",
-                value: senha,
-                setter: setSenha,
-                type: "password",
-              },
-              {
-                placeholder: "Confirmar senha",
-                value: senha2,
-                setter: setSenha2,
-                type: "password",
-              },
-            ].map((input, idx) => (
+          <form
+            onSubmit={handleSubmit}
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: "column",
+              gap: "1rem",
+            }}
+          >
+            {/* Nome */}
+            <input
+              type="text"
+              placeholder="Nome"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "none",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.1)",
+                color: "white",
+                fontSize: "1rem",
+                outline: "none",
+              }}
+            />
+
+            {/* Aluno Page */}
+            <input
+              type="text"
+              placeholder="/SeuPerfil"
+              value={alunoPage}
+              onChange={(e) => setAlunoPage(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "none",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.1)",
+                color: "white",
+                fontSize: "1rem",
+                outline: "none",
+              }}
+            />
+
+            {/* Email */}
+            <input
+              type="email"
+              placeholder="Email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                border: "none",
+                borderRadius: "8px",
+                background: "rgba(255,255,255,0.1)",
+                color: "white",
+                fontSize: "1rem",
+                outline: "none",
+              }}
+            />
+
+            {/* Senha */}
+            <div style={{ position: "relative" }}>
               <input
-                key={idx}
-                type={input.type}
-                placeholder={input.placeholder}
-                value={input.value}
-                onChange={(e) => input.setter(e.target.value)}
+                type={showPassword ? "text" : "password"}
+                placeholder="Senha"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 required
                 style={{
                   width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 8,
+                  padding: "12px 40px 12px 16px",
                   border: "none",
-                  marginBottom: 12,
+                  borderRadius: "8px",
                   background: "rgba(255,255,255,0.1)",
                   color: "white",
+                  fontSize: "1rem",
+                  outline: "none",
                 }}
               />
-            ))}
+              <span
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "white",
+                }}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
+
+            {/* Repetir senha */}
+            <div style={{ position: "relative" }}>
+              <input
+                type={showRepeatPassword ? "text" : "password"}
+                placeholder="Repetir Senha"
+                value={repeatPassword}
+                onChange={(e) => setRepeatPassword(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "12px 40px 12px 16px",
+                  border: "none",
+                  borderRadius: "8px",
+                  background: "rgba(255,255,255,0.1)",
+                  color: "white",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+              />
+              <span
+                onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                style={{
+                  position: "absolute",
+                  right: "10px",
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  cursor: "pointer",
+                  color: "white",
+                }}
+              >
+                {showRepeatPassword ? <FaEyeSlash /> : <FaEye />}
+              </span>
+            </div>
 
             <button
               type="submit"
@@ -383,6 +437,7 @@ export default function ConvitePage() {
                 borderRadius: 8,
                 fontWeight: 700,
                 color: "white",
+                fontSize: "1rem",
                 cursor: "pointer",
               }}
             >
@@ -390,8 +445,6 @@ export default function ConvitePage() {
             </button>
           </form>
         </div>
-
-        <div style={{ height: 100 }} />
       </div>
     </div>
   );

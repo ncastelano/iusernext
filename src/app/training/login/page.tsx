@@ -10,7 +10,7 @@ import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface UserData {
   role?: string;
-  studentPage?: string;
+  alunoPage?: string;
   uid?: string;
 }
 
@@ -37,6 +37,7 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
+      // Login no Firebase Auth
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
@@ -44,27 +45,29 @@ export default function LoginPage() {
       );
       const user = userCredential.user;
 
+      // Busca dados do usuário no Firestore
       const q = query(collection(db, "training"), where("uid", "==", user.uid));
       const snapshot = await getDocs(q);
 
       if (!snapshot.empty) {
         const userData = snapshot.docs[0].data() as UserData;
 
-        if (userData.role === "aluno" && userData.studentPage) {
-          router.push(`/aluno/${encodeURIComponent(userData.studentPage)}`);
-        } else {
-          router.push("/personal_home");
+        // Se for aluno e tiver alunoPage
+        if (userData.role === "aluno" && userData.alunoPage) {
+          router.push(`/aluno/${encodeURIComponent(userData.alunoPage)}`);
+          return;
         }
+
+        // Se não for aluno ou não tiver alunoPage, vai para a página do personal
+        router.push("/personal_home");
       } else {
+        // Caso não exista no Firestore (por algum motivo)
         router.push("/personal_home");
       }
     } catch (err) {
       console.error(err);
-      if (err instanceof Error) {
-        setError(err.message);
-      } else {
-        setError("Erro desconhecido ao tentar entrar.");
-      }
+      if (err instanceof Error) setError(err.message);
+      else setError("Erro desconhecido ao tentar entrar.");
     } finally {
       setLoading(false);
     }
@@ -84,7 +87,7 @@ export default function LoginPage() {
         boxSizing: "border-box",
       }}
     >
-      {/* Background gradient animado */}
+      {/* Background animado */}
       <div
         style={{
           position: "absolute",
@@ -283,6 +286,13 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
+      <style>{`
+        input::placeholder {
+          color: white;
+          opacity: 1;
+        }
+      `}</style>
     </div>
   );
 }
