@@ -124,6 +124,14 @@ export default function EditarAluno() {
     });
   };
 
+  const limparExercicios = (dia: string) => {
+    setTreino((prev) => {
+      const novoTreino = { ...prev };
+      novoTreino[dia] = []; // limpa todos os exercícios do dia
+      return novoTreino;
+    });
+  };
+
   const handleSalvar = async () => {
     if (!aluno) return;
 
@@ -292,31 +300,61 @@ export default function EditarAluno() {
             </div>
           ))}
 
-          <button
-            onClick={() => adicionarExercicio(dia)}
-            style={{
-              width: "100%",
-              marginTop: "0.5rem",
-              padding: "0.6rem",
-              background: "#16a34a",
-              border: "none",
-              borderRadius: 12,
-              color: "white",
-              fontWeight: 600,
-              cursor: "pointer",
-              transition: "0.3s",
-            }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.background =
-                "#22c55e")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLButtonElement).style.background =
-                "#16a34a")
-            }
-          >
-            + Adicionar exercício
-          </button>
+          <div style={{ display: "flex", gap: "0.8rem", marginTop: "0.5rem" }}>
+            <button
+              onClick={() => adicionarExercicio(dia)}
+              style={{
+                flex: 1,
+                padding: "0.6rem",
+                background: "#16a34a",
+                border: "none",
+                borderRadius: 12,
+                color: "white",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "0.3s",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background =
+                  "#22c55e")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background =
+                  "#16a34a")
+              }
+            >
+              + Adicionar exercício
+            </button>
+
+            <button
+              onClick={() => limparExercicios(dia)}
+              style={{
+                flex: 1,
+                padding: "0.6rem",
+                background: "#dc2626",
+                border: "none",
+                borderRadius: 12,
+                color: "white",
+                fontWeight: 600,
+                cursor: "pointer",
+                transition: "0.3s",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.5rem",
+              }}
+              onMouseEnter={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background =
+                  "#ef4444")
+              }
+              onMouseLeave={(e) =>
+                ((e.currentTarget as HTMLButtonElement).style.background =
+                  "#dc2626")
+              }
+            >
+              <span>Deletar</span> ❌
+            </button>
+          </div>
         </div>
       ))}
 
