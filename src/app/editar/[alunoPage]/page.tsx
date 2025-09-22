@@ -24,7 +24,7 @@ interface Treino {
 
 interface Aluno {
   uid: string;
-  nome: string;
+  name: string;
   email: string;
   personalUID: string;
   alunoPage: string; // alterado
@@ -223,7 +223,7 @@ export default function EditarAluno() {
         >
           <Image
             src={aluno.image || "/default-avatar.png"}
-            alt={aluno.nome || "Foto do aluno"} // <- garante string não vazia
+            alt={aluno.name || "Foto do aluno"} // <- garante string não vazia
             fill
             style={{ objectFit: "cover", borderRadius: "50%" }}
           />
@@ -231,7 +231,7 @@ export default function EditarAluno() {
       )}
 
       <h1 style={{ fontSize: "2rem", marginBottom: "2rem", color: "#22c55e" }}>
-        Editar Treino de {aluno.nome}
+        Editar Treino de {aluno.name}
       </h1>
 
       {diasSemana.map((dia) => (
