@@ -57,7 +57,7 @@ export default function AddOrMyLink({
     }
 
     // Monta mensagem
-    let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: https://www.iuser.com.br/convite/${personalPage}`;
+    const mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: https://www.iuser.com.br/convite/${personalPage}`;
 
     const whatsappURL = `https://wa.me/${numero}?text=${encodeURIComponent(
       mensagem
