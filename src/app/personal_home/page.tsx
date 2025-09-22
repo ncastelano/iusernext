@@ -102,14 +102,12 @@ export default function PersonalHome() {
     <div
       style={{
         position: "relative",
-        minHeight: "100dvh",
-        height: "100vh", // fallback
+        minHeight: "100dvh", // garante pelo menos a altura da tela
         display: "flex",
         flexDirection: "column",
         padding: "2rem 1rem",
         gap: "2rem",
         boxSizing: "border-box",
-        overflow: "auto", // permite scroll vertical se o conteúdo extrapolar
       }}
     >
       {/* Fundo animado */}
