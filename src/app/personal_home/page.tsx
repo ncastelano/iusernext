@@ -92,7 +92,6 @@ export default function PersonalHome() {
           minHeight: "100dvh",
           height: "100vh", // fallback
           color: "#fff",
-          overflow: "hidden",
         }}
       >
         Personal não encontrado.
