@@ -118,7 +118,6 @@ export default function ConvitePage() {
         email,
         image: imageUrl,
         alunoPage: alunoPage.trim().toLowerCase(), // alterado
-        personalPage: personal.personalPage,
         personalUID: personal.uid,
         createdAt: new Date(),
         role: "aluno",
