@@ -5,7 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
-import Alunos from "@/app/components/Students";
 import AlunosDoPersonal from "@/app/components/StudentosForPersonalPage";
 
 interface Personal {
