@@ -13,7 +13,7 @@ import { db, auth } from "@/lib/firebase";
 
 interface Aluno {
   uid: string;
-  nome: string;
+  name: string;
   email: string;
   telefone?: string;
   image?: string;
@@ -149,7 +149,7 @@ export default function AlunosPendentes() {
               >
                 <Image
                   src={aluno.image}
-                  alt={aluno.nome || "Foto do aluno"}
+                  alt={aluno.name || "Foto do aluno"}
                   fill
                   style={{ objectFit: "cover", borderRadius: "50%" }}
                 />
@@ -163,7 +163,7 @@ export default function AlunosPendentes() {
                 color: "#22c55e",
               }}
             >
-              {aluno.nome}
+              {aluno.name}
             </strong>
 
             <div

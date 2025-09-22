@@ -6,7 +6,7 @@ import { db, auth } from "@/lib/firebase";
 
 interface Aluno {
   uid: string;
-  nome: string;
+  name: string;
   whatsapp?: string;
   image?: string;
   personalUID: string;
@@ -144,7 +144,7 @@ export default function AlunosAceitos() {
                 >
                   <Image
                     src={aluno.image || "/default-avatar.png"}
-                    alt={aluno.nome || "Foto do aluno"}
+                    alt={aluno.name || "Foto do aluno"}
                     fill
                     style={{ objectFit: "cover", borderRadius: "50%" }}
                   />
@@ -158,7 +158,7 @@ export default function AlunosAceitos() {
                   color: "#22c55e",
                 }}
               >
-                {aluno.nome}
+                {aluno.name}
               </strong>
 
               {currentUser && aluno.personalUID === currentUser.uid && (
