@@ -6,6 +6,7 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import Image from "next/image";
 import Alunos from "@/app/components/Students";
+import AlunosDoPersonal from "@/app/components/StudentosForPersonalPage";
 
 interface Personal {
   name: string;
@@ -182,7 +183,7 @@ export default function PersonalPage() {
 
       {/* Students */}
       <div style={{ width: "100%", marginBottom: "1rem" }}>
-        {personal?.personalPage && <Alunos />}
+        {personal?.personalPage && <AlunosDoPersonal />}
       </div>
     </div>
   );
