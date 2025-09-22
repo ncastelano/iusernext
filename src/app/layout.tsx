@@ -8,7 +8,7 @@ import NavbarTrainingWrapper from "./components/NavbarTrainingWrapper";
 
 export const metadata: Metadata = {
   title: "iUser",
-  description: "a melhor rede social",
+  description: "plataforma de serviços",
   manifest: "/manifest.json",
   icons: {
     icon: "/icon/icon_blackbg_512x512.png",

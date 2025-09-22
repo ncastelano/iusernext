@@ -23,24 +23,63 @@ export default function UserProfileAnimations({
       initial={{ opacity: 0, y: 30 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
-      className="relative w-full aspect-[16/9] overflow-hidden"
+      style={{
+        position: "relative",
+        width: "100%",
+        aspectRatio: "16/9",
+        borderRadius: "20px",
+        overflow: "hidden",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.5)",
+      }}
     >
+      {/* Imagem de fundo */}
       <Image
         src={imageUrl}
         alt={`Foto de ${userName}`}
         fill
-        className="object-cover"
         priority
+        style={{
+          objectFit: "cover",
+          filter: "brightness(0.85)",
+        }}
+      />
+
+      {/* Overlay com gradiente para dar contraste */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(to top, rgba(0,0,0,0.7) 15%, rgba(0,0,0,0.2) 60%, transparent 100%)",
+        }}
       />
 
       {/* Ícone no canto superior direito */}
       <button
         onClick={abrirImagemOriginal}
         aria-label="Abrir imagem original"
-        className="absolute top-4 right-4 text-white bg-transparent bg-opacity-40 rounded p-2 hover:bg-opacity-70 transition"
-        style={{ userSelect: "none" }}
+        style={{
+          position: "absolute",
+          top: "16px",
+          right: "16px",
+          background: "rgba(255,255,255,0.15)",
+          border: "1px solid rgba(255,255,255,0.25)",
+          borderRadius: "12px",
+          padding: "8px",
+          cursor: "pointer",
+          color: "#fff",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.3)";
+          e.currentTarget.style.transform = "scale(1.1)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = "rgba(255,255,255,0.15)";
+          e.currentTarget.style.transform = "scale(1)";
+        }}
       >
-        <Fullscreen />
+        <Fullscreen size={20} />
       </button>
 
       {/* Nome do usuário com @ no rodapé */}
@@ -48,8 +87,16 @@ export default function UserProfileAnimations({
         initial={{ opacity: 0, x: -40 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.5, duration: 0.6 }}
-        className="absolute bottom-4 left-4 text-white text-2xl font-semibold"
-        style={{ userSelect: "none" }}
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "20px",
+          color: "#fff",
+          fontSize: "1.8rem",
+          fontWeight: 700,
+          textShadow: "0 4px 10px rgba(0,0,0,0.6)",
+          userSelect: "none",
+        }}
       >
         @{userName}
       </motion.h1>

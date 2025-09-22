@@ -232,7 +232,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
 
   return (
     <section style={{ maxWidth: "800px", margin: "0 auto", width: "100%" }}>
-      <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Comentários</h3>
+      <h3 style={{ fontSize: "1.5rem", marginBottom: "1rem" }}>Depoimentos</h3>
 
       {loadingComments ? (
         <p>Carregando comentários...</p>
@@ -438,7 +438,7 @@ export default function CommentProfile({ profileUid }: CommentProfileProps) {
           <textarea
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Escreva um comentário..."
+            placeholder="Escreva um depoimento..."
             rows={1}
             style={{
               width: "100%",

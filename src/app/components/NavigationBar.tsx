@@ -22,8 +22,9 @@ function NavigationBar() {
     backdropFilter: "blur(10px)",
     boxShadow: "0 0 6px rgba(255,255,255,0.5)",
     transition: "all 0.3s ease",
-    overflow: "hidden",
+    overflow: "hidden", // <- garante que nada escape
     boxSizing: "border-box",
+    flexShrink: 0,
   };
 
   const handleUserClick = () => {
@@ -76,6 +77,7 @@ function NavigationBar() {
                 boxShadow: "0 0 10px 2px rgba(255,255,255,0.6)",
               }
             : {}),
+          position: "relative", // necessário pro <Image fill />
         }}
         title={user?.namePage || "Login"}
         role="button"
@@ -88,11 +90,8 @@ function NavigationBar() {
           <Image
             src={user.image}
             alt={user.namePage || "User"}
-            width={80}
-            height={80}
+            fill
             style={{
-              width: "100%",
-              height: "100%",
               objectFit: "cover",
               borderRadius: "50%",
             }}

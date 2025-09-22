@@ -44,7 +44,7 @@ export default function HomePage() {
       {/* Card iUser */}
       <div
         style={cardStyle}
-        onClick={() => router.push("/home")}
+        onClick={() => router.push("/inicio")}
         onMouseEnter={(e) => {
           const target = e.currentTarget as HTMLDivElement;
           target.style.transform = "scale(1.05)";

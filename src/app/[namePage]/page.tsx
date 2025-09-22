@@ -1,4 +1,4 @@
-//app/[name]/page.tsx
+// app/[name]/page.tsx
 
 import { db } from "@/lib/firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
@@ -27,7 +27,6 @@ export default async function UserProfilePage({
 
     const user = userSnapshot.docs[0].data() as User;
 
-    // Definindo valores padrão caso estejam ausentes
     const safeUser = {
       ...user,
       latitude: typeof user.latitude === "number" ? user.latitude : null,
@@ -43,11 +42,35 @@ export default async function UserProfilePage({
     );
 
     return (
-      <main className="min-h-screen bg-gradient-to-b from-[#0f0c29] via-[#302b63] to-[#24243e] text-white">
-        <div className="max-w-3xl mx-auto p-6 space-y-10">
+      <main
+        style={{
+          minHeight: "100vh",
+          background: "linear-gradient(135deg, #0f0c29, #302b63, #24243e)",
+          color: "#fff",
+          padding: "2rem",
+          fontFamily: "system-ui, sans-serif",
+        }}
+      >
+        <div
+          style={{
+            maxWidth: "960px",
+            margin: "0 auto",
+            display: "flex",
+            flexDirection: "column",
+            gap: "2rem",
+          }}
+        >
+          {/* Banner do usuário */}
           <section
-            className="relative overflow-hidden rounded-3xl shadow-xl"
-            style={{ aspectRatio: "16 / 9" }}
+            style={{
+              position: "relative",
+              overflow: "hidden",
+              borderRadius: "20px",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
+              aspectRatio: "16/9",
+              background: "rgba(255,255,255,0.05)",
+              backdropFilter: "blur(12px)",
+            }}
           >
             <UserProfileAnimations
               imageUrl={safeUser.image || "/default-profile.png"}
@@ -55,17 +78,44 @@ export default async function UserProfilePage({
             />
           </section>
 
-          <div className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
+          {/* Info e comentários */}
+          <div
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              borderRadius: "16px",
+              padding: "2rem",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+            }}
+          >
             <InfoProfileAnimations
               safeUser={safeUser}
               videosCount={videos.length}
             />
-            <CommentProfile profileUid={safeUser.uid} />
+            <div style={{ marginTop: "1.5rem" }}>
+              <CommentProfile profileUid={safeUser.uid} />
+            </div>
           </div>
 
-          <section className="bg-white/10 backdrop-blur-lg p-6 rounded-2xl shadow-lg border border-white/20">
+          {/* Vídeos */}
+          <section
+            style={{
+              background: "rgba(255, 255, 255, 0.08)",
+              border: "1px solid rgba(255, 255, 255, 0.15)",
+              borderRadius: "16px",
+              padding: "2rem",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
+            }}
+          >
             {videos.length === 0 ? (
-              <p className="text-gray-300 text-center">
+              <p
+                style={{
+                  color: "rgba(255,255,255,0.6)",
+                  textAlign: "center",
+                  fontSize: "1.1rem",
+                  fontWeight: 300,
+                }}
+              >
                 Nenhum vídeo encontrado.
               </p>
             ) : (
@@ -80,6 +130,21 @@ export default async function UserProfilePage({
     );
   } catch (error) {
     console.error("Erro ao buscar usuário ou vídeos:", error);
-    return <div>Erro ao carregar o perfil.</div>;
+    return (
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#1a1a1a",
+          color: "#fff",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          fontSize: "1.2rem",
+          fontWeight: 500,
+        }}
+      >
+        Erro ao carregar o perfil.
+      </div>
+    );
   }
 }

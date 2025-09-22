@@ -41,7 +41,11 @@ export default function VideosProfileAnimations({
   userName,
 }: VideosProfileAnimationsProps) {
   if (videos.length === 0) {
-    return <p className="text-gray-400">Nenhum vídeo encontrado.</p>;
+    return (
+      <p style={{ color: "#9ca3af", fontSize: "1rem", textAlign: "center" }}>
+        Nenhum vídeo encontrado.
+      </p>
+    );
   }
 
   return (
@@ -49,7 +53,14 @@ export default function VideosProfileAnimations({
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+        gap: "1.5rem",
+        padding: "0",
+        margin: "0",
+        listStyle: "none",
+      }}
     >
       {videos.map((video, index) => (
         <motion.li
@@ -57,27 +68,49 @@ export default function VideosProfileAnimations({
           variants={itemVariants}
           whileHover={{
             scale: 1.07,
-            boxShadow: "0 8px 20px rgba(255, 255, 255, 0.25)",
+            boxShadow: "0 8px 25px rgba(255, 255, 255, 0.25)",
             transition: { type: "spring", stiffness: 300, damping: 25 },
           }}
-          className="rounded-lg overflow-hidden cursor-pointer bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 hover:brightness-110 transition-all duration-300"
-          style={{ willChange: "transform, box-shadow" }}
+          style={{
+            borderRadius: "14px",
+            overflow: "hidden",
+            cursor: "pointer",
+            background:
+              "linear-gradient(145deg, rgba(31,31,31,1), rgba(55,55,55,1))",
+            transition: "all 0.3s ease",
+            willChange: "transform, box-shadow",
+          }}
         >
           <Link
             href={`/${encodeURIComponent(userName)}/${encodeURIComponent(
               video.videoID || index.toString()
             )}`}
-            className="block"
+            style={{
+              display: "block",
+              width: "100%",
+              height: "100%",
+            }}
           >
-            <Image
-              src={video.thumbnailUrl || "/default-thumbnail.png"}
-              alt={`Thumbnail do vídeo: ${video.artistSongName}`}
-              width={320}
-              height={180}
-              className="object-cover w-full h-auto"
-              priority={index < 3}
-              draggable={false}
-            />
+            <div
+              style={{
+                position: "relative",
+                width: "100%",
+                paddingTop: "56.25%", // proporção 16:9
+              }}
+            >
+              <Image
+                src={video.thumbnailUrl || "/default-thumbnail.png"}
+                alt={`Thumbnail do vídeo: ${video.artistSongName}`}
+                fill
+                style={{
+                  objectFit: "cover",
+                  borderBottom: "3px solid rgba(255,255,255,0.08)",
+                  borderRadius: "10px",
+                }}
+                priority={index < 3}
+                draggable={false}
+              />
+            </div>
           </Link>
         </motion.li>
       ))}

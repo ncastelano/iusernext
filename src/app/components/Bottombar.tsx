@@ -11,111 +11,105 @@ export default function BottomBar() {
   const { user } = useUser();
 
   const handleNavigate = (path: string) => router.push(path);
-
   const handleUserClick = () => {
     router.push(user?.namePage ? `/${user.namePage.toLowerCase()}` : "/login");
   };
 
+  // Barra ajustada (30% menor)
+  const barStyle: React.CSSProperties = {
+    position: "fixed",
+    bottom: 0,
+    left: 0,
+    width: "100vw",
+    height: "clamp(84px, 14vh, 126px)", // 30% menor
+    background:
+      "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.8), rgba(0,0,0,0.5), transparent)",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    zIndex: 1000,
+    padding: "0 1rem",
+    boxSizing: "border-box",
+  };
+
+  const navButtonStyle: React.CSSProperties = {
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    background: "none",
+    border: "none",
+    color: "white",
+    fontSize: "clamp(14px, 2.8vw, 20px)", // 30% menor
+    cursor: "pointer",
+    flexShrink: 0,
+    gap: "0.35rem",
+  };
+
+  const profileImageWrapper: React.CSSProperties = {
+    width: "clamp(39px, 7vw, 56px)", // 30% menor
+    height: "clamp(39px, 7vw, 56px)",
+    borderRadius: "50%",
+    overflow: "hidden",
+    border: "2px solid white",
+    position: "relative",
+  };
+
+  const centerButtonsStyle: React.CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: "clamp(1.4rem, 5.6vw, 2.8rem)", // 30% menor
+    flexGrow: 1,
+  };
+
   return (
-    <>
-      <style>{`
-        .bottom-bar {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          width: 100%;
-          height: clamp(60px, 10vh, 90px);
-          background: linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.8), rgba(0,0,0,0.5), transparent);
-          display: flex;
-          justify-content: space-around;
-          align-items: center;
-          z-index: 10;
-          padding: 0 clamp(1rem, 2vw, 2rem);
-        }
+    <div style={barStyle}>
+      {/* Botão perfil à esquerda */}
+      <button style={navButtonStyle} onClick={handleUserClick}>
+        {user?.image ? (
+          <div style={profileImageWrapper}>
+            <Image
+              src={user.image}
+              alt={user.namePage || "User"}
+              fill
+              style={{ objectFit: "cover" }}
+            />
+          </div>
+        ) : (
+          <User size="clamp(28px, 7vw, 45px)" color="#fff" /> // 30% menor
+        )}
+        <span>{user?.namePage ? "Perfil" : "Login"}</span>
+      </button>
 
-        .nav-button {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          background: none;
-          border: none;
-          color: white;
-          font-size: clamp(10px, 2vw, 14px);
-          cursor: pointer;
-          flex-shrink: 0;
-          padding: 0.5rem clamp(0.4rem, 1vw, 0.75rem);
-        }
-
-        .profile-image {
-          width: clamp(28px, 5vw, 40px);
-          height: clamp(28px, 5vw, 40px);
-          border-radius: 50%;
-          overflow: hidden;
-          border: 2px solid white;
-          margin-bottom: 4px;
-        }
-
-        /* Telas de celular com largura maior que 900px */
-        @media (min-width: 900px) and (max-width: 1199px) {
-          .bottom-bar {
-            height: clamp(100px, 15vh, 160px);
-          }
-
-          .nav-button {
-            font-size: 20px;
-            padding: 1rem;
-          }
-
-          .nav-button svg {
-            width: 48px;
-            height: 48px;
-          }
-
-          .profile-image {
-            width: 56px;
-            height: 56px;
-          }
-        }
-      `}</style>
-
-      <div className="bottom-bar">
+      {/* Botões centrais */}
+      <div style={centerButtonsStyle}>
         <NavIcon
-          icon={<Home size="clamp(20px, 5vw, 32px)" />}
+          icon={<Home size="clamp(28px, 7vw, 45px)" color="#fff" />}
           label="Home"
           onClick={() => handleNavigate("/home")}
+          style={navButtonStyle}
         />
         <NavIcon
-          icon={<MapPin size="clamp(20px, 5vw, 32px)" />}
+          icon={<MapPin size="clamp(28px, 7vw, 45px)" color="#fff" />}
           label="Mapa"
           onClick={() => handleNavigate("/mapa")}
+          style={navButtonStyle}
         />
         <NavIcon
-          icon={<Zap size="clamp(20px, 5vw, 32px)" />}
+          icon={<Zap size="clamp(28px, 7vw, 45px)" color="#fff" />}
           label="Flash"
           onClick={() => handleNavigate("/flash")}
+          style={navButtonStyle}
         />
         <NavIcon
-          icon={<Plus size="clamp(20px, 5vw, 32px)" />}
-          label="Upload"
-          onClick={() => handleNavigate("/upload")}
+          icon={<Plus size="clamp(28px, 7vw, 45px)" color="#fff" />}
+          label="Publicar"
+          onClick={() => handleNavigate("/publicar")}
+          style={navButtonStyle}
         />
-        <button className="nav-button" onClick={handleUserClick}>
-          {user?.image ? (
-            <div className="profile-image">
-              <Image
-                src={user.image}
-                alt={user.namePage || "User"}
-                fill
-                style={{ objectFit: "cover" }}
-              />
-            </div>
-          ) : (
-            <User size="clamp(20px, 5vw, 32px)" />
-          )}
-          <span>{user?.namePage ? "Perfil" : "Login"}</span>
-        </button>
       </div>
-    </>
+    </div>
   );
 }
 
@@ -123,13 +117,15 @@ function NavIcon({
   icon,
   label,
   onClick,
+  style,
 }: {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
+  style: React.CSSProperties;
 }) {
   return (
-    <button className="nav-button" onClick={onClick}>
+    <button style={style} onClick={onClick}>
       {icon}
       <span>{label}</span>
     </button>

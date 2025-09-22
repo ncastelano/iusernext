@@ -34,7 +34,6 @@ export default function InfoProfileAnimations({
   videosCount: number;
 }) {
   const [loadingRoute, setLoadingRoute] = useState(false);
-
   const [currentUid, setCurrentUid] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loadingFollow, setLoadingFollow] = useState(true);
@@ -140,24 +139,46 @@ export default function InfoProfileAnimations({
     }
   };
 
+  // estilo base de box estatística
+  const statBox: React.CSSProperties = {
+    flex: "1",
+    minWidth: "120px",
+    background: "rgba(255,255,255,0.05)",
+    borderRadius: "12px",
+    padding: "1rem",
+    textAlign: "center",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.3)",
+  };
+
   return (
-    <section className="space-y-6">
-      {/* STATUS + LOCALIZAÇÃO (condicional) */}
+    <section
+      style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+    >
+      {/* STATUS + LOCALIZAÇÃO */}
       <motion.div
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.2, duration: 0.5 }}
-        className="flex flex-col md:flex-row md:items-center gap-4 text-white"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+          color: "#fff",
+        }}
       >
         {safeUser.visible &&
           safeUser.latitude !== null &&
           safeUser.longitude !== null && (
             <>
-              <div className="flex items-center gap-2">
-                <FaMapMarkerAlt className="text-red-500 text-xl" />
-                <p>
-                  <strong>Localização:</strong> Latitude:{" "}
-                  {safeUser.latitude.toFixed(6)}, Longitude:{" "}
+              <div
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                <FaMapMarkerAlt
+                  style={{ color: "#ef4444", fontSize: "1.25rem" }}
+                />
+                <p style={{ margin: 0 }}>
+                  <strong>Localização:</strong> Lat:{" "}
+                  {safeUser.latitude.toFixed(6)}, Lng:{" "}
                   {safeUser.longitude.toFixed(6)}
                 </p>
               </div>
@@ -165,11 +186,25 @@ export default function InfoProfileAnimations({
               <button
                 onClick={handleComoChegar}
                 disabled={loadingRoute}
-                className={`${
-                  loadingRoute
-                    ? "bg-indigo-400"
-                    : "bg-indigo-600 hover:bg-indigo-700"
-                } text-white font-semibold px-4 py-2 rounded-full transition flex items-center gap-2`}
+                style={{
+                  background: loadingRoute ? "#818cf8" : "#4f46e5",
+                  color: "#fff",
+                  fontWeight: 600,
+                  padding: "0.6rem 1.2rem",
+                  borderRadius: "9999px",
+                  border: "none",
+                  cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  transition: "all 0.3s",
+                }}
+                onMouseEnter={(e) =>
+                  (e.currentTarget.style.background = "#4338ca")
+                }
+                onMouseLeave={(e) =>
+                  (e.currentTarget.style.background = "#4f46e5")
+                }
               >
                 <FaMapMarkerAlt />
                 {loadingRoute ? "Carregando..." : "Como chegar"}
@@ -183,19 +218,43 @@ export default function InfoProfileAnimations({
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.4, duration: 0.5 }}
-        className="space-y-4 text-white border-t border-gray-700 pt-4"
+        style={{
+          borderTop: "1px solid rgba(255,255,255,0.2)",
+          paddingTop: "1rem",
+          color: "#fff",
+          display: "flex",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
       >
-        {/* Linha 1: Botão seguir (centralizado) */}
+        {/* Botão seguir */}
         {currentUid && currentUid !== safeUser.uid && !loadingFollow && (
-          <div className="flex justify-start">
+          <div>
             <button
               onClick={toggleFollow}
-              className={`flex items-center gap-2 px-4 py-1 text-sm font-semibold rounded-full transition duration-300
-      ${
-        isFollowing
-          ? "bg-red-500 hover:bg-red-600"
-          : "bg-green-600 hover:bg-green-700"
-      } text-white`}
+              style={{
+                background: isFollowing ? "#ef4444" : "#16a34a",
+                color: "#fff",
+                fontWeight: 600,
+                padding: "0.5rem 1.2rem",
+                borderRadius: "9999px",
+                border: "none",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                transition: "all 0.3s",
+              }}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.background = isFollowing
+                  ? "#dc2626"
+                  : "#15803d")
+              }
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = isFollowing
+                  ? "#ef4444"
+                  : "#16a34a")
+              }
             >
               {isFollowing ? (
                 <>
@@ -210,36 +269,48 @@ export default function InfoProfileAnimations({
           </div>
         )}
 
-        {/* Linha 2: Seguidores, Seguindo, Vídeos (na mesma linha) */}
-        <div className="flex justify-center gap-6 flex-wrap">
-          {/* Seguidores */}
-          <div className="flex flex-col items-center p-4 rounded-xl shadow-md bg-white/5 min-w-[120px]">
+        {/* Estatísticas */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            gap: "1rem",
+            flexWrap: "wrap",
+          }}
+        >
+          <div style={statBox}>
             {loadingFollow ? (
-              <span className="text-sm">Carregando...</span>
+              <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
             ) : (
               <>
-                <div className="text-2xl font-bold">{followersCount}</div>
-                <div className="text-sm text-gray-400">Seguidores</div>
+                <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                  {followersCount}
+                </div>
+                <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
+                  Seguidores
+                </div>
               </>
             )}
           </div>
-
-          {/* Seguindo */}
-          <div className="flex flex-col items-center p-4 rounded-xl shadow-md bg-white/5 min-w-[120px]">
+          <div style={statBox}>
             {loadingFollow ? (
-              <span className="text-sm">Carregando...</span>
+              <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
             ) : (
               <>
-                <div className="text-2xl font-bold">{followingCount}</div>
-                <div className="text-sm text-gray-400">Seguindo</div>
+                <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                  {followingCount}
+                </div>
+                <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
+                  Seguindo
+                </div>
               </>
             )}
           </div>
-
-          {/* Vídeos */}
-          <div className="flex flex-col items-center p-4 rounded-xl shadow-md bg-white/5 min-w-[120px]">
-            <div className="text-2xl font-bold text-white">{videosCount}</div>
-            <span className="text-sm text-gray-400">Vídeos</span>
+          <div style={statBox}>
+            <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+              {videosCount}
+            </div>
+            <span style={{ fontSize: "0.9rem", color: "#9ca3af" }}>Vídeos</span>
           </div>
         </div>
       </motion.div>
@@ -249,14 +320,19 @@ export default function InfoProfileAnimations({
         initial={{ opacity: 0, x: -50 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: 0.8, duration: 0.5 }}
-        className="flex gap-4 mt-4"
+        style={{
+          display: "flex",
+          gap: "1rem",
+          marginTop: "1rem",
+          fontSize: "1.6rem",
+        }}
       >
-        <FaInstagram className="text-pink-500 text-2xl cursor-pointer" />
-        <FaFacebookF className="text-blue-600 text-2xl cursor-pointer" />
-        <FaWhatsapp className="text-green-500 text-2xl cursor-pointer" />
-        <FaTwitter className="text-white text-2xl cursor-pointer" />
-        <FaYoutube className="text-red-600 text-2xl cursor-pointer" />
-        <FaSnapchatGhost className="text-yellow-400 text-2xl cursor-pointer" />
+        <FaInstagram style={{ color: "#ec4899", cursor: "pointer" }} />
+        <FaFacebookF style={{ color: "#3b82f6", cursor: "pointer" }} />
+        <FaWhatsapp style={{ color: "#22c55e", cursor: "pointer" }} />
+        <FaTwitter style={{ color: "#e5e7eb", cursor: "pointer" }} />
+        <FaYoutube style={{ color: "#ef4444", cursor: "pointer" }} />
+        <FaSnapchatGhost style={{ color: "#facc15", cursor: "pointer" }} />
       </motion.div>
     </section>
   );
