@@ -13,13 +13,17 @@ const caveat = Caveat({
   weight: ["400", "500", "600", "700"],
 });
 
+interface TrainingDoc {
+  personalPage?: string;
+  alunoPage?: string;
+}
+
 export default function NavbarTraining() {
   const [mounted, setMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isPersonal, setIsPersonal] = useState<boolean | null>(null);
   const [alunoPage, setAlunoPage] = useState<string>("");
-  const [personalPage, setPersonalPage] = useState<string>("");
 
   const pathname = usePathname();
   const router = useRouter();
@@ -39,7 +43,6 @@ export default function NavbarTraining() {
       if (!user) {
         setIsPersonal(null);
         setAlunoPage("");
-        setPersonalPage("");
         return;
       }
 
@@ -48,37 +51,27 @@ export default function NavbarTraining() {
         const snap = await getDoc(ref);
 
         if (!snap.exists()) {
-          // sem documento, considera como não-personal (sem alunoPage)
           setIsPersonal(false);
           setAlunoPage("");
-          setPersonalPage("");
           return;
         }
 
-        const data = snap.data() as Record<string, any>;
+        const data = snap.data() as TrainingDoc;
 
-        // Nova regra simples e explícita:
-        // - se existir `personalPage` -> é personal
-        // - senão se existir `alunoPage` -> é aluno
-        // - senão -> trata como aluno sem página
         if (data.personalPage) {
           setIsPersonal(true);
-          setPersonalPage(String(data.personalPage));
           setAlunoPage("");
         } else if (data.alunoPage) {
           setIsPersonal(false);
           setAlunoPage(String(data.alunoPage));
-          setPersonalPage("");
         } else {
           setIsPersonal(false);
           setAlunoPage("");
-          setPersonalPage("");
         }
       } catch (err) {
         console.error("Erro ao buscar perfil de training:", err);
         setIsPersonal(false);
         setAlunoPage("");
-        setPersonalPage("");
       }
     });
 
@@ -94,10 +87,6 @@ export default function NavbarTraining() {
     }
   };
 
-  // Roteamento do botão "Início":
-  // - se personal -> /personal_home
-  // - se aluno com alunoPage -> /aluno/[alunoPage]
-  // - fallback -> /training/login
   const inicioLink = isPersonal
     ? "/personal_home"
     : alunoPage
@@ -108,9 +97,7 @@ export default function NavbarTraining() {
 
   const isActive = (route: string) => {
     if (!pathname) return false;
-    // marca ativo para /aluno/* quando estivermos em qualquer rota /aluno/
     if (route.startsWith("/aluno/")) return pathname.startsWith("/aluno/");
-    // marca ativo para /personal_home e suas variações
     if (route === "/personal_home")
       return (
         pathname === "/personal_home" || pathname.startsWith("/personal_home")
