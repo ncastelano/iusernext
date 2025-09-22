@@ -298,68 +298,51 @@ export default function ConvitePage() {
               width: "100%",
               display: "flex",
               flexDirection: "column",
-              gap: "1rem",
+              gap: "0.8rem",
             }}
           >
-            {/* Nome */}
-            <input
-              type="text"
-              placeholder="Nome"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                border: "none",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.1)",
-                color: "white",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-            />
-
-            {/* Aluno Page */}
-            <input
-              type="text"
-              placeholder="/SeuPerfil"
-              value={alunoPage}
-              onChange={(e) => setAlunoPage(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                border: "none",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.1)",
-                color: "white",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-            />
-
-            {/* Email */}
-            <input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              style={{
-                width: "100%",
-                padding: "12px 16px",
-                border: "none",
-                borderRadius: "8px",
-                background: "rgba(255,255,255,0.1)",
-                color: "white",
-                fontSize: "1rem",
-                outline: "none",
-              }}
-            />
+            {[
+              {
+                type: "text",
+                placeholder: "Nome",
+                value: name,
+                onChange: setName,
+              },
+              {
+                type: "text",
+                placeholder: "/SeuPerfil",
+                value: alunoPage,
+                onChange: setAlunoPage,
+              },
+              {
+                type: "email",
+                placeholder: "Email",
+                value: email,
+                onChange: setEmail,
+              },
+            ].map((input, idx) => (
+              <input
+                key={idx}
+                type={input.type}
+                placeholder={input.placeholder}
+                value={input.value}
+                onChange={(e) => input.onChange(e.target.value)}
+                required
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  border: "1px solid rgba(255,255,255,0.2)",
+                  borderRadius: "8px",
+                  background: "rgba(0,0,0,0.3)",
+                  color: "white",
+                  fontSize: "1rem",
+                  outline: "none",
+                }}
+              />
+            ))}
 
             {/* Senha */}
-            <div style={{ position: "relative" }}>
+            <div style={{ position: "relative", width: "100%" }}>
               <input
                 type={showPassword ? "text" : "password"}
                 placeholder="Senha"
@@ -369,9 +352,9 @@ export default function ConvitePage() {
                 style={{
                   width: "100%",
                   padding: "12px 40px 12px 16px",
-                  border: "none",
+                  border: "1px solid rgba(255,255,255,0.2)",
                   borderRadius: "8px",
-                  background: "rgba(255,255,255,0.1)",
+                  background: "rgba(0,0,0,0.3)",
                   color: "white",
                   fontSize: "1rem",
                   outline: "none",
@@ -381,19 +364,19 @@ export default function ConvitePage() {
                 onClick={() => setShowPassword(!showPassword)}
                 style={{
                   position: "absolute",
-                  right: "10px",
+                  right: "12px",
                   top: "50%",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
-                  color: "white",
+                  color: "#ccc",
                 }}
               >
                 {showPassword ? <FaEyeSlash /> : <FaEye />}
               </span>
             </div>
 
-            {/* Repetir senha */}
-            <div style={{ position: "relative" }}>
+            {/* Repetir Senha */}
+            <div style={{ position: "relative", width: "100%" }}>
               <input
                 type={showRepeatPassword ? "text" : "password"}
                 placeholder="Repetir Senha"
@@ -403,9 +386,9 @@ export default function ConvitePage() {
                 style={{
                   width: "100%",
                   padding: "12px 40px 12px 16px",
-                  border: "none",
+                  border: "1px solid rgba(255,255,255,0.2)",
                   borderRadius: "8px",
-                  background: "rgba(255,255,255,0.1)",
+                  background: "rgba(0,0,0,0.3)",
                   color: "white",
                   fontSize: "1rem",
                   outline: "none",
@@ -415,11 +398,11 @@ export default function ConvitePage() {
                 onClick={() => setShowRepeatPassword(!showRepeatPassword)}
                 style={{
                   position: "absolute",
-                  right: "10px",
+                  right: "12px",
                   top: "50%",
                   transform: "translateY(-50%)",
                   cursor: "pointer",
-                  color: "white",
+                  color: "#ccc",
                 }}
               >
                 {showRepeatPassword ? <FaEyeSlash /> : <FaEye />}
@@ -438,6 +421,7 @@ export default function ConvitePage() {
                 color: "white",
                 fontSize: "1rem",
                 cursor: "pointer",
+                marginTop: "0.5rem",
               }}
             >
               Cadastrar
