@@ -109,7 +109,7 @@ export default function PersonalHome() {
         padding: "2rem 1rem",
         gap: "2rem",
         boxSizing: "border-box",
-        overflow: "hidden", // evita scroll causado pelo gradiente
+        overflow: "auto", // permite scroll vertical se o conteúdo extrapolar
       }}
     >
       {/* Fundo animado */}
