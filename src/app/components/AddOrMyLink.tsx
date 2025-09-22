@@ -13,7 +13,6 @@ export default function AddOrMyLink({
 }: AddOrMyLinkProps) {
   const [showDialog, setShowDialog] = useState(false);
   const [telefone, setTelefone] = useState("");
-  const [anamneseOption, setAnamneseOption] = useState("");
 
   const buttonStyle: React.CSSProperties = {
     background: "#16a34a",
@@ -60,11 +59,6 @@ export default function AddOrMyLink({
     // Monta mensagem
     let mensagem = `Olá, estou te convidando para ser meu aluno. Para prosseguir com o cadastro, entre no link: https://www.iuser.com.br/convite/${personalPage}`;
 
-    // Só adiciona anamnese se houver seleção
-    if (anamneseOption) {
-      mensagem += `\nOpção de Anamnese: ${anamneseOption}`;
-    }
-
     const whatsappURL = `https://wa.me/${numero}?text=${encodeURIComponent(
       mensagem
     )}`;
@@ -73,7 +67,6 @@ export default function AddOrMyLink({
     alert("Pedido enviado com sucesso!");
     setShowDialog(false);
     setTelefone("");
-    setAnamneseOption("");
   };
 
   const handleShareLink = () => {
@@ -170,37 +163,6 @@ export default function AddOrMyLink({
                 }}
                 required
               />
-
-              <select
-                value={anamneseOption}
-                onChange={(e) => setAnamneseOption(e.target.value)}
-                style={{
-                  padding: "12px 16px",
-                  borderRadius: "12px",
-                  border: "1px solid rgba(255,255,255,0.3)",
-                  background: "#000",
-                  color: "#fff",
-                  outline: "none",
-                  fontSize: "1rem",
-                  transition: "0.3s",
-                }}
-              >
-                <option value="" style={{ background: "#000", color: "#fff" }}>
-                  Selecionar Anamnese...
-                </option>
-                <option
-                  value="padrao"
-                  style={{ background: "#000", color: "#fff" }}
-                >
-                  Padrão
-                </option>
-                <option
-                  value="parq"
-                  style={{ background: "#000", color: "#fff" }}
-                >
-                  PAR-Q
-                </option>
-              </select>
 
               <button type="submit" style={buttonStyle}>
                 Enviar Convite pelo WhatsApp
