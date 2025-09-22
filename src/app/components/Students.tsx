@@ -11,7 +11,7 @@ interface Aluno {
   image?: string;
   personalUID: string;
   statusPersonal?: string;
-  alunoPage?: string; // Alterado de studentPage
+  alunoPage?: string;
 }
 
 export default function AlunosAceitos() {
@@ -95,11 +95,16 @@ export default function AlunosAceitos() {
           padding: "1rem",
           boxSizing: "border-box",
           scrollBehavior: "smooth",
+
+          /* 🎨 Estilização do scroll */
+          scrollbarWidth: "thin", // Firefox
+          scrollbarColor: "#22c55e rgba(255,255,255,0.1)", // Firefox
         }}
+        className="custom-scroll"
       >
         {alunos.map((aluno) => {
           const whatsapp = aluno.whatsapp;
-          const alunoPage = aluno.alunoPage; // Alterado
+          const alunoPage = aluno.alunoPage;
 
           return (
             <div
@@ -211,6 +216,24 @@ export default function AlunosAceitos() {
           );
         })}
       </div>
+
+      {/* CSS customizado do scroll */}
+      <style>{`
+        .custom-scroll::-webkit-scrollbar {
+          height: 8px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+          background: #22c55e;
+          border-radius: 10px;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb:hover {
+          background: #16a34a;
+        }
+      `}</style>
     </div>
   );
 }

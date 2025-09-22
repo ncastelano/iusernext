@@ -107,8 +107,27 @@ export default function AlunosPendentes() {
           padding: "0.5rem",
           boxSizing: "border-box",
           scrollBehavior: "smooth",
+          scrollbarWidth: "thin",
+          scrollbarColor: "#22c55e rgba(0,0,0,0.3)",
         }}
       >
+        <style>{`
+          div::-webkit-scrollbar {
+            height: 10px;
+          }
+          div::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+          }
+          div::-webkit-scrollbar-thumb {
+            background: #22c55e;
+            border-radius: 10px;
+          }
+          div::-webkit-scrollbar-thumb:hover {
+            background: #16a34a;
+          }
+        `}</style>
+
         {alunos.map((aluno) => (
           <div
             key={aluno.uid}
@@ -144,7 +163,7 @@ export default function AlunosPendentes() {
                   overflow: "hidden",
                   margin: "0 auto 0.5rem",
                   border: "3px solid #22c55e",
-                  position: "relative", // necessário para Image fill
+                  position: "relative",
                 }}
               >
                 <Image
