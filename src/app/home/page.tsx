@@ -202,16 +202,17 @@ export default function HomePage() {
     <div
       style={{
         position: "relative",
-        width: "100vw",
+        width: "100%",
+        maxWidth: "100%",
         height: "100dvh",
         overflow: "hidden",
-        // Adiciona safe-area para não esconder conteúdo atrás do BottomBar
+        // espaço seguro para o BottomBar
         paddingBottom: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`,
       }}
     >
       <GoogleMap
         onLoad={handleMapLoad}
-        mapContainerStyle={{ width: "100%", height: "100%" }}
+        mapContainerStyle={{ width: "100%", height: "100%", maxWidth: "100%" }}
         center={defaultCenter}
         zoom={4}
         options={{
