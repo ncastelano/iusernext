@@ -15,20 +15,21 @@ export default function BottomBar() {
     router.push(user?.namePage ? `/${user.namePage.toLowerCase()}` : "/login");
   };
 
-  // Barra ajustada (30% menor)
   const barStyle: React.CSSProperties = {
     position: "fixed",
-    bottom: "env(safe-area-inset-bottom)", // corrigido
+    bottom: 0,
     left: 0,
     width: "100vw",
-    height: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`, // adiciona safe area à altura
+    // Altura da barra + safe area para iOS
+    height: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`,
     background:
       "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.8), rgba(0,0,0,0.5), transparent)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     zIndex: 1000,
-    padding: `0 1rem env(safe-area-inset-bottom) 1rem`, // adiciona padding interno
+    // Padding interno: left, right e bottom consideram safe area
+    padding: `0 1rem env(safe-area-inset-bottom)`,
     boxSizing: "border-box",
   };
 
@@ -40,14 +41,14 @@ export default function BottomBar() {
     background: "none",
     border: "none",
     color: "white",
-    fontSize: "clamp(14px, 2.8vw, 20px)", // 30% menor
+    fontSize: "clamp(14px, 2.8vw, 20px)",
     cursor: "pointer",
     flexShrink: 0,
     gap: "0.35rem",
   };
 
   const profileImageWrapper: React.CSSProperties = {
-    width: "clamp(39px, 7vw, 56px)", // 30% menor
+    width: "clamp(39px, 7vw, 56px)",
     height: "clamp(39px, 7vw, 56px)",
     borderRadius: "50%",
     overflow: "hidden",
@@ -59,7 +60,7 @@ export default function BottomBar() {
     display: "flex",
     justifyContent: "center",
     alignItems: "center",
-    gap: "clamp(1.4rem, 5.6vw, 2.8rem)", // 30% menor
+    gap: "clamp(1.4rem, 5.6vw, 2.8rem)",
     flexGrow: 1,
   };
 
@@ -77,7 +78,7 @@ export default function BottomBar() {
             />
           </div>
         ) : (
-          <User size="clamp(28px, 7vw, 45px)" color="#fff" /> // 30% menor
+          <User size="clamp(28px, 7vw, 45px)" color="#fff" />
         )}
         <span>{user?.namePage ? "Perfil" : "Login"}</span>
       </button>
