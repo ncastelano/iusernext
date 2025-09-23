@@ -19,8 +19,8 @@ export default function BottomBar() {
     position: "fixed",
     bottom: 0,
     left: 0,
-    width: "100vw",
-    // Altura da barra + safe area para iOS
+    width: "100%", // segura largura total da tela
+    maxWidth: "100%", // evita overflow lateral
     height: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`,
     background:
       "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.8), rgba(0,0,0,0.5), transparent)",
@@ -28,7 +28,6 @@ export default function BottomBar() {
     justifyContent: "space-between",
     alignItems: "center",
     zIndex: 1000,
-    // Padding interno: left, right e bottom consideram safe area
     padding: `0 1rem env(safe-area-inset-bottom)`,
     boxSizing: "border-box",
   };
@@ -62,6 +61,8 @@ export default function BottomBar() {
     alignItems: "center",
     gap: "clamp(1.4rem, 5.6vw, 2.8rem)",
     flexGrow: 1,
+    overflowX: "auto", // permite rolagem horizontal se necessário
+    padding: "0 0.5rem", // um pequeno padding interno
   };
 
   return (
