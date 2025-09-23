@@ -211,10 +211,11 @@ export default function HomePage() {
   return (
     <div
       style={{
-        height: "100vh",
+        height: "100dvh", // Corrige corte no Safari/iOS
         width: "100vw",
         position: "relative",
         overflow: "hidden",
+        paddingBottom: "env(safe-area-inset-bottom)", // Safe area inferior iOS
       }}
     >
       <GoogleMap
