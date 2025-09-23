@@ -18,17 +18,17 @@ export default function BottomBar() {
   // Barra ajustada (30% menor)
   const barStyle: React.CSSProperties = {
     position: "fixed",
-    bottom: 0,
+    bottom: "env(safe-area-inset-bottom)", // corrigido
     left: 0,
     width: "100vw",
-    height: "clamp(84px, 14vh, 126px)", // 30% menor
+    height: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`, // adiciona safe area à altura
     background:
       "linear-gradient(to top, rgba(0,0,0,1), rgba(0,0,0,0.8), rgba(0,0,0,0.5), transparent)",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
     zIndex: 1000,
-    padding: "0 1rem",
+    padding: `0 1rem env(safe-area-inset-bottom) 1rem`, // adiciona padding interno
     boxSizing: "border-box",
   };
 
