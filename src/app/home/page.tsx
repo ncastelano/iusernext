@@ -12,11 +12,7 @@ import AvatarListView from "./AvatarListView";
 import { MarkerData, VideoData } from "types/markerTypes";
 import DynamicInfoWindows from "./DynamicInfoWindow";
 
-const defaultCenter = {
-  lat: -16.843212,
-  lng: -53.905319,
-};
-
+const defaultCenter = { lat: -16.843212, lng: -53.905319 };
 const filters = [
   { label: "Flash", icon: <Zap size={16} />, key: "flash" },
   { label: "Usuários", icon: <User size={16} />, key: "users" },
@@ -33,6 +29,17 @@ export default function HomePage() {
   const [videosCache, setVideosCache] = useState<VideoData[]>([]);
   const [usersCache, setUsersCache] = useState<MarkerData[]>([]);
   const mapRef = useRef<google.maps.Map | null>(null);
+
+  const [selectedUserMarker, setSelectedUserMarker] =
+    useState<MarkerData | null>(null);
+  const [selectedFlashMarker, setSelectedFlashMarker] =
+    useState<VideoData | null>(null);
+  const [selectedStoreMarker, setSelectedStoreMarker] =
+    useState<VideoData | null>(null);
+  const [selectedProductMarker, setSelectedProductMarker] =
+    useState<VideoData | null>(null);
+  const [selectedPlaceMarker, setSelectedPlaceMarker] =
+    useState<VideoData | null>(null);
 
   const clearMarker = (type: string) => {
     switch (type) {
@@ -53,17 +60,6 @@ export default function HomePage() {
         break;
     }
   };
-
-  const [selectedUserMarker, setSelectedUserMarker] =
-    useState<MarkerData | null>(null);
-  const [selectedFlashMarker, setSelectedFlashMarker] =
-    useState<VideoData | null>(null);
-  const [selectedStoreMarker, setSelectedStoreMarker] =
-    useState<VideoData | null>(null);
-  const [selectedProductMarker, setSelectedProductMarker] =
-    useState<VideoData | null>(null);
-  const [selectedPlaceMarker, setSelectedPlaceMarker] =
-    useState<VideoData | null>(null);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
   const { isLoaded } = useJsApiLoader({
@@ -143,7 +139,6 @@ export default function HomePage() {
   }, []);
 
   useEffect(() => {
-    // Limpa todos os selected markers quando o filtro mudar
     setSelectedUserMarker(null);
     setSelectedFlashMarker(null);
     setSelectedStoreMarker(null);
@@ -154,14 +149,11 @@ export default function HomePage() {
     let filtered: MarkerData[] = [];
 
     if (selectedFilter === "users") {
-      filtered = usersCache.filter((user) =>
-        user.namePage.toLowerCase().includes(lowerSearch)
+      filtered = usersCache.filter((u) =>
+        u.namePage.toLowerCase().includes(lowerSearch)
       );
     } else if (
-      selectedFilter === "flash" ||
-      selectedFilter === "place" ||
-      selectedFilter === "store" ||
-      selectedFilter === "product"
+      ["flash", "place", "store", "product"].includes(selectedFilter)
     ) {
       const filterKey = {
         flash: "isFlash",
@@ -169,15 +161,14 @@ export default function HomePage() {
         store: "isStore",
         product: "isProduct",
       }[selectedFilter] as keyof VideoData;
-
       filtered = videosCache.filter(
-        (video) =>
-          video[filterKey] === true &&
-          video.namePage.toLowerCase().includes(lowerSearch)
+        (v) =>
+          v[filterKey] === true &&
+          v.namePage.toLowerCase().includes(lowerSearch)
       );
     } else {
-      filtered = allMarkers.filter((marker) =>
-        marker.namePage.toLowerCase().includes(lowerSearch)
+      filtered = allMarkers.filter((m) =>
+        m.namePage.toLowerCase().includes(lowerSearch)
       );
     }
 
@@ -186,7 +177,6 @@ export default function HomePage() {
 
   const focusOnMarker = (marker: MarkerData) => {
     if (!mapRef.current) return;
-
     const startZoom = mapRef.current.getZoom() ?? 4;
     const targetZoom = 16;
     const steps = 10;
@@ -202,7 +192,7 @@ export default function HomePage() {
     }
   };
 
-  const handleMapLoad = (map: google.maps.Map): void => {
+  const handleMapLoad = (map: google.maps.Map) => {
     mapRef.current = map;
   };
 
@@ -211,11 +201,12 @@ export default function HomePage() {
   return (
     <div
       style={{
-        height: "100dvh",
-        width: "100vw",
         position: "relative",
+        width: "100vw",
+        height: "100dvh",
         overflow: "hidden",
-        paddingBottom: "env(safe-area-inset-bottom)",
+        // Adiciona safe-area para não esconder conteúdo atrás do BottomBar
+        paddingBottom: `calc(clamp(84px, 14vh, 126px) + env(safe-area-inset-bottom))`,
       }}
     >
       <GoogleMap
@@ -241,7 +232,6 @@ export default function HomePage() {
             videoMarker?.thumbnailUrl ??
             usersCache.find((u) => u.id === marker.id)?.image ??
             "";
-
           return (
             <OverlayView
               key={`marker-${marker.id}`}
@@ -264,52 +254,44 @@ export default function HomePage() {
                 }}
                 title={marker.namePage}
                 onClick={() => {
-                  // Limpar todos os markers primeiro
                   setSelectedUserMarker(null);
                   setSelectedFlashMarker(null);
                   setSelectedStoreMarker(null);
                   setSelectedProductMarker(null);
                   setSelectedPlaceMarker(null);
 
-                  const markerId = marker.id;
-
                   switch (selectedFilter) {
-                    case "users": {
-                      const clickedUser = usersCache.find(
-                        (u) => u.id === markerId
+                    case "users":
+                      setSelectedUserMarker(
+                        usersCache.find((u) => u.id === marker.id) ?? null
                       );
-                      if (clickedUser) setSelectedUserMarker(clickedUser);
                       break;
-                    }
-                    case "flash": {
-                      const clickedVideo = videosCache.find(
-                        (v) => v.id === markerId
+                    case "flash":
+                      setSelectedFlashMarker(
+                        videosCache.find((v) => v.id === marker.id) ?? null
                       );
-                      if (clickedVideo) setSelectedFlashMarker(clickedVideo);
                       break;
-                    }
-                    case "store": {
-                      const clickedStore = videosCache.find(
-                        (v) => v.id === markerId && v.isStore
+                    case "store":
+                      setSelectedStoreMarker(
+                        videosCache.find(
+                          (v) => v.id === marker.id && v.isStore
+                        ) ?? null
                       );
-                      if (clickedStore) setSelectedStoreMarker(clickedStore);
                       break;
-                    }
-                    case "product": {
-                      const clickedProduct = videosCache.find(
-                        (v) => v.id === markerId && v.isProduct
+                    case "product":
+                      setSelectedProductMarker(
+                        videosCache.find(
+                          (v) => v.id === marker.id && v.isProduct
+                        ) ?? null
                       );
-                      if (clickedProduct)
-                        setSelectedProductMarker(clickedProduct);
                       break;
-                    }
-                    case "place": {
-                      const clickedPlace = videosCache.find(
-                        (v) => v.id === markerId && v.isPlace
+                    case "place":
+                      setSelectedPlaceMarker(
+                        videosCache.find(
+                          (v) => v.id === marker.id && v.isPlace
+                        ) ?? null
                       );
-                      if (clickedPlace) setSelectedPlaceMarker(clickedPlace);
                       break;
-                    }
                   }
                 }}
               >
@@ -364,9 +346,7 @@ export default function HomePage() {
         }
         onAvatarClick={(item) => {
           const marker = markers.find((m) => m.id === item.id);
-          if (marker) {
-            focusOnMarker(marker);
-          }
+          if (marker) focusOnMarker(marker);
         }}
       />
 
