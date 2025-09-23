@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import BottomBar from "../components/Bottombar";
 
 interface UserData {
   uid: string;
@@ -211,6 +212,7 @@ export default function DashboardPage() {
             🛒 Loja / Produtos
           </div>
         </section>
+        <BottomBar />
       </div>
     </main>
   );
