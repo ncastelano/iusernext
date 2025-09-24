@@ -31,14 +31,14 @@ export default function Publicar() {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "clamp(10px,2vw,16px) clamp(12px,4vw,24px)",
+          padding: "clamp(14px,2vw,20px) clamp(16px,6vw,28px)",
           borderBottom: "1px solid #333",
           cursor: "pointer",
         }}
       >
         <div
           style={{
-            fontSize: "clamp(24px,5vw,32px)",
+            fontSize: "clamp(28px,6vw,36px)",
             marginRight: "clamp(12px,4vw,16px)",
             color: "white",
           }}
@@ -48,7 +48,7 @@ export default function Publicar() {
         <div
           style={{
             flex: 1,
-            fontSize: "clamp(16px,4vw,20px)",
+            fontSize: "clamp(20px,6vw,26px)",
             color: "white",
           }}
         >
@@ -56,7 +56,7 @@ export default function Publicar() {
         </div>
         <div
           style={{
-            fontSize: "clamp(18px,4vw,22px)",
+            fontSize: "clamp(22px,5vw,26px)",
             color: "white",
           }}
         >
@@ -83,7 +83,7 @@ export default function Publicar() {
           backgroundColor: "black",
           padding: "clamp(12px,3vw,20px)",
           borderBottom: "1px solid #333",
-          fontSize: "clamp(18px,4vw,22px)",
+          fontSize: "clamp(32px,8vw,40px)",
           fontWeight: "bold",
           textAlign: "center",
         }}
