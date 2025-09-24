@@ -18,8 +18,8 @@ export default function Publicar() {
 
   // 🔹 Variáveis de estilo responsivo
   const titleFontSize = "clamp(26px,7vw,36px)";
-  const iconSize = "clamp(40px,10vw,56px)";
-  const labelFontSize = "clamp(40px,10vw,56px)";
+  const iconSize = "clamp(28px,7vw,40px)";
+  const labelFontSize = "clamp(18px,5vw,24px)";
 
   const buildOption = useCallback(
     ({
@@ -35,18 +35,18 @@ export default function Publicar() {
         onClick={onClick}
         style={{
           display: "flex",
-          flexDirection: "column",
-          alignItems: "start",
-          justifyContent: "center",
-          padding: "clamp(20px,6vw,32px)",
+          flexDirection: "row",
+          alignItems: "center",
+          gap: "clamp(12px,3vw,20px)",
+          padding: "clamp(16px,5vw,24px)",
           cursor: "pointer",
-          borderRadius: "16px",
-          backgroundColor: "#111", // card mais sutil
+          borderRadius: "12px",
+          backgroundColor: "#111",
           transition: "transform 0.2s ease, background 0.2s ease",
         }}
         onMouseEnter={(e) => {
           (e.currentTarget as HTMLDivElement).style.backgroundColor = "#222";
-          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.03)";
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.02)";
         }}
         onMouseLeave={(e) => {
           (e.currentTarget as HTMLDivElement).style.backgroundColor = "#111";
@@ -57,7 +57,7 @@ export default function Publicar() {
           style={{
             fontSize: iconSize,
             color: "#fff",
-            marginBottom: "12px",
+            flexShrink: 0,
           }}
         >
           {icon}
@@ -66,7 +66,6 @@ export default function Publicar() {
           style={{
             fontSize: labelFontSize,
             color: "white",
-            textAlign: "center",
           }}
         >
           {label}
@@ -85,7 +84,7 @@ export default function Publicar() {
         backgroundColor: "black",
         color: "white",
         padding: "clamp(20px,6vw,32px)",
-        gap: "clamp(20px,5vw,28px)",
+        gap: "clamp(16px,4vw,24px)",
         overflowY: "auto",
       }}
     >
@@ -148,7 +147,7 @@ export default function Publicar() {
       })}
 
       {/* Espaço extra no fim */}
-      <div style={{ height: "100px" }} />
+      <div style={{ height: "150px" }} />
     </div>
   );
 }
