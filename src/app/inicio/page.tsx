@@ -4,7 +4,6 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
-import BottomBar from "../components/Bottombar";
 
 interface UserData {
   name: string;
