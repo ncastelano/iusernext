@@ -113,7 +113,7 @@ export default function Fotografar() {
     return () => stopCamera();
   }, [facingMode, startCamera, stopCamera]);
 
-  const btnSize = "clamp(80px,12vw,120px)";
+  const btnSize = "clamp(32px,8vw,40px)";
   const iconFont = "clamp(32px,8vw,40px)";
   const textFont = "clamp(32px,8vw,40px)";
 
@@ -131,10 +131,10 @@ export default function Fotografar() {
       {/* AppBar */}
       <div
         style={{
-          height: "clamp(80px,10vh,160px)",
+          height: "clamp(40px,6vh,80px)",
           display: "flex",
           alignItems: "center",
-          padding: "0 clamp(20px,5vw,80px)",
+          padding: "0 clamp(20px,5vw,60px)",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
           fontSize: "clamp(24px,4vw,60px)",
