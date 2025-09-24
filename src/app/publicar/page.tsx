@@ -148,7 +148,7 @@ export default function Publicar() {
       {/* Escolher Som */}
       <div
         style={optionStyle}
-        onClick={() => alert("Abrir file picker de áudio")}
+        onClick={() => router.push("/publicar/escolher_som")}
         onMouseEnter={hoverIn}
         onMouseLeave={hoverOut}
       >

@@ -38,7 +38,6 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
         latInterval[1] = mid;
       }
     }
-
     isEven = !isEven;
     if (bit < 4) {
       bit++;
@@ -48,15 +47,11 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
       ch = 0;
     }
   }
-
   return geohash;
 }
 
-interface EscolherSomProps {
-  audioFile: File;
-}
-
-export default function EscolherSom({ audioFile }: EscolherSomProps) {
+export default function EscolherSom() {
+  const [audioFile, setAudioFile] = useState<File | null>(null);
   const [songName, setSongName] = useState("");
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
@@ -76,11 +71,13 @@ export default function EscolherSom({ audioFile }: EscolherSomProps) {
         setPosition(pos);
         setGeohash(encodeGeoHash(pos.coords.latitude, pos.coords.longitude));
       },
-      (err) => {
-        console.warn("Erro ao obter localização:", err.message);
-      }
+      (err) => console.warn("Erro ao obter localização:", err.message)
     );
   }, []);
+
+  const handlePickAudio = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.[0]) setAudioFile(e.target.files[0]);
+  };
 
   const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -102,17 +99,19 @@ export default function EscolherSom({ audioFile }: EscolherSomProps) {
   };
 
   const handlePublish = async () => {
-    if (!selectedImageUrl || songName.trim().length < 4) return;
+    if (!audioFile || !selectedImageUrl || songName.trim().length < 4) return;
     if (!position || !geohash) {
       alert("Aguardando geolocalização...");
       return;
     }
 
     setIsPublishing(true);
-
     try {
       // Upload do áudio
-      const storageRef = ref(storage, `songpublication/${Date.now()}.mp3`);
+      const storageRef = ref(
+        storage,
+        `songpublication/${Date.now()}_${audioFile.name}`
+      );
       await uploadBytes(storageRef, audioFile);
       const songUrl = await getDownloadURL(storageRef);
 
@@ -140,6 +139,10 @@ export default function EscolherSom({ audioFile }: EscolherSomProps) {
 
       await addDoc(collection(db, "publications"), publication);
       alert("Som publicado com sucesso!");
+      // Reset
+      setAudioFile(null);
+      setSongName("");
+      setSelectedImageUrl(null);
     } catch (error) {
       console.error(error);
       alert("Erro ao publicar som");
@@ -149,75 +152,83 @@ export default function EscolherSom({ audioFile }: EscolherSomProps) {
   };
 
   const canPublish =
-    !!selectedImageUrl && songName.trim().length >= 4 && !isPublishing;
+    !!audioFile &&
+    !!selectedImageUrl &&
+    songName.trim().length >= 4 &&
+    !isPublishing;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
+    <div className="min-h-screen bg-black text-white p-6 flex flex-col gap-4">
       <h1 className="text-2xl font-bold mb-4">Escolher Som</h1>
 
       <input
-        type="text"
-        placeholder="Digite o nome ou título do som..."
-        value={songName}
-        onChange={(e) => setSongName(e.target.value)}
-        className="w-full p-3 rounded-md bg-white/10 border border-white/40 mb-4"
+        type="file"
+        accept=".mp3,.wav,.m4a,.aac,.ogg"
+        onChange={handlePickAudio}
+        className="mb-2"
       />
-
-      <div className="flex justify-center mb-4">
-        <label className="relative cursor-pointer">
+      {audioFile && (
+        <div className="flex flex-col gap-2">
           <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handlePickImage}
+            type="text"
+            placeholder="Digite o nome ou título do som..."
+            value={songName}
+            onChange={(e) => setSongName(e.target.value)}
+            className="w-full p-3 rounded-md bg-white/10 border border-white/40"
           />
-          <div className="h-40 w-40 bg-gray-800 border-2 border-white rounded-lg flex items-center justify-center">
-            {isUploadingImage ? (
-              <span>Carregando...</span>
-            ) : selectedImageUrl ? (
-              <Image
-                src={selectedImageUrl}
-                alt="Capa"
-                className="h-40 w-40 object-cover rounded-lg"
-              />
-            ) : (
-              <div className="flex flex-col items-center">
-                <FaCamera className="text-white text-3xl" />
-                <span>Selecionar capa</span>
-              </div>
-            )}
+
+          <label className="cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePickImage}
+            />
+            <div className="h-40 w-40 bg-gray-800 border-2 border-white rounded-lg flex items-center justify-center">
+              {isUploadingImage ? (
+                <span>Carregando...</span>
+              ) : selectedImageUrl ? (
+                <Image
+                  src={selectedImageUrl}
+                  alt="Capa"
+                  className="h-40 w-40 object-cover rounded-lg"
+                />
+              ) : (
+                <div className="flex flex-col items-center">
+                  <FaCamera className="text-white text-3xl" />
+                  <span>Selecionar capa</span>
+                </div>
+              )}
+            </div>
+          </label>
+
+          <div className="flex items-center gap-4">
+            <button
+              onClick={handleTogglePlay}
+              className="flex items-center px-4 py-2 bg-yellow-500 text-black rounded-md"
+            >
+              {isPlaying ? (
+                <FaPause className="mr-2" />
+              ) : (
+                <FaPlay className="mr-2" />
+              )}
+              {isPlaying ? "Pause" : "Play"}
+            </button>
+            <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
           </div>
-        </label>
-      </div>
 
-      <div className="flex justify-center mb-6">
-        <button
-          onClick={handleTogglePlay}
-          className="flex items-center px-4 py-2 bg-yellow-500 text-black rounded-md"
-        >
-          {isPlaying ? (
-            <FaPause className="mr-2" />
-          ) : (
-            <FaPlay className="mr-2" />
-          )}
-          {isPlaying ? "Pause" : "Play"}
-        </button>
-      </div>
-
-      <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
-
-      <div className="flex justify-center">
-        <button
-          onClick={handlePublish}
-          disabled={!canPublish}
-          className={`flex items-center px-4 py-2 rounded-md ${
-            canPublish ? "bg-white text-black" : "bg-gray-500 text-black/50"
-          }`}
-        >
-          <FaShare className="mr-2" />
-          {isPublishing ? "Publicando..." : "Publicar"}
-        </button>
-      </div>
+          <button
+            onClick={handlePublish}
+            disabled={!canPublish}
+            className={`flex items-center px-4 py-2 rounded-md mt-4 ${
+              canPublish ? "bg-white text-black" : "bg-gray-500 text-black/50"
+            }`}
+          >
+            <FaShare className="mr-2" />{" "}
+            {isPublishing ? "Publicando..." : "Publicar"}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
