@@ -31,6 +31,13 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR">
+      <head>
+        {/* Meta tag extra para garantir que não haja zoom em inputs */}
+        <meta
+          name="viewport"
+          content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+        />
+      </head>
       <body>
         <UserProvider>
           <div className="min-h-screen flex flex-col">

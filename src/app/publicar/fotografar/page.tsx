@@ -113,9 +113,9 @@ export default function Fotografar() {
     return () => stopCamera();
   }, [facingMode, startCamera, stopCamera]);
 
-  const btnSize = "clamp(80px,12vw,120px)";
-  const iconFont = "clamp(28px,4vw,36px)";
-  const textFont = "clamp(20px,2vw,24px)";
+  const btnSize = "clamp(28px,8vw,36px)";
+  const iconFont = "clamp(28px,8vw,36px)";
+  const textFont = "clamp(20px,4vw,24px)";
 
   return (
     <div
