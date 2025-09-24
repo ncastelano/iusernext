@@ -16,6 +16,14 @@ import { useCallback } from "react";
 export default function Publicar() {
   const router = useRouter();
 
+  // 🔹 Variáveis de estilo responsivo
+  const headerFontSize = "clamp(32px,8vw,40px)";
+  const optionPaddingY = "clamp(14px,2vw,20px)";
+  const optionPaddingX = "clamp(16px,6vw,28px)";
+  const iconSize = "clamp(40px,8vw,48px)";
+  const labelFontSize = "clamp(20px,6vw,26px)";
+  const arrowFontSize = "clamp(22px,5vw,26px)";
+
   const buildOption = useCallback(
     ({
       icon,
@@ -31,14 +39,14 @@ export default function Publicar() {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "clamp(14px,2vw,20px) clamp(16px,6vw,28px)",
+          padding: `${optionPaddingY} ${optionPaddingX}`,
           borderBottom: "1px solid #333",
           cursor: "pointer",
         }}
       >
         <div
           style={{
-            fontSize: "clamp(28px,6vw,36px)",
+            fontSize: iconSize,
             marginRight: "clamp(12px,4vw,16px)",
             color: "white",
           }}
@@ -48,7 +56,7 @@ export default function Publicar() {
         <div
           style={{
             flex: 1,
-            fontSize: "clamp(20px,6vw,26px)",
+            fontSize: labelFontSize,
             color: "white",
           }}
         >
@@ -56,7 +64,7 @@ export default function Publicar() {
         </div>
         <div
           style={{
-            fontSize: "clamp(22px,5vw,26px)",
+            fontSize: arrowFontSize,
             color: "white",
           }}
         >
@@ -64,7 +72,7 @@ export default function Publicar() {
         </div>
       </div>
     ),
-    []
+    [iconSize, labelFontSize, arrowFontSize, optionPaddingY, optionPaddingX]
   );
 
   return (
@@ -72,7 +80,7 @@ export default function Publicar() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100dvh", // altura total responsiva
+        height: "100dvh",
         backgroundColor: "black",
         color: "white",
       }}
@@ -83,7 +91,7 @@ export default function Publicar() {
           backgroundColor: "black",
           padding: "clamp(12px,3vw,20px)",
           borderBottom: "1px solid #333",
-          fontSize: "clamp(32px,8vw,40px)",
+          fontSize: headerFontSize,
           fontWeight: "bold",
           textAlign: "center",
         }}
