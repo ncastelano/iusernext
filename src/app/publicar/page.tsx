@@ -140,9 +140,6 @@ export default function Publicar() {
           onClick: () => router.push("/publicar/criar_loja"),
         })}
       </div>
-
-      {/* BottomNav */}
-      <BottomBar />
     </div>
   );
 }

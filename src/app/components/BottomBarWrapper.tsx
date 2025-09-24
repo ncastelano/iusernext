@@ -7,7 +7,13 @@ export default function BottomBarWrapper() {
   const pathname = usePathname();
 
   // Lista de rotas que devem exibir o BottomBar
-  const allowedRoutes = ["/inicio", "/perfil", "/contatos", "/mapa"];
+  const allowedRoutes = [
+    "/inicio",
+    "/perfil",
+    "/contatos",
+    "/mapa",
+    "/publicar",
+  ];
 
   const showBottomBar = allowedRoutes.includes(pathname);
 
