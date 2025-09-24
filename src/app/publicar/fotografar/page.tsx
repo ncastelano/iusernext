@@ -114,8 +114,8 @@ export default function Fotografar() {
   }, [facingMode, startCamera, stopCamera]);
 
   const btnSize = "clamp(32px,8vw,40px)";
-  const iconFont = "clamp(32px,8vw,40px)";
-  const textFont = "clamp(32px,8vw,40px)";
+  const iconFont = "clamp(29px,7vw,35px)";
+  const textFont = "clamp(18px,3vw,22px)";
 
   return (
     <div
@@ -137,7 +137,7 @@ export default function Fotografar() {
           padding: "0 clamp(20px,5vw,60px)",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
-          fontSize: "clamp(24px,4vw,60px)",
+          fontSize: "clamp(24px,4vw,50px)",
         }}
       >
         <button
@@ -171,24 +171,28 @@ export default function Fotografar() {
           alignItems: "center",
           justifyContent: "center",
           flexDirection: "column",
+          padding: "2vh 2vw",
+          gap: "2vh",
         }}
       >
-        <motion.div
-          animate={{
-            width: previewDataUrl ? "80%" : "95%",
-            height: previewDataUrl ? "60%" : "95%",
-          }}
-          transition={{ duration: 0.5, ease: "easeInOut" }}
-          style={{
-            position: "relative",
-            backgroundColor: previewDataUrl ? "hotpink" : "#111",
-            borderRadius: "16px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          {!previewDataUrl && (
+        {!previewDataUrl ? (
+          // ======= MODO "ANTES DE TIRAR FOTO" =======
+          <motion.div
+            animate={{
+              width: "95%",
+              height: "95%",
+            }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            style={{
+              position: "relative",
+              backgroundColor: "#111",
+              borderRadius: "16px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              overflow: "hidden",
+            }}
+          >
             <video
               ref={videoRef}
               playsInline
@@ -201,151 +205,34 @@ export default function Fotografar() {
                 borderRadius: "16px",
               }}
             />
-          )}
-          {previewDataUrl && (
-            <Image
-              src={previewDataUrl}
-              alt="Preview da foto"
-              fill
-              unoptimized
-              style={{ objectFit: "cover", borderRadius: "16px" }}
-            />
-          )}
-
-          {/* Botões topo container quando estiver em preview */}
-          {previewDataUrl && (
-            <div
+            {/* Botão alternar câmera */}
+            <button
+              onClick={toggleFacingMode}
               style={{
                 position: "absolute",
-                top: "-50px",
-                left: "50%",
-                transform: "translateX(-50%)",
-                display: "flex",
-                flexDirection: "row", // agora é row
-                gap: "1em", // espaço entre os botões
-                zIndex: 10,
-              }}
-            >
-              <button
-                onClick={retake}
-                style={{
-                  padding: "0.3em 0.6em",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "rgba(255,255,255,0.2)",
-                  color: "#fff",
-                  fontSize: textFont,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.3em",
-                  cursor: "pointer",
-                }}
-              >
-                <FaRedo /> Refazer
-              </button>
-
-              <button
-                onClick={downloadPhoto}
-                style={{
-                  padding: "0.3em 0.6em",
-                  borderRadius: "8px",
-                  border: "none",
-                  background: "#22c55e",
-                  color: "#000",
-                  fontWeight: 700,
-                  fontSize: textFont,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.3em",
-                  cursor: "pointer",
-                }}
-              >
-                <FaDownload /> Baixar
-              </button>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Input e switch abaixo do container */}
-        {previewDataUrl && (
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              marginTop: "4vh",
-              width: "60%",
-              gap: "1em",
-            }}
-          >
-            <input
-              type="text"
-              placeholder="Nome da foto"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={{
-                padding: "0.5em",
-                borderRadius: "8px",
-                border: "1px solid #ccc",
-                fontSize: textFont,
-              }}
-            />
-            <label
-              style={{
+                top: 20,
+                right: 20,
+                padding: "0.5em 1em",
+                borderRadius: 8,
+                border: "none",
+                background: "rgba(0,0,0,0.5)",
+                color: "#fff",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "space-between",
+                gap: 8,
                 fontSize: textFont,
+                cursor: "pointer",
+                backdropFilter: "blur(6px)",
               }}
             >
-              Mostrar no mapa
-              <input
-                type="checkbox"
-                checked={showOnMap}
-                onChange={() => setShowOnMap(!showOnMap)}
-              />
-            </label>
-          </div>
-        )}
-
-        {/* Botão alternar câmera */}
-        {!previewDataUrl && (
-          <button
-            onClick={toggleFacingMode}
-            style={{
-              position: "absolute",
-              top: 40,
-              right: 40,
-              padding: "0.5em 1em",
-              borderRadius: 8,
-              border: "none",
-              background: "rgba(0,0,0,0.5)",
-              color: "#fff",
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              fontSize: textFont,
-              cursor: "pointer",
-              backdropFilter: "blur(6px)",
-            }}
-          >
-            <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
-          </button>
-        )}
-
-        {/* Botão tirar foto / publicar */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: 60,
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          {!previewDataUrl ? (
+              <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
+            </button>
+            {/* Botão capturar */}
             <button
               onClick={takePhoto}
               style={{
+                position: "absolute",
+                bottom: 40,
                 width: btnSize,
                 height: btnSize,
                 borderRadius: "50%",
@@ -362,27 +249,127 @@ export default function Fotografar() {
             >
               <FaCamera />
             </button>
-          ) : (
+          </motion.div>
+        ) : (
+          // ======= MODO "DEPOIS DE TIRAR FOTO" =======
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              width: "100%",
+              gap: "2vh",
+            }}
+          >
+            {/* Foto tirada */}
+            <div
+              style={{
+                width: "90%",
+                aspectRatio: "3/4",
+                borderRadius: "16px",
+                overflow: "hidden",
+                background: "#111",
+                position: "relative",
+              }}
+            >
+              <Image
+                src={previewDataUrl}
+                alt="Preview da foto"
+                fill
+                unoptimized
+                style={{ objectFit: "cover" }}
+              />
+            </div>
+
+            {/* Botões refazer / baixar */}
+            <div style={{ display: "flex", gap: "1em" }}>
+              <button
+                onClick={retake}
+                style={{
+                  padding: "0.6em 1.2em",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "rgba(255,255,255,0.2)",
+                  color: "#fff",
+                  fontSize: textFont,
+                  cursor: "pointer",
+                }}
+              >
+                <FaRedo /> Refazer
+              </button>
+              <button
+                onClick={downloadPhoto}
+                style={{
+                  padding: "0.6em 1.2em",
+                  borderRadius: "8px",
+                  border: "none",
+                  background: "#22c55e",
+                  color: "#000",
+                  fontWeight: 700,
+                  fontSize: textFont,
+                  cursor: "pointer",
+                }}
+              >
+                <FaDownload /> Baixar
+              </button>
+            </div>
+
+            {/* Inputs */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                width: "80%",
+                gap: "1em",
+              }}
+            >
+              <input
+                type="text"
+                placeholder="Nome da foto"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={{
+                  padding: "0.5em",
+                  borderRadius: "8px",
+                  border: "1px solid #ccc",
+                  fontSize: textFont,
+                }}
+              />
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  fontSize: textFont,
+                }}
+              >
+                Mostrar no mapa
+                <input
+                  type="checkbox"
+                  checked={showOnMap}
+                  onChange={() => setShowOnMap(!showOnMap)}
+                />
+              </label>
+            </div>
+
+            {/* Botão publicar */}
             <button
               onClick={() => alert("Foto aceita — implementar upload.")}
               style={{
-                padding: "0.5em 1em",
+                padding: "0.6em 1.5em",
                 borderRadius: "12px",
                 border: "none",
                 background: "#2563eb",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: textFont,
-                display: "flex",
-                alignItems: "center",
-                gap: "0.3em",
                 cursor: "pointer",
               }}
             >
               <FaCamera /> Publicar
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {/* Error */}
         {error && (
