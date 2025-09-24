@@ -1,253 +1,222 @@
 "use client";
+import { GeoPoint } from "firebase/firestore";
+import { useState, useRef, useEffect } from "react";
+import { FaCamera, FaPlay, FaPause, FaShare } from "react-icons/fa";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { addDoc, collection } from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { db, storage } from "@/lib/firebase";
+import { Publication } from "types/publication";
 
-import React, { useEffect, useRef, useState } from "react";
-import WaveSurfer from "wavesurfer.js";
-import { FaCut, FaPlay, FaPause, FaCamera, FaShare } from "react-icons/fa";
+// Função para gerar geohash (adaptado do Dart)
+const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
+  let latInterval = [-90.0, 90.0];
+  let lonInterval = [-180.0, 180.0];
+  let geohash = "";
+  let isEven = true;
+  let bit = 0;
+  let ch = 0;
 
-export default function EscolherSom() {
-  const waveformRef = useRef<HTMLDivElement>(null);
-  const wavesurfer = useRef<WaveSurfer | null>(null);
-
-  const [audioFile, setAudioFile] = useState<File | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [songName, setSongName] = useState("");
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [duration, setDuration] = useState(0);
-  const [start, setStart] = useState(0);
-  const [end, setEnd] = useState(0);
-  const [cutMode, setCutMode] = useState(false);
-
-  // init WaveSurfer
-  useEffect(() => {
-    if (audioFile && waveformRef.current) {
-      if (wavesurfer.current) {
-        wavesurfer.current.destroy();
+  while (geohash.length < precision) {
+    let mid: number;
+    if (isEven) {
+      mid = (lonInterval[0] + lonInterval[1]) / 2;
+      if (longitude > mid) {
+        ch |= 1 << (4 - bit);
+        lonInterval[0] = mid;
+      } else {
+        lonInterval[1] = mid;
       }
-
-      const ws = WaveSurfer.create({
-        container: waveformRef.current,
-        waveColor: "#666",
-        progressColor: "#facc15", // amarelo
-        cursorColor: "#fff",
-        height: 100,
-      });
-
-      ws.load(URL.createObjectURL(audioFile));
-      ws.on("ready", () => {
-        setDuration(ws.getDuration());
-        setEnd(ws.getDuration());
-      });
-
-      ws.on("finish", () => setIsPlaying(false));
-      wavesurfer.current = ws;
+    } else {
+      mid = (latInterval[0] + latInterval[1]) / 2;
+      if (latitude > mid) {
+        ch |= 1 << (4 - bit);
+        latInterval[0] = mid;
+      } else {
+        latInterval[1] = mid;
+      }
     }
-  }, [audioFile]);
 
-  const togglePlay = () => {
-    if (wavesurfer.current) {
-      wavesurfer.current.playPause();
-      setIsPlaying(!isPlaying);
+    isEven = !isEven;
+    if (bit < 4) {
+      bit++;
+    } else {
+      geohash += base32[ch];
+      bit = 0;
+      ch = 0;
     }
-  };
+  }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setAudioFile(e.target.files[0]);
-    }
-  };
+  return geohash;
+}
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.[0]) {
-      setImageFile(e.target.files[0]);
-    }
-  };
+interface EscolherSomProps {
+  audioFile: File;
+}
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60)
-      .toString()
-      .padStart(2, "0");
-    return `${mins}:${secs}`;
-  };
+export default function EscolherSom({ audioFile }: EscolherSomProps) {
+  const [songName, setSongName] = useState("");
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [position, setPosition] = useState<GeolocationPosition | null>(null);
+  const [geohash, setGeohash] = useState<string | null>(null);
 
-  const handleCut = () => {
-    if (!wavesurfer.current) return;
-    alert(
-      `Corte de ${formatTime(start)} até ${formatTime(
-        end
-      )} ainda não implementado.`
+  const audioRef = useRef<HTMLAudioElement>(null);
+  const auth = getAuth();
+
+  // Pega localização ao montar o componente
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setPosition(pos);
+        setGeohash(encodeGeoHash(pos.coords.latitude, pos.coords.longitude));
+      },
+      (err) => {
+        console.warn("Erro ao obter localização:", err.message);
+      }
     );
-    // Aqui entraria ffmpeg.wasm para cortar realmente
+  }, []);
+
+  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files?.[0]) return;
+    const file = e.target.files[0];
+    setIsUploadingImage(true);
+
+    const storageRef = ref(storage, `imagepublication/${Date.now()}.jpg`);
+    await uploadBytes(storageRef, file);
+    const downloadUrl = await getDownloadURL(storageRef);
+    setSelectedImageUrl(downloadUrl);
+    setIsUploadingImage(false);
   };
 
-  const canPublish = imageFile && songName.trim().length >= 4 && !cutMode;
+  const handleTogglePlay = () => {
+    if (!audioRef.current) return;
+    if (isPlaying) audioRef.current.pause();
+    else audioRef.current.play();
+    setIsPlaying(!isPlaying);
+  };
+
+  const handlePublish = async () => {
+    if (!selectedImageUrl || songName.trim().length < 4) return;
+    if (!position || !geohash) {
+      alert("Aguardando geolocalização...");
+      return;
+    }
+
+    setIsPublishing(true);
+
+    try {
+      // Upload do áudio
+      const storageRef = ref(storage, `songpublication/${Date.now()}.mp3`);
+      await uploadBytes(storageRef, audioFile);
+      const songUrl = await getDownloadURL(storageRef);
+
+      // Criação do documento no Firestore
+      const publication: Publication = {
+        position: new GeoPoint(
+          position.coords.latitude,
+          position.coords.longitude
+        ),
+        geohash,
+        ranking: 0,
+        publicationType: "song",
+        ownerType: "user",
+        userID: auth.currentUser?.uid || "",
+        createdDateTime: new Date(),
+        active: true,
+        visibleOnMap: true,
+        deleted: false,
+        songID: "",
+        songUrl,
+        songDuration: audioRef.current?.duration || 0,
+        songName,
+        imageUrl: selectedImageUrl,
+      };
+
+      await addDoc(collection(db, "publications"), publication);
+      alert("Som publicado com sucesso!");
+    } catch (error) {
+      console.error(error);
+      alert("Erro ao publicar som");
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const canPublish =
+    !!selectedImageUrl && songName.trim().length >= 4 && !isPublishing;
 
   return (
-    <div
-      style={{
-        minHeight: "100dvh",
-        backgroundColor: "black",
-        color: "white",
-        padding: "20px",
-      }}
-    >
-      {/* Header */}
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "20px",
-          alignItems: "center",
-        }}
-      >
-        <h2>Editar Som</h2>
-        <button
-          onClick={canPublish ? () => alert("Publicar no Firebase") : undefined}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-            padding: "8px 12px",
-            backgroundColor: canPublish ? "white" : "gray",
-            color: "black",
-            border: "1px solid black",
-            borderRadius: "8px",
-            cursor: canPublish ? "pointer" : "not-allowed",
-          }}
-        >
-          <FaShare /> Publicar
-        </button>
-      </div>
+    <div className="min-h-screen bg-black text-white p-6">
+      <h1 className="text-2xl font-bold mb-4">Escolher Som</h1>
 
-      {/* Upload audio */}
-      {!audioFile && (
-        <input
-          type="file"
-          accept="audio/*"
-          onChange={handleFileChange}
-          style={{ marginBottom: "20px" }}
-        />
-      )}
+      <input
+        type="text"
+        placeholder="Digite o nome ou título do som..."
+        value={songName}
+        onChange={(e) => setSongName(e.target.value)}
+        className="w-full p-3 rounded-md bg-white/10 border border-white/40 mb-4"
+      />
 
-      {/* Audio info */}
-      {audioFile && (
-        <>
-          <p style={{ fontSize: "14px", marginBottom: "10px" }}>
-            Arquivo: {audioFile.name}
-          </p>
-
-          {/* Capa */}
-          <div
-            style={{
-              height: "150px",
-              width: "150px",
-              border: "2px solid white",
-              borderRadius: "12px",
-              marginBottom: "20px",
-              backgroundSize: "cover",
-              backgroundImage: imageFile
-                ? `url(${URL.createObjectURL(imageFile)})`
-                : "none",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: "pointer",
-            }}
-            onClick={() => document.getElementById("imageInput")?.click()}
-          >
-            {!imageFile && (
-              <div style={{ textAlign: "center" }}>
-                <FaCamera size={24} />
-                <p style={{ fontSize: "14px" }}>Selecionar capa</p>
+      <div className="flex justify-center mb-4">
+        <label className="relative cursor-pointer">
+          <input
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={handlePickImage}
+          />
+          <div className="h-40 w-40 bg-gray-800 border-2 border-white rounded-lg flex items-center justify-center">
+            {isUploadingImage ? (
+              <span>Carregando...</span>
+            ) : selectedImageUrl ? (
+              <img
+                src={selectedImageUrl}
+                alt="Capa"
+                className="h-40 w-40 object-cover rounded-lg"
+              />
+            ) : (
+              <div className="flex flex-col items-center">
+                <FaCamera className="text-white text-3xl" />
+                <span>Selecionar capa</span>
               </div>
             )}
           </div>
-          <input
-            type="file"
-            id="imageInput"
-            accept="image/*"
-            style={{ display: "none" }}
-            onChange={handleImageChange}
-          />
+        </label>
+      </div>
 
-          {/* Waveform */}
-          <div ref={waveformRef} style={{ marginBottom: "20px" }} />
-
-          {/* Cut mode */}
-          {cutMode ? (
-            <div>
-              <p>
-                Corte de: {formatTime(start)} / {formatTime(end)}
-              </p>
-              <button
-                onClick={() => setCutMode(false)}
-                style={{
-                  backgroundColor: "red",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                  marginRight: "10px",
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleCut}
-                style={{
-                  backgroundColor: "blue",
-                  padding: "8px 16px",
-                  borderRadius: "8px",
-                }}
-              >
-                Confirmar Corte
-              </button>
-            </div>
+      <div className="flex justify-center mb-6">
+        <button
+          onClick={handleTogglePlay}
+          className="flex items-center px-4 py-2 bg-yellow-500 text-black rounded-md"
+        >
+          {isPlaying ? (
+            <FaPause className="mr-2" />
           ) : (
-            <button
-              onClick={() => setCutMode(true)}
-              style={{
-                backgroundColor: "blue",
-                padding: "10px 20px",
-                borderRadius: "8px",
-                marginBottom: "20px",
-              }}
-            >
-              <FaCut /> Recortar
-            </button>
+            <FaPlay className="mr-2" />
           )}
+          {isPlaying ? "Pause" : "Play"}
+        </button>
+      </div>
 
-          {/* Play/Pause */}
-          <button
-            onClick={togglePlay}
-            style={{
-              backgroundColor: "yellow",
-              color: "black",
-              padding: "10px 20px",
-              borderRadius: "8px",
-              marginLeft: "10px",
-            }}
-          >
-            {isPlaying ? <FaPause /> : <FaPlay />}{" "}
-            {isPlaying ? "Pause" : "Play"}
-          </button>
+      <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
 
-          {/* Nome do som */}
-          <input
-            type="text"
-            value={songName}
-            onChange={(e) => setSongName(e.target.value)}
-            placeholder="Digite o nome do som..."
-            style={{
-              marginTop: "20px",
-              width: "100%",
-              padding: "12px",
-              borderRadius: "8px",
-              border: "1px solid gray",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              color: "white",
-            }}
-          />
-        </>
-      )}
+      <div className="flex justify-center">
+        <button
+          onClick={handlePublish}
+          disabled={!canPublish}
+          className={`flex items-center px-4 py-2 rounded-md ${
+            canPublish ? "bg-white text-black" : "bg-gray-500 text-black/50"
+          }`}
+        >
+          <FaShare className="mr-2" />
+          {isPublishing ? "Publicando..." : "Publicar"}
+        </button>
+      </div>
     </div>
   );
 }
