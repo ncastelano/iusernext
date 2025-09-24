@@ -9,7 +9,6 @@ import { db, storage } from "@/lib/firebase";
 import { Publication } from "types/publication";
 import Image from "next/image";
 
-// Função para gerar geohash (adaptado do Dart)
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
   const latInterval = [-90.0, 90.0];
@@ -26,22 +25,17 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
       if (longitude > mid) {
         ch |= 1 << (4 - bit);
         lonInterval[0] = mid;
-      } else {
-        lonInterval[1] = mid;
-      }
+      } else lonInterval[1] = mid;
     } else {
       mid = (latInterval[0] + latInterval[1]) / 2;
       if (latitude > mid) {
         ch |= 1 << (4 - bit);
         latInterval[0] = mid;
-      } else {
-        latInterval[1] = mid;
-      }
+      } else latInterval[1] = mid;
     }
     isEven = !isEven;
-    if (bit < 4) {
-      bit++;
-    } else {
+    if (bit < 4) bit++;
+    else {
       geohash += base32[ch];
       bit = 0;
       ch = 0;
@@ -63,7 +57,6 @@ export default function EscolherSom() {
   const audioRef = useRef<HTMLAudioElement>(null);
   const auth = getAuth();
 
-  // Pega localização ao montar o componente
   useEffect(() => {
     if (!navigator.geolocation) return;
     navigator.geolocation.getCurrentPosition(
@@ -83,7 +76,6 @@ export default function EscolherSom() {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
     setIsUploadingImage(true);
-
     const storageRef = ref(storage, `imagepublication/${Date.now()}.jpg`);
     await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(storageRef);
@@ -107,7 +99,6 @@ export default function EscolherSom() {
 
     setIsPublishing(true);
     try {
-      // Upload do áudio
       const storageRef = ref(
         storage,
         `songpublication/${Date.now()}_${audioFile.name}`
@@ -115,7 +106,6 @@ export default function EscolherSom() {
       await uploadBytes(storageRef, audioFile);
       const songUrl = await getDownloadURL(storageRef);
 
-      // Criação do documento no Firestore
       const publication: Publication = {
         position: new GeoPoint(
           position.coords.latitude,
@@ -139,7 +129,6 @@ export default function EscolherSom() {
 
       await addDoc(collection(db, "publications"), publication);
       alert("Som publicado com sucesso!");
-      // Reset
       setAudioFile(null);
       setSongName("");
       setSelectedImageUrl(null);
@@ -158,59 +147,140 @@ export default function EscolherSom() {
     !isPublishing;
 
   return (
-    <div className="min-h-screen bg-black text-white p-6 flex flex-col gap-4">
-      <h1 className="text-2xl font-bold mb-4">Escolher Som</h1>
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "#000",
+        color: "#fff",
+        padding: "24px",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        gap: "24px",
+      }}
+    >
+      <h1 style={{ fontSize: "2.5rem", fontWeight: "bold" }}>Escolher Som</h1>
 
       <input
         type="file"
         accept=".mp3,.wav,.m4a,.aac,.ogg"
         onChange={handlePickAudio}
-        className="mb-2"
+        style={{
+          padding: "8px",
+          borderRadius: "8px",
+          backgroundColor: "#111",
+          color: "#fff",
+          border: "1px solid #444",
+          cursor: "pointer",
+        }}
       />
-      {audioFile && (
-        <div className="flex flex-col gap-2">
-          <input
-            type="text"
-            placeholder="Digite o nome ou título do som..."
-            value={songName}
-            onChange={(e) => setSongName(e.target.value)}
-            className="w-full p-3 rounded-md bg-white/10 border border-white/40"
-          />
 
-          <label className="cursor-pointer">
+      {audioFile && (
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "16px",
+            width: "100%",
+            maxWidth: "400px",
+          }}
+        >
+          <p
+            style={{
+              color: "rgba(255,255,255,0.7)",
+              fontSize: "0.875rem",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+              width: "100%",
+            }}
+          >
+            {audioFile.name}
+          </p>
+
+          <label style={{ cursor: "pointer" }}>
             <input
               type="file"
               accept="image/*"
-              className="hidden"
+              style={{ display: "none" }}
               onChange={handlePickImage}
             />
-            <div className="h-40 w-40 bg-gray-800 border-2 border-white rounded-lg flex items-center justify-center">
+            <div
+              style={{
+                width: "192px",
+                height: "192px",
+                backgroundColor: "#111",
+                border: "2px solid #fff",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                overflow: "hidden",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
+              }}
+            >
               {isUploadingImage ? (
                 <span>Carregando...</span>
               ) : selectedImageUrl ? (
                 <Image
                   src={selectedImageUrl}
                   alt="Capa"
-                  className="h-40 w-40 object-cover rounded-lg"
+                  width={192}
+                  height={192}
+                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
                 />
               ) : (
-                <div className="flex flex-col items-center">
-                  <FaCamera className="text-white text-3xl" />
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    color: "#fff",
+                  }}
+                >
+                  <FaCamera style={{ fontSize: "32px", marginBottom: "8px" }} />
                   <span>Selecionar capa</span>
                 </div>
               )}
             </div>
           </label>
 
-          <div className="flex items-center gap-4">
+          <input
+            type="text"
+            placeholder="Digite o nome ou título do som..."
+            value={songName}
+            onChange={(e) => setSongName(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px",
+              borderRadius: "12px",
+              backgroundColor: "rgba(255,255,255,0.1)",
+              border: "1.5px solid rgba(255,255,255,0.3)",
+              color: "#fff",
+              fontSize: "1rem",
+            }}
+          />
+
+          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
             <button
               onClick={handleTogglePlay}
-              className="flex items-center px-4 py-2 bg-yellow-500 text-black rounded-md"
+              style={{
+                display: "flex",
+                alignItems: "center",
+                padding: "10px 16px",
+                backgroundColor: "#FFD700",
+                color: "#000",
+                borderRadius: "12px",
+                fontWeight: "bold",
+                cursor: "pointer",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+              }}
             >
               {isPlaying ? (
-                <FaPause className="mr-2" />
+                <FaPause style={{ marginRight: "8px" }} />
               ) : (
-                <FaPlay className="mr-2" />
+                <FaPlay style={{ marginRight: "8px" }} />
               )}
               {isPlaying ? "Pause" : "Play"}
             </button>
@@ -220,11 +290,24 @@ export default function EscolherSom() {
           <button
             onClick={handlePublish}
             disabled={!canPublish}
-            className={`flex items-center px-4 py-2 rounded-md mt-4 ${
-              canPublish ? "bg-white text-black" : "bg-gray-500 text-black/50"
-            }`}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: "100%",
+              padding: "14px",
+              borderRadius: "16px",
+              backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
+              color: "#000",
+              fontWeight: "bold",
+              cursor: canPublish ? "pointer" : "not-allowed",
+              gap: "8px",
+              marginTop: "16px",
+              boxShadow: canPublish ? "0 4px 12px rgba(0,0,0,0.5)" : "none",
+              transition: "all 0.2s ease-in-out",
+            }}
           >
-            <FaShare className="mr-2" />{" "}
+            <FaShare />
             {isPublishing ? "Publicando..." : "Publicar"}
           </button>
         </div>
