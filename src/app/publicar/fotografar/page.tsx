@@ -163,11 +163,12 @@ export default function Fotografar() {
       {/* Área de preview */}
       <div
         style={{
-          flex: previewDataUrl ? "0" : 1, // ocupa espaço só antes de tirar foto
+          flex: previewDataUrl ? "0" : 1,
+          alignItems: previewDataUrl ? "flex-start" : "center",
+          justifyContent: previewDataUrl ? "flex-start" : "center",
+          paddingTop: previewDataUrl ? "1vh" : "2vh",
           position: "relative",
           display: "flex",
-          alignItems: previewDataUrl ? "flex-start" : "center",
-          justifyContent: "center",
           flexDirection: "column",
           padding: "2vh 2vw",
           gap: "2vh",
@@ -252,7 +253,6 @@ export default function Fotografar() {
               alignItems: "center",
               width: "100%",
               gap: "2vh",
-              marginTop: "2vh",
             }}
           >
             {/* Foto tirada */}
