@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
+import Image from "next/image";
 
 interface UserData {
   name: string;
@@ -75,7 +76,7 @@ export default function DashboardPage() {
           //boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
         }}
       >
-        <img
+        <Image
           src={userData?.image || "/default-profile.png"}
           alt="Foto de perfil"
           style={{

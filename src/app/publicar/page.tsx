@@ -12,7 +12,6 @@ import {
 } from "react-icons/fa";
 import { MdVideoLibrary, MdImage } from "react-icons/md";
 import { useCallback } from "react";
-import BottomBar from "../components/Bottombar";
 
 export default function Publicar() {
   const router = useRouter();
