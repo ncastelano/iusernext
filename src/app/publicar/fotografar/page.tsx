@@ -113,9 +113,9 @@ export default function Fotografar() {
     return () => stopCamera();
   }, [facingMode, startCamera, stopCamera]);
 
-  const btnSize = "clamp(28px,8vw,36px)";
-  const iconFont = "clamp(28px,8vw,36px)";
-  const textFont = "clamp(20px,4vw,24px)";
+  const btnSize = "clamp(80px,12vw,120px)";
+  const iconFont = "clamp(28px,6vw,36px)";
+  const textFont = "clamp(20px,6vw,24px)";
 
   return (
     <div
@@ -214,13 +214,21 @@ export default function Fotografar() {
 
           {/* Botões topo container quando estiver em preview */}
           {previewDataUrl && (
-            <>
+            <div
+              style={{
+                position: "absolute",
+                top: "-50px",
+                left: "50%",
+                transform: "translateX(-50%)",
+                display: "flex",
+                flexDirection: "row", // agora é row
+                gap: "1em", // espaço entre os botões
+                zIndex: 10,
+              }}
+            >
               <button
                 onClick={retake}
                 style={{
-                  position: "absolute",
-                  top: "-40px",
-                  left: "-20px",
                   padding: "0.3em 0.6em",
                   borderRadius: "8px",
                   border: "none",
@@ -235,12 +243,10 @@ export default function Fotografar() {
               >
                 <FaRedo /> Refazer
               </button>
+
               <button
                 onClick={downloadPhoto}
                 style={{
-                  position: "absolute",
-                  top: "-40px",
-                  right: "-20px",
                   padding: "0.3em 0.6em",
                   borderRadius: "8px",
                   border: "none",
@@ -256,7 +262,7 @@ export default function Fotografar() {
               >
                 <FaDownload /> Baixar
               </button>
-            </>
+            </div>
           )}
         </motion.div>
 
@@ -266,7 +272,7 @@ export default function Fotografar() {
             style={{
               display: "flex",
               flexDirection: "column",
-              marginTop: "2vh",
+              marginTop: "4vh",
               width: "60%",
               gap: "1em",
             }}
