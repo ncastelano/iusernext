@@ -20,7 +20,7 @@ export default function Publicar() {
   const headerFontSize = "clamp(36px,10vw,52px)";
   const optionPaddingY = "clamp(14px,2vw,20px)";
   const optionPaddingX = "clamp(16px,6vw,28px)";
-  const iconSize = "clamp(48px,9vw,56px)";
+  const iconSize = "clamp(36px,9vw,40px)";
   const labelFontSize = "clamp(30px,8vw,38px)";
   const arrowFontSize = "clamp(30px,8vw,38px)";
 
