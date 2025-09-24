@@ -146,6 +146,9 @@ export default function Publicar() {
           label: "Criar Loja",
           onClick: () => router.push("/publicar/criar_loja"),
         })}
+
+        {/* 🔹 Espaço extra no final para não ficar escondido atrás da BottomBar */}
+        <div style={{ height: "100px" }} />
       </div>
     </div>
   );
