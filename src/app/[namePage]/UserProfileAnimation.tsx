@@ -44,16 +44,6 @@ export default function UserProfileAnimations({
         }}
       />
 
-      {/* Overlay com gradiente para dar contraste */}
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(to top, rgba(0,0,0,0.7) 15%, rgba(0,0,0,0.2) 60%, transparent 100%)",
-        }}
-      />
-
       {/* Ícone no canto superior direito */}
       <button
         onClick={abrirImagemOriginal}
@@ -62,10 +52,10 @@ export default function UserProfileAnimations({
           position: "absolute",
           top: "16px",
           right: "16px",
-          background: "rgba(255,255,255,0.15)",
-          border: "1px solid rgba(255,255,255,0.25)",
+          background: "rgba(255, 255, 255, 0)",
+          border: "1px solid rgba(255, 255, 255, 0)",
           borderRadius: "12px",
-          padding: "8px",
+          padding: "0px",
           cursor: "pointer",
           color: "#fff",
           transition: "all 0.3s ease",
@@ -89,7 +79,7 @@ export default function UserProfileAnimations({
         transition={{ delay: 0.5, duration: 0.6 }}
         style={{
           position: "absolute",
-          bottom: "20px",
+          bottom: "0px",
           left: "20px",
           color: "#fff",
           fontSize: "1.8rem",

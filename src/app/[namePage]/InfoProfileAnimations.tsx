@@ -46,7 +46,6 @@ export default function InfoProfileAnimations({
       alert("Localização do usuário de destino não informada.");
       return;
     }
-
     if (!navigator.geolocation) {
       alert("Geolocalização não suportada pelo seu navegador.");
       return;
@@ -139,7 +138,6 @@ export default function InfoProfileAnimations({
     }
   };
 
-  // estilo base de box estatística
   const statBox: React.CSSProperties = {
     flex: "1",
     minWidth: "120px",
@@ -273,39 +271,43 @@ export default function InfoProfileAnimations({
         <div
           style={{
             display: "flex",
-            justifyContent: "center",
-            gap: "1rem",
-            flexWrap: "wrap",
+            flexDirection: "column", // mobile-first: coluna
+            gap: "0.5rem",
           }}
         >
-          <div style={statBox}>
-            {loadingFollow ? (
-              <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
-            ) : (
-              <>
-                <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-                  {followersCount}
-                </div>
-                <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
-                  Seguidores
-                </div>
-              </>
-            )}
+          {/* Seguidores e Seguindo lado a lado */}
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <div style={statBox}>
+              {loadingFollow ? (
+                <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
+              ) : (
+                <>
+                  <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                    {followersCount}
+                  </div>
+                  <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
+                    Seguidores
+                  </div>
+                </>
+              )}
+            </div>
+            <div style={statBox}>
+              {loadingFollow ? (
+                <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
+              ) : (
+                <>
+                  <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
+                    {followingCount}
+                  </div>
+                  <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
+                    Seguindo
+                  </div>
+                </>
+              )}
+            </div>
           </div>
-          <div style={statBox}>
-            {loadingFollow ? (
-              <span style={{ fontSize: "0.9rem" }}>Carregando...</span>
-            ) : (
-              <>
-                <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
-                  {followingCount}
-                </div>
-                <div style={{ fontSize: "0.9rem", color: "#9ca3af" }}>
-                  Seguindo
-                </div>
-              </>
-            )}
-          </div>
+
+          {/* Vídeos abaixo */}
           <div style={statBox}>
             <div style={{ fontSize: "1.5rem", fontWeight: "bold" }}>
               {videosCount}

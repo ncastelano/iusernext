@@ -51,81 +51,54 @@ export default async function UserProfilePage({
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        <div
+        {/* Banner do usuário */}
+
+        <UserProfileAnimations
+          imageUrl={safeUser.image || "/default-profile.png"}
+          userName={safeUser.namePage}
+        />
+
+        {/* Info e comentários */}
+        <div style={{ marginTop: "1.5rem" }}>
+          {" "}
+          <InfoProfileAnimations
+            safeUser={safeUser}
+            videosCount={videos.length}
+          />
+        </div>
+
+        <div style={{ marginTop: "1.5rem" }}>
+          <CommentProfile profileUid={safeUser.uid} />
+        </div>
+
+        {/* Vídeos */}
+        <section
           style={{
-            maxWidth: "960px",
-            margin: "0 auto",
-            display: "flex",
-            flexDirection: "column",
-            gap: "2rem",
+            background: "rgba(255, 255, 255, 0.08)",
+            border: "1px solid rgba(255, 255, 255, 0.15)",
+            borderRadius: "16px",
+            padding: "2rem",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
           }}
         >
-          {/* Banner do usuário */}
-          <section
-            style={{
-              position: "relative",
-              overflow: "hidden",
-              borderRadius: "20px",
-              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
-              aspectRatio: "16/9",
-              background: "rgba(255,255,255,0.05)",
-              backdropFilter: "blur(12px)",
-            }}
-          >
-            <UserProfileAnimations
-              imageUrl={safeUser.image || "/default-profile.png"}
+          {videos.length === 0 ? (
+            <p
+              style={{
+                color: "rgba(255,255,255,0.6)",
+                textAlign: "center",
+                fontSize: "1.1rem",
+                fontWeight: 300,
+              }}
+            >
+              Nenhum vídeo encontrado.
+            </p>
+          ) : (
+            <VideosProfileAnimations
+              videos={videos}
               userName={safeUser.namePage}
             />
-          </section>
-
-          {/* Info e comentários */}
-          <div
-            style={{
-              background: "rgba(255, 255, 255, 0.08)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              borderRadius: "16px",
-              padding: "2rem",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
-            }}
-          >
-            <InfoProfileAnimations
-              safeUser={safeUser}
-              videosCount={videos.length}
-            />
-            <div style={{ marginTop: "1.5rem" }}>
-              <CommentProfile profileUid={safeUser.uid} />
-            </div>
-          </div>
-
-          {/* Vídeos */}
-          <section
-            style={{
-              background: "rgba(255, 255, 255, 0.08)",
-              border: "1px solid rgba(255, 255, 255, 0.15)",
-              borderRadius: "16px",
-              padding: "2rem",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.35)",
-            }}
-          >
-            {videos.length === 0 ? (
-              <p
-                style={{
-                  color: "rgba(255,255,255,0.6)",
-                  textAlign: "center",
-                  fontSize: "1.1rem",
-                  fontWeight: 300,
-                }}
-              >
-                Nenhum vídeo encontrado.
-              </p>
-            ) : (
-              <VideosProfileAnimations
-                videos={videos}
-                userName={safeUser.namePage}
-              />
-            )}
-          </section>
-        </div>
+          )}
+        </section>
       </main>
     );
   } catch (error) {
