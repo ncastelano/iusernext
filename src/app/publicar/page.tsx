@@ -19,7 +19,7 @@ export default function Publicar() {
   // 🔹 Variáveis de estilo responsivo
   const titleFontSize = "clamp(26px,7vw,36px)";
   const iconSize = "clamp(40px,10vw,56px)";
-  const labelFontSize = "clamp(18px,5vw,24px)";
+  const labelFontSize = "clamp(40px,10vw,56px)";
 
   const buildOption = useCallback(
     ({
@@ -36,7 +36,7 @@ export default function Publicar() {
         style={{
           display: "flex",
           flexDirection: "column",
-          alignItems: "center",
+          alignItems: "start",
           justifyContent: "center",
           padding: "clamp(20px,6vw,32px)",
           cursor: "pointer",
