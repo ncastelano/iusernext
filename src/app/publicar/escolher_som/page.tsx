@@ -7,12 +7,13 @@ import { addDoc, collection } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db, storage } from "@/lib/firebase";
 import { Publication } from "types/publication";
+import Image from "next/image";
 
 // Função para gerar geohash (adaptado do Dart)
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
-  let latInterval = [-90.0, 90.0];
-  let lonInterval = [-180.0, 180.0];
+  const latInterval = [-90.0, 90.0];
+  const lonInterval = [-180.0, 180.0];
   let geohash = "";
   let isEven = true;
   let bit = 0;
@@ -174,7 +175,7 @@ export default function EscolherSom({ audioFile }: EscolherSomProps) {
             {isUploadingImage ? (
               <span>Carregando...</span>
             ) : selectedImageUrl ? (
-              <img
+              <Image
                 src={selectedImageUrl}
                 alt="Capa"
                 className="h-40 w-40 object-cover rounded-lg"
