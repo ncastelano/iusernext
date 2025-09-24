@@ -12,6 +12,10 @@ import {
 import Image from "next/image";
 import { motion } from "framer-motion";
 
+import { db, storage, auth } from "@/lib/firebase";
+import { ref, uploadString, getDownloadURL } from "firebase/storage";
+import { collection, addDoc, GeoPoint } from "firebase/firestore";
+
 export default function Fotografar() {
   const router = useRouter();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -27,6 +31,7 @@ export default function Fotografar() {
 
   const [name, setName] = useState("");
   const [showOnMap, setShowOnMap] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   const startCamera = useCallback(async () => {
     setError(null);
@@ -111,6 +116,67 @@ export default function Fotografar() {
     startCamera();
     return () => stopCamera();
   }, [facingMode, startCamera, stopCamera]);
+
+  // ================================
+  // FUNÇÃO DE PUBLICAÇÃO
+  // ================================
+  const publishPhoto = useCallback(async () => {
+    if (!previewDataUrl) return alert("Tire uma foto antes de publicar.");
+    if (!auth.currentUser) return alert("Você precisa estar logado.");
+
+    setUploading(true);
+    setError(null);
+
+    try {
+      // 1️⃣ Salvar imagem no Firebase Storage
+      const imageID = `img_${Date.now()}`;
+      const storageRef = ref(storage, `images/${imageID}.jpg`);
+      await uploadString(storageRef, previewDataUrl, "data_url");
+      const imageUrl = await getDownloadURL(storageRef);
+
+      // 2️⃣ Obter posição do usuário
+      let position = new GeoPoint(0, 0);
+      if ("geolocation" in navigator) {
+        const pos = await new Promise<GeolocationPosition>(
+          (resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          }
+        );
+        position = new GeoPoint(pos.coords.latitude, pos.coords.longitude);
+      }
+
+      // 3️⃣ Gerar geohash
+      const geohash = GeoHashHelper.encode(
+        position.latitude,
+        position.longitude
+      );
+
+      // 4️⃣ Criar objeto de publicação (somente campos de imagem)
+      const publication = {
+        position,
+        geohash,
+        ranking: 0,
+        publicationType: "image",
+        ownerType: "user",
+        userID: auth.currentUser.uid,
+        createdDateTime: new Date(),
+        visibleOnMap: showOnMap,
+        imageUrl,
+        imageName: name || `Foto_${Date.now()}`,
+      };
+
+      // 5️⃣ Salvar no Firestore
+      await addDoc(collection(db, "publications"), publication);
+
+      alert("Foto publicada com sucesso!");
+      retake();
+    } catch (err) {
+      console.error("Erro ao publicar foto:", err);
+      setError("Falha ao publicar a foto.");
+    } finally {
+      setUploading(false);
+    }
+  }, [previewDataUrl, name, showOnMap, retake]);
 
   const btnSize = "clamp(32px,8vw,40px)";
   const textFont = "clamp(18px,3vw,22px)";
@@ -348,19 +414,20 @@ export default function Fotografar() {
 
             {/* Botão publicar */}
             <button
-              onClick={() => alert("Foto aceita — implementar upload.")}
+              onClick={publishPhoto}
+              disabled={uploading}
               style={{
                 padding: "0.6em 1.5em",
                 borderRadius: "12px",
                 border: "none",
-                background: "#2563eb",
+                background: uploading ? "#999" : "#2563eb",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: textFont,
-                cursor: "pointer",
+                cursor: uploading ? "not-allowed" : "pointer",
               }}
             >
-              <FaCamera /> Publicar
+              <FaCamera /> {uploading ? "Publicando..." : "Publicar"}
             </button>
           </div>
         )}
