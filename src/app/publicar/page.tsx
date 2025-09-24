@@ -20,6 +20,7 @@ export default function Publicar() {
   const titleFontSize = "clamp(26px,7vw,36px)";
   const iconSize = "clamp(28px,7vw,40px)";
   const labelFontSize = "clamp(18px,5vw,24px)";
+  const optionPadding = "clamp(16px,5vw,24px)"; // usado também no espaço final
 
   const buildOption = useCallback(
     ({
@@ -38,7 +39,7 @@ export default function Publicar() {
           flexDirection: "row",
           alignItems: "center",
           gap: "clamp(12px,3vw,20px)",
-          padding: "clamp(16px,5vw,24px)",
+          padding: optionPadding,
           cursor: "pointer",
           borderRadius: "12px",
           backgroundColor: "#111",
@@ -72,7 +73,7 @@ export default function Publicar() {
         </div>
       </div>
     ),
-    [iconSize, labelFontSize]
+    [iconSize, labelFontSize, optionPadding]
   );
 
   return (
@@ -86,9 +87,10 @@ export default function Publicar() {
         padding: "clamp(20px,6vw,32px)",
         gap: "clamp(16px,4vw,24px)",
         overflowY: "auto",
+        paddingBottom: `calc(${optionPadding} * 2)`, // 🔹 espaço de 2 opções no final
       }}
     >
-      {/* Título como item da lista */}
+      {/* Título */}
       <div
         style={{
           fontSize: titleFontSize,
@@ -145,9 +147,6 @@ export default function Publicar() {
         label: "Criar Loja",
         onClick: () => router.push("/publicar/criar_loja"),
       })}
-
-      {/* Espaço extra no fim */}
-      <div style={{ height: "150px" }} />
     </div>
   );
 }
