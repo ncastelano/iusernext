@@ -21,8 +21,8 @@ export default function Publicar() {
   const optionPaddingY = "clamp(14px,2vw,20px)";
   const optionPaddingX = "clamp(16px,6vw,28px)";
   const iconSize = "clamp(30px,8vw,44px)";
-  const labelFontSize = "clamp(28px,8vw,32px)";
-  const arrowFontSize = "clamp(28px,8vw,32px)";
+  const labelFontSize = "clamp(28px,6vw,32px)";
+  const arrowFontSize = "clamp(28px,6vw,32px)";
 
   const buildOption = useCallback(
     ({
