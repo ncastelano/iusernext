@@ -3,7 +3,7 @@ import { GeoPoint } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { FaCamera, FaPlay, FaPause, FaShare } from "react-icons/fa";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { addDoc, collection } from "firebase/firestore";
+import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db, storage } from "@/lib/firebase";
 import { Publication } from "types/publication";
@@ -99,12 +99,16 @@ export default function EscolherSom() {
 
     setIsPublishing(true);
     try {
+      // Upload do áudio
       const storageRef = ref(
         storage,
         `songpublication/${Date.now()}_${audioFile.name}`
       );
       await uploadBytes(storageRef, audioFile);
       const songUrl = await getDownloadURL(storageRef);
+
+      // Cria o documento com ID manual para usar como songID
+      const newDocRef = doc(collection(db, "publications"));
 
       const publication: Publication = {
         position: new GeoPoint(
@@ -120,14 +124,15 @@ export default function EscolherSom() {
         active: true,
         visibleOnMap: true,
         deleted: false,
-        songID: "",
+        songID: newDocRef.id, // ID já definido
         songUrl,
         songDuration: audioRef.current?.duration || 0,
         songName,
         imageUrl: selectedImageUrl,
       };
 
-      await addDoc(collection(db, "publications"), publication);
+      await setDoc(newDocRef, publication);
+
       alert("Som publicado com sucesso!");
       setAudioFile(null);
       setSongName("");
@@ -190,19 +195,6 @@ export default function EscolherSom() {
             maxWidth: "clamp(320px,80%,400px)",
           }}
         >
-          <p
-            style={{
-              color: "rgba(255,255,255,0.7)",
-              fontSize: "clamp(0.75rem,1.5vw,0.875rem)",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              width: "100%",
-            }}
-          >
-            {audioFile.name}
-          </p>
-
           <label style={{ cursor: "pointer" }}>
             <input
               type="file"

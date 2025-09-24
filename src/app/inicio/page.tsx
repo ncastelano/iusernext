@@ -53,11 +53,11 @@ export default function DashboardPage() {
         justifyContent: "center",
         alignItems: "center",
         minHeight: "100dvh",
-        gap: "1rem", // espaçamento entre elementos
+        gap: "1rem",
         padding: "1rem",
         width: "100%",
         boxSizing: "border-box",
-        backgroundColor: "#000", // fundo preto
+        backgroundColor: "#000",
       }}
     >
       {/* Card do usuário */}
@@ -70,23 +70,31 @@ export default function DashboardPage() {
           background: "rgba(255,255,255,0.08)",
           border: "1px solid rgba(255,255,255,0.15)",
           borderRadius: "16px",
-          padding: "clamp(1rem, 2vw, 2rem) clamp(2rem, 4vw, 3rem)", // Espaço interno (top/bottom e left/right)
-          width: "80%", // Largura relativa ao container (ajustável)
-          maxWidth: "500px", // Máximo 500px para manter retângulo horizontal
-          //boxShadow: "0 4px 15px rgba(0,0,0,0.3)",
+          padding: "clamp(1rem, 2vw, 2rem) clamp(2rem, 4vw, 3rem)",
+          width: "80%",
+          maxWidth: "500px",
         }}
       >
-        <Image
-          src={userData?.image || "/default-profile.png"}
-          alt="Foto de perfil"
+        {/* Container circular da imagem */}
+        <div
           style={{
             width: "60px",
             height: "60px",
+            position: "relative",
             borderRadius: "50%",
+            overflow: "hidden",
             border: "2px solid #22c55e",
-            objectFit: "cover",
+            flexShrink: 0,
           }}
-        />
+        >
+          <Image
+            src={userData?.image || "/default-profile.png"}
+            alt="Foto de perfil"
+            fill
+            style={{ objectFit: "cover" }}
+          />
+        </div>
+
         <div>
           <h2
             style={{

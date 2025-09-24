@@ -114,7 +114,6 @@ export default function Fotografar() {
   }, [facingMode, startCamera, stopCamera]);
 
   const btnSize = "clamp(32px,8vw,40px)";
-  const iconFont = "clamp(29px,7vw,35px)";
   const textFont = "clamp(18px,3vw,22px)";
 
   return (
@@ -232,15 +231,15 @@ export default function Fotografar() {
               onClick={takePhoto}
               style={{
                 position: "absolute",
-                bottom: 40,
-                width: btnSize,
-                height: btnSize,
+                bottom: 60,
+                width: "clamp(50px,10vw,80px)",
+                height: "clamp(50px,10vw,80px)",
                 borderRadius: "50%",
                 background: "linear-gradient(180deg,#22c55e,#16a34a)",
                 border: "none",
                 boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
                 cursor: "pointer",
-                fontSize: iconFont,
+                fontSize: "clamp(20px,8vw,25px)",
                 color: "#000",
                 display: "flex",
                 alignItems: "center",
