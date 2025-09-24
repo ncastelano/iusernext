@@ -17,12 +17,12 @@ export default function Publicar() {
   const router = useRouter();
 
   // 🔹 Variáveis de estilo responsivo
-  const headerFontSize = "clamp(32px,8vw,40px)";
+  const headerFontSize = "clamp(46px,10vw,52px)";
   const optionPaddingY = "clamp(14px,2vw,20px)";
   const optionPaddingX = "clamp(16px,6vw,28px)";
-  const iconSize = "clamp(40px,8vw,48px)";
-  const labelFontSize = "clamp(20px,6vw,26px)";
-  const arrowFontSize = "clamp(22px,5vw,26px)";
+  const iconSize = "clamp(48px,9vw,56px)";
+  const labelFontSize = "clamp(40px,8vw,48px)";
+  const arrowFontSize = "clamp(40px,8vw,48px)";
 
   const buildOption = useCallback(
     ({
