@@ -20,7 +20,7 @@ export default function Publicar() {
   const titleFontSize = "clamp(26px,7vw,36px)";
   const iconSize = "clamp(28px,7vw,40px)";
   const labelFontSize = "clamp(18px,5vw,24px)";
-  const optionPadding = "clamp(16px,5vw,24px)"; // usado também no espaço final
+  const optionPadding = "clamp(25px,9vw,30px)"; // usado também no espaço final
 
   const buildOption = useCallback(
     ({
