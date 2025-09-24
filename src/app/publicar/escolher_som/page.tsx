@@ -152,22 +152,26 @@ export default function EscolherSom() {
         minHeight: "100vh",
         backgroundColor: "#000",
         color: "#fff",
-        padding: "24px",
+        padding: "clamp(16px, 2vw, 32px)",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        gap: "24px",
+        gap: "clamp(16px, 2.5vw, 32px)",
       }}
     >
-      <h1 style={{ fontSize: "2.5rem", fontWeight: "bold" }}>Escolher Som</h1>
+      <h1
+        style={{ fontSize: "clamp(1.8rem, 5vw, 2.5rem)", fontWeight: "bold" }}
+      >
+        Escolher Som
+      </h1>
 
       <input
         type="file"
         accept=".mp3,.wav,.m4a,.aac,.ogg"
         onChange={handlePickAudio}
         style={{
-          padding: "8px",
-          borderRadius: "8px",
+          padding: "clamp(6px,1.5vw,12px)",
+          borderRadius: "clamp(8px,1.5vw,12px)",
           backgroundColor: "#111",
           color: "#fff",
           border: "1px solid #444",
@@ -181,15 +185,15 @@ export default function EscolherSom() {
             display: "flex",
             flexDirection: "column",
             alignItems: "center",
-            gap: "16px",
+            gap: "clamp(12px,2vw,16px)",
             width: "100%",
-            maxWidth: "400px",
+            maxWidth: "clamp(320px,80%,400px)",
           }}
         >
           <p
             style={{
               color: "rgba(255,255,255,0.7)",
-              fontSize: "0.875rem",
+              fontSize: "clamp(0.75rem,1.5vw,0.875rem)",
               overflow: "hidden",
               textOverflow: "ellipsis",
               whiteSpace: "nowrap",
@@ -208,11 +212,11 @@ export default function EscolherSom() {
             />
             <div
               style={{
-                width: "192px",
-                height: "192px",
+                width: "clamp(160px, 40vw, 192px)",
+                height: "clamp(160px, 40vw, 192px)",
                 backgroundColor: "#111",
                 border: "2px solid #fff",
-                borderRadius: "16px",
+                borderRadius: "clamp(12px,4vw,16px)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
@@ -239,7 +243,12 @@ export default function EscolherSom() {
                     color: "#fff",
                   }}
                 >
-                  <FaCamera style={{ fontSize: "32px", marginBottom: "8px" }} />
+                  <FaCamera
+                    style={{
+                      fontSize: "clamp(24px,6vw,32px)",
+                      marginBottom: "8px",
+                    }}
+                  />
                   <span>Selecionar capa</span>
                 </div>
               )}
@@ -253,25 +262,31 @@ export default function EscolherSom() {
             onChange={(e) => setSongName(e.target.value)}
             style={{
               width: "100%",
-              padding: "12px",
-              borderRadius: "12px",
+              padding: "clamp(10px,2vw,12px)",
+              borderRadius: "clamp(8px,2vw,12px)",
               backgroundColor: "rgba(255,255,255,0.1)",
               border: "1.5px solid rgba(255,255,255,0.3)",
               color: "#fff",
-              fontSize: "1rem",
+              fontSize: "clamp(0.9rem,2vw,1rem)",
             }}
           />
 
-          <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              gap: "clamp(12px,2vw,16px)",
+              alignItems: "center",
+            }}
+          >
             <button
               onClick={handleTogglePlay}
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "10px 16px",
+                padding: "clamp(8px,1.5vw,10px) clamp(12px,2vw,16px)",
                 backgroundColor: "#FFD700",
                 color: "#000",
-                borderRadius: "12px",
+                borderRadius: "clamp(8px,2vw,12px)",
                 fontWeight: "bold",
                 cursor: "pointer",
                 boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
@@ -295,14 +310,14 @@ export default function EscolherSom() {
               alignItems: "center",
               justifyContent: "center",
               width: "100%",
-              padding: "14px",
-              borderRadius: "16px",
+              padding: "clamp(12px,2.5vw,14px)",
+              borderRadius: "clamp(12px,3vw,16px)",
               backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
               color: "#000",
               fontWeight: "bold",
               cursor: canPublish ? "pointer" : "not-allowed",
               gap: "8px",
-              marginTop: "16px",
+              marginTop: "clamp(12px,2vw,16px)",
               boxShadow: canPublish ? "0 4px 12px rgba(0,0,0,0.5)" : "none",
               transition: "all 0.2s ease-in-out",
             }}
