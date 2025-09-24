@@ -17,12 +17,9 @@ export default function Publicar() {
   const router = useRouter();
 
   // 🔹 Variáveis de estilo responsivo
-  const headerFontSize = "clamp(36px,10vw,52px)";
-  const optionPaddingY = "clamp(14px,2vw,20px)";
-  const optionPaddingX = "clamp(16px,5vw,28px)";
-  const iconSize = "clamp(20px,6vw,28px)";
-  const labelFontSize = "clamp(22px,5vw,28px)";
-  const arrowFontSize = "clamp(22px,5vw,28px)";
+  const titleFontSize = "clamp(26px,7vw,36px)";
+  const iconSize = "clamp(40px,10vw,56px)";
+  const labelFontSize = "clamp(18px,5vw,24px)";
 
   const buildOption = useCallback(
     ({
@@ -38,41 +35,45 @@ export default function Publicar() {
         onClick={onClick}
         style={{
           display: "flex",
+          flexDirection: "column",
           alignItems: "center",
-          padding: `${optionPaddingY} ${optionPaddingX}`,
-          borderBottom: "1px solid #333",
+          justifyContent: "center",
+          padding: "clamp(20px,6vw,32px)",
           cursor: "pointer",
+          borderRadius: "16px",
+          backgroundColor: "#111", // card mais sutil
+          transition: "transform 0.2s ease, background 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLDivElement).style.backgroundColor = "#222";
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1.03)";
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLDivElement).style.backgroundColor = "#111";
+          (e.currentTarget as HTMLDivElement).style.transform = "scale(1)";
         }}
       >
         <div
           style={{
             fontSize: iconSize,
-            marginRight: "clamp(20px,4vw,24px)",
-            color: "white",
+            color: "#fff",
+            marginBottom: "12px",
           }}
         >
           {icon}
         </div>
         <div
           style={{
-            flex: 1,
             fontSize: labelFontSize,
             color: "white",
+            textAlign: "center",
           }}
         >
           {label}
         </div>
-        <div
-          style={{
-            fontSize: arrowFontSize,
-            color: "white",
-          }}
-        >
-          {">"}
-        </div>
       </div>
     ),
-    [iconSize, labelFontSize, arrowFontSize, optionPaddingY, optionPaddingX]
+    [iconSize, labelFontSize]
   );
 
   return (
@@ -83,73 +84,71 @@ export default function Publicar() {
         height: "100dvh",
         backgroundColor: "black",
         color: "white",
+        padding: "clamp(20px,6vw,32px)",
+        gap: "clamp(20px,5vw,28px)",
+        overflowY: "auto",
       }}
     >
-      {/* AppBar */}
-      <header
+      {/* Título como item da lista */}
+      <div
         style={{
-          backgroundColor: "black",
-          padding: "clamp(20px,6vw,40px)",
-          borderBottom: "1px solid #333",
-          fontSize: headerFontSize,
+          fontSize: titleFontSize,
           fontWeight: "bold",
           textAlign: "center",
+          marginBottom: "clamp(10px,4vw,20px)",
         }}
       >
         Escolha o jeito de compartilhar
-      </header>
-
-      {/* Lista de opções */}
-      <div style={{ flex: 1, overflowY: "auto" }}>
-        {buildOption({
-          icon: <FaCamera />,
-          label: "Tirar Foto",
-          onClick: () => router.push("/publicar/fotografar"),
-        })}
-        {buildOption({
-          icon: <FaVideo />,
-          label: "Gravar Vídeo",
-          onClick: () => router.push("/publicar/filmar"),
-        })}
-        {buildOption({
-          icon: <FaMicrophone />,
-          label: "Gravar Áudio",
-          onClick: () => router.push("/publicar/gravar_som"),
-        })}
-        {buildOption({
-          icon: <MdVideoLibrary />,
-          label: "Escolher Vídeo da Galeria",
-          onClick: () => alert("Abrir file picker de vídeo"),
-        })}
-        {buildOption({
-          icon: <MdImage />,
-          label: "Escolher Imagem da Galeria",
-          onClick: () => alert("Abrir file picker de imagem"),
-        })}
-        {buildOption({
-          icon: <FaMusic />,
-          label: "Escolher Som",
-          onClick: () => alert("Abrir file picker de áudio"),
-        })}
-        {buildOption({
-          icon: <FaFilePdf />,
-          label: "Escolher PDF",
-          onClick: () => alert("Abrir file picker de PDF"),
-        })}
-        {buildOption({
-          icon: <FaEdit />,
-          label: "Escrever Texto",
-          onClick: () => router.push("/publicar/escrever"),
-        })}
-        {buildOption({
-          icon: <FaStore />,
-          label: "Criar Loja",
-          onClick: () => router.push("/publicar/criar_loja"),
-        })}
-
-        {/* 🔹 Espaço extra no final para não ficar escondido atrás da BottomBar */}
-        <div style={{ height: "100px" }} />
       </div>
+
+      {buildOption({
+        icon: <FaCamera />,
+        label: "Tirar Foto",
+        onClick: () => router.push("/publicar/fotografar"),
+      })}
+      {buildOption({
+        icon: <FaVideo />,
+        label: "Gravar Vídeo",
+        onClick: () => router.push("/publicar/filmar"),
+      })}
+      {buildOption({
+        icon: <FaMicrophone />,
+        label: "Gravar Áudio",
+        onClick: () => router.push("/publicar/gravar_som"),
+      })}
+      {buildOption({
+        icon: <MdVideoLibrary />,
+        label: "Vídeo da Galeria",
+        onClick: () => alert("Abrir file picker de vídeo"),
+      })}
+      {buildOption({
+        icon: <MdImage />,
+        label: "Imagem da Galeria",
+        onClick: () => alert("Abrir file picker de imagem"),
+      })}
+      {buildOption({
+        icon: <FaMusic />,
+        label: "Escolher Som",
+        onClick: () => alert("Abrir file picker de áudio"),
+      })}
+      {buildOption({
+        icon: <FaFilePdf />,
+        label: "Escolher PDF",
+        onClick: () => alert("Abrir file picker de PDF"),
+      })}
+      {buildOption({
+        icon: <FaEdit />,
+        label: "Escrever Texto",
+        onClick: () => router.push("/publicar/escrever"),
+      })}
+      {buildOption({
+        icon: <FaStore />,
+        label: "Criar Loja",
+        onClick: () => router.push("/publicar/criar_loja"),
+      })}
+
+      {/* Espaço extra no fim */}
+      <div style={{ height: "100px" }} />
     </div>
   );
 }
