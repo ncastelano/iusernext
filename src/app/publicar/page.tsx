@@ -19,10 +19,10 @@ export default function Publicar() {
   // 🔹 Variáveis de estilo responsivo
   const headerFontSize = "clamp(36px,10vw,52px)";
   const optionPaddingY = "clamp(14px,2vw,20px)";
-  const optionPaddingX = "clamp(16px,6vw,28px)";
-  const iconSize = "clamp(22px,6vw,30px)";
-  const labelFontSize = "clamp(28px,6vw,32px)";
-  const arrowFontSize = "clamp(28px,6vw,32px)";
+  const optionPaddingX = "clamp(16px,5vw,28px)";
+  const iconSize = "clamp(20px,6vw,28px)";
+  const labelFontSize = "clamp(22px,5vw,28px)";
+  const arrowFontSize = "clamp(22px,5vw,28px)";
 
   const buildOption = useCallback(
     ({
