@@ -14,7 +14,6 @@ import { motion } from "framer-motion";
 
 export default function Fotografar() {
   const router = useRouter();
-
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -164,10 +163,10 @@ export default function Fotografar() {
       {/* Área de preview */}
       <div
         style={{
-          flex: 1,
+          flex: previewDataUrl ? "0" : 1, // ocupa espaço só antes de tirar foto
           position: "relative",
           display: "flex",
-          alignItems: "center",
+          alignItems: previewDataUrl ? "flex-start" : "center",
           justifyContent: "center",
           flexDirection: "column",
           padding: "2vh 2vw",
@@ -177,10 +176,7 @@ export default function Fotografar() {
         {!previewDataUrl ? (
           // ======= MODO "ANTES DE TIRAR FOTO" =======
           <motion.div
-            animate={{
-              width: "95%",
-              height: "95%",
-            }}
+            animate={{ width: "95%", height: "95%" }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
             style={{
               position: "relative",
@@ -204,7 +200,6 @@ export default function Fotografar() {
                 borderRadius: "16px",
               }}
             />
-            {/* Botão alternar câmera */}
             <button
               onClick={toggleFacingMode}
               style={{
@@ -226,7 +221,6 @@ export default function Fotografar() {
             >
               <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
             </button>
-            {/* Botão capturar */}
             <button
               onClick={takePhoto}
               style={{
@@ -258,6 +252,7 @@ export default function Fotografar() {
               alignItems: "center",
               width: "100%",
               gap: "2vh",
+              marginTop: "2vh",
             }}
           >
             {/* Foto tirada */}
