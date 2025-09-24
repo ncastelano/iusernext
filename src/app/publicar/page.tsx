@@ -32,16 +32,37 @@ export default function Publicar() {
         style={{
           display: "flex",
           alignItems: "center",
-          padding: "12px 16px",
+          padding: "clamp(10px,2vw,16px) clamp(12px,4vw,24px)",
           borderBottom: "1px solid #333",
           cursor: "pointer",
         }}
       >
-        <div style={{ fontSize: "28px", marginRight: "16px", color: "white" }}>
+        <div
+          style={{
+            fontSize: "clamp(24px,5vw,32px)",
+            marginRight: "clamp(12px,4vw,16px)",
+            color: "white",
+          }}
+        >
           {icon}
         </div>
-        <div style={{ flex: 1, fontSize: "18px", color: "white" }}>{label}</div>
-        <div style={{ fontSize: "22px", color: "white" }}>{">"}</div>
+        <div
+          style={{
+            flex: 1,
+            fontSize: "clamp(16px,4vw,20px)",
+            color: "white",
+          }}
+        >
+          {label}
+        </div>
+        <div
+          style={{
+            fontSize: "clamp(18px,4vw,22px)",
+            color: "white",
+          }}
+        >
+          {">"}
+        </div>
       </div>
     ),
     []
@@ -52,7 +73,7 @@ export default function Publicar() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100dvh", // 🔹 usa dvh para altura total responsiva
+        height: "100dvh", // altura total responsiva
         backgroundColor: "black",
         color: "white",
       }}
@@ -61,9 +82,9 @@ export default function Publicar() {
       <header
         style={{
           backgroundColor: "black",
-          padding: "16px",
+          padding: "clamp(12px,3vw,20px)",
           borderBottom: "1px solid #333",
-          fontSize: "20px",
+          fontSize: "clamp(18px,4vw,22px)",
           fontWeight: "bold",
           textAlign: "center",
         }}
