@@ -89,7 +89,7 @@ export default function Publicar() {
       <header
         style={{
           backgroundColor: "black",
-          padding: "clamp(12px,3vw,20px)",
+          padding: "clamp(20px,6vw,40px)",
           borderBottom: "1px solid #333",
           fontSize: headerFontSize,
           fontWeight: "bold",
