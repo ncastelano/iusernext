@@ -216,9 +216,10 @@ export default function Fotografar() {
             background: "transparent",
             border: "none",
             color: "#fff",
-            fontSize: btnSize,
+            fontSize: "clamp(24px,4vw,50px)",
             cursor: "pointer",
             marginRight: "2vw",
+            marginTop: "2vw",
           }}
         >
           <FaArrowLeft />
