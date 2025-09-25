@@ -275,8 +275,8 @@ export default function Fotografar() {
                 position: "absolute",
                 top: 20,
                 right: 20,
-                padding: "0.5em 1em",
-                borderRadius: 8,
+                padding: "0.6em 1.2em",
+                borderRadius: "9999px",
                 border: "none",
                 background: "rgba(0,0,0,0.5)",
                 color: "#fff",
@@ -348,13 +348,16 @@ export default function Fotografar() {
               <button
                 onClick={retake}
                 style={{
-                  padding: "0.6em 1.2em",
-                  borderRadius: "8px",
+                  padding: "0.6em 1.5em",
+                  borderRadius: "9999px",
                   border: "none",
                   background: "rgba(255,255,255,0.2)",
                   color: "#fff",
                   fontSize: textFont,
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5em",
                 }}
               >
                 <FaRedo /> Refazer
@@ -362,14 +365,17 @@ export default function Fotografar() {
               <button
                 onClick={downloadPhoto}
                 style={{
-                  padding: "0.6em 1.2em",
-                  borderRadius: "8px",
+                  padding: "0.6em 1.5em",
+                  borderRadius: "9999px",
                   border: "none",
                   background: "#22c55e",
                   color: "#000",
                   fontWeight: 700,
                   fontSize: textFont,
                   cursor: "pointer",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5em",
                 }}
               >
                 <FaDownload /> Baixar
@@ -422,14 +428,17 @@ export default function Fotografar() {
               onClick={publishPhoto}
               disabled={uploading}
               style={{
-                padding: "0.6em 1.5em",
-                borderRadius: "12px",
+                padding: "0.6em 2em",
+                borderRadius: "9999px",
                 border: "none",
                 background: uploading ? "#999" : "#2563eb",
                 color: "#fff",
                 fontWeight: 700,
                 fontSize: textFont,
                 cursor: uploading ? "not-allowed" : "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5em",
               }}
             >
               <FaCamera /> {uploading ? "Publicando..." : "Publicar"}
