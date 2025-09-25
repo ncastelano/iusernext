@@ -408,6 +408,8 @@ export default function Filmar() {
                 color: "#fff",
                 fontSize: "16px",
                 WebkitTextSizeAdjust: "100%",
+                MozTextSizeAdjust: "100%",
+                textSizeAdjust: "100%",
               }}
             />
 
