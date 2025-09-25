@@ -3,7 +3,14 @@
 import { useRouter } from "next/navigation";
 import { GeoPoint } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { FaShare, FaArrowLeft } from "react-icons/fa";
+import {
+  FaShare,
+  FaArrowLeft,
+  FaBold,
+  FaItalic,
+  FaListUl,
+  FaListOl,
+} from "react-icons/fa";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
@@ -75,11 +82,8 @@ export default function EscreverTexto() {
   }, []);
 
   const handlePublish = async () => {
-    if (
-      textTitle.trim().length < 4 ||
-      !editor ||
-      editor.getText().trim().length < 4
-    )
+    if (!editor) return;
+    if (textTitle.trim().length < 4 || editor.getText().trim().length < 4)
       return;
     if (!position || !geohash) {
       alert("Aguardando geolocalização...");
@@ -123,8 +127,9 @@ export default function EscreverTexto() {
   };
 
   const canPublish =
+    editor &&
     textTitle.trim().length >= 4 &&
-    editor?.getText().trim().length >= 4 &&
+    editor.getText().trim().length >= 4 &&
     !isPublishing;
 
   return (
@@ -184,7 +189,7 @@ export default function EscreverTexto() {
           boxSizing: "border-box",
         }}
       >
-        {/* Título do texto */}
+        {/* Título */}
         <input
           type="text"
           placeholder="Digite o título do texto..."
@@ -203,7 +208,59 @@ export default function EscreverTexto() {
           }}
         />
 
-        {/* Editor Rich Text */}
+        {/* Toolbar Tiptap */}
+        <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
+          <button
+            onClick={() => editor?.chain().focus().toggleBold().run()}
+            style={{
+              color: editor?.isActive("bold") ? "#fff" : "#888",
+              background: "transparent",
+              border: "1px solid #888",
+              padding: "4px",
+              borderRadius: "4px",
+            }}
+          >
+            <FaBold />
+          </button>
+          <button
+            onClick={() => editor?.chain().focus().toggleItalic().run()}
+            style={{
+              color: editor?.isActive("italic") ? "#fff" : "#888",
+              background: "transparent",
+              border: "1px solid #888",
+              padding: "4px",
+              borderRadius: "4px",
+            }}
+          >
+            <FaItalic />
+          </button>
+          <button
+            onClick={() => editor?.chain().focus().toggleBulletList().run()}
+            style={{
+              color: editor?.isActive("bulletList") ? "#fff" : "#888",
+              background: "transparent",
+              border: "1px solid #888",
+              padding: "4px",
+              borderRadius: "4px",
+            }}
+          >
+            <FaListUl />
+          </button>
+          <button
+            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+            style={{
+              color: editor?.isActive("orderedList") ? "#fff" : "#888",
+              background: "transparent",
+              border: "1px solid #888",
+              padding: "4px",
+              borderRadius: "4px",
+            }}
+          >
+            <FaListOl />
+          </button>
+        </div>
+
+        {/* Editor */}
         <div
           style={{
             width: "100%",
@@ -214,6 +271,7 @@ export default function EscreverTexto() {
             minHeight: "200px",
             overflow: "hidden",
             color: "#fff",
+            padding: "8px",
           }}
         >
           <EditorContent editor={editor} />
