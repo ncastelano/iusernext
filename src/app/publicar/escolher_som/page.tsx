@@ -1,7 +1,14 @@
 "use client";
+import { useRouter } from "next/navigation";
 import { GeoPoint } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
-import { FaCamera, FaPlay, FaPause, FaShare } from "react-icons/fa";
+import {
+  FaCamera,
+  FaPlay,
+  FaPause,
+  FaShare,
+  FaArrowLeft,
+} from "react-icons/fa";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -53,7 +60,7 @@ export default function EscolherSom() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
-
+  const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
   const auth = getAuth();
 
@@ -164,11 +171,37 @@ export default function EscolherSom() {
         gap: "clamp(16px, 2.5vw, 32px)",
       }}
     >
-      <h1
-        style={{ fontSize: "clamp(1.8rem, 5vw, 2.5rem)", fontWeight: "bold" }}
+      {/* AppBar com botão de voltar */}
+      <div
+        style={{
+          height: "clamp(40px,6vh,80px)",
+          display: "flex",
+          alignItems: "center",
+          padding: "0 clamp(20px,5vw,60px)",
+          borderBottom: "1px solid rgba(255,255,255,0.06)",
+          background: "rgba(0,0,0,0.7)",
+          fontSize: "clamp(24px,4vw,50px)",
+        }}
       >
-        Escolher Som
-      </h1>
+        <button
+          onClick={() => router.back()}
+          aria-label="Voltar"
+          style={{
+            background: "transparent",
+            border: "none",
+            color: "#fff",
+            fontSize: "clamp(24px,4vw,50px)",
+            cursor: "pointer",
+            marginRight: "2vw",
+            marginTop: "1vw",
+          }}
+        >
+          <FaArrowLeft />
+        </button>
+        <div style={{ fontWeight: 700, fontSize: "clamp(24px,4vw,50px)" }}>
+          Escolher Som
+        </div>
+      </div>
 
       <input
         type="file"
