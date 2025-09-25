@@ -218,7 +218,7 @@ export default function Fotografar() {
             fontSize: "clamp(24px,4vw,50px)",
             cursor: "pointer",
             marginRight: "2vw",
-            marginTop: "2vw",
+            marginTop: "1vw",
           }}
         >
           <FaArrowLeft />
@@ -234,7 +234,7 @@ export default function Fotografar() {
           flex: previewDataUrl ? "0" : 1,
           alignItems: previewDataUrl ? "flex-start" : "center",
           justifyContent: previewDataUrl ? "flex-start" : "center",
-          paddingTop: previewDataUrl ? "1vh" : "2vh",
+
           position: "relative",
           display: "flex",
           flexDirection: "column",
