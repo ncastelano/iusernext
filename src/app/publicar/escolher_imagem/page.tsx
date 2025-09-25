@@ -118,9 +118,12 @@ export default function EscolherImagem() {
 
     setIsPublishing(true);
     try {
+      // 🔥 Gera docRef com ID antes de salvar
       const newDocRef = doc(collection(db, "publications"));
+      const imageID = newDocRef.id;
+
       const publication: Publication = {
-        imageID: newDocRef.id,
+        imageID,
         imageUrl: selectedImageUrl,
         imageName: imageName || selectedFile.name,
         ranking: 0,
