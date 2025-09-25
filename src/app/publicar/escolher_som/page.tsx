@@ -161,10 +161,11 @@ export default function EscolherSom() {
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100dvh",
+        minHeight: "100dvh",
         background: "#000",
         color: "#fff",
         fontFamily: "Inter, sans-serif",
+        overflowX: "hidden", // evita scroll horizontal
       }}
     >
       {/* AppBar */}
@@ -173,7 +174,7 @@ export default function EscolherSom() {
           height: "clamp(40px,6vh,80px)",
           display: "flex",
           alignItems: "center",
-          padding: "0 clamp(20px,5vw,60px)",
+          padding: "0 16px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
           fontSize: "clamp(24px,4vw,50px)",
@@ -188,8 +189,7 @@ export default function EscolherSom() {
             color: "#fff",
             fontSize: "clamp(24px,4vw,50px)",
             cursor: "pointer",
-            marginRight: "2vw",
-            marginTop: "1vw",
+            marginRight: "12px",
           }}
         >
           <FaArrowLeft />
@@ -199,7 +199,7 @@ export default function EscolherSom() {
         </div>
       </div>
 
-      {/* Conteúdo alinhado ao topo, centralizado horizontalmente */}
+      {/* Conteúdo */}
       <div
         style={{
           flex: 1,
@@ -207,8 +207,10 @@ export default function EscolherSom() {
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "flex-start",
-          gap: "clamp(16px,2.5vw,32px)",
-          padding: "clamp(16px,2vw,32px)",
+          gap: "clamp(16px,2vw,32px)",
+          padding: "16px",
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
         <input
@@ -216,12 +218,15 @@ export default function EscolherSom() {
           accept=".mp3,.wav,.m4a,.aac,.ogg"
           onChange={handlePickAudio}
           style={{
-            padding: "clamp(6px,1.5vw,12px)",
-            borderRadius: "clamp(8px,1.5vw,12px)",
+            width: "100%",
+            maxWidth: "400px",
+            padding: "clamp(8px,2vw,12px)",
+            borderRadius: "8px",
             backgroundColor: "#111",
             color: "#fff",
             border: "1px solid #444",
             cursor: "pointer",
+            boxSizing: "border-box",
           }}
         />
 
@@ -231,12 +236,12 @@ export default function EscolherSom() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-              gap: "clamp(12px,2vw,16px)",
+              gap: "16px",
               width: "100%",
-              maxWidth: "clamp(320px,80%,400px)",
+              maxWidth: "400px",
             }}
           >
-            <label style={{ cursor: "pointer" }}>
+            <label style={{ cursor: "pointer", width: "100%" }}>
               <input
                 type="file"
                 accept="image/*"
@@ -245,35 +250,42 @@ export default function EscolherSom() {
               />
               <div
                 style={{
-                  width: "clamp(160px, 40vw, 192px)",
-                  height: "clamp(160px, 40vw, 192px)",
+                  width: "100%",
+                  paddingTop: "100%", // deixa quadrado responsivo
+                  position: "relative",
                   backgroundColor: "#111",
                   border: "2px solid #fff",
-                  borderRadius: "clamp(12px,4vw,16px)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
+                  borderRadius: "12px",
                   overflow: "hidden",
                   boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
                 }}
               >
                 {isUploadingImage ? (
-                  <span>Carregando...</span>
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
+                      color: "#fff",
+                    }}
+                  >
+                    Carregando...
+                  </span>
                 ) : selectedImageUrl ? (
                   <Image
                     src={selectedImageUrl}
                     alt="Capa"
-                    width={192}
-                    height={192}
-                    style={{
-                      objectFit: "cover",
-                      width: "100%",
-                      height: "100%",
-                    }}
+                    fill
+                    style={{ objectFit: "cover" }}
                   />
                 ) : (
                   <div
                     style={{
+                      position: "absolute",
+                      top: "50%",
+                      left: "50%",
+                      transform: "translate(-50%, -50%)",
                       display: "flex",
                       flexDirection: "column",
                       alignItems: "center",
@@ -281,10 +293,7 @@ export default function EscolherSom() {
                     }}
                   >
                     <FaCamera
-                      style={{
-                        fontSize: "clamp(24px,6vw,32px)",
-                        marginBottom: "8px",
-                      }}
+                      style={{ fontSize: "32px", marginBottom: "8px" }}
                     />
                     <span>Selecionar capa</span>
                   </div>
@@ -299,42 +308,44 @@ export default function EscolherSom() {
               onChange={(e) => setSongName(e.target.value)}
               style={{
                 width: "100%",
-                padding: "clamp(12px,2vw,16px)",
-                borderRadius: "clamp(8px,2vw,12px)",
+                padding: "12px",
+                borderRadius: "8px",
                 backgroundColor: "rgba(255,255,255,0.1)",
                 border: "1.5px solid rgba(255,255,255,0.3)",
                 color: "#fff",
-                fontSize: "clamp(18px,2vw,22px)", // mínimo 18px, máximo 22px
+                fontSize: "18px", // >= 18px
                 lineHeight: "1.4",
+                boxSizing: "border-box",
+                touchAction: "manipulation", // evita zoom em alguns navegadores
               }}
             />
 
             <div
               style={{
                 display: "flex",
-                gap: "clamp(12px,2vw,16px)",
+                gap: "12px",
                 alignItems: "center",
+                width: "100%",
               }}
             >
               <button
                 onClick={handleTogglePlay}
                 style={{
+                  flex: 1,
                   display: "flex",
                   alignItems: "center",
-                  padding: "clamp(8px,1.5vw,10px) clamp(12px,2vw,16px)",
+                  justifyContent: "center",
+                  padding: "10px",
                   backgroundColor: "#FFD700",
                   color: "#000",
-                  borderRadius: "clamp(8px,2vw,12px)",
+                  borderRadius: "8px",
                   fontWeight: "bold",
                   cursor: "pointer",
                   boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                  gap: "8px",
                 }}
               >
-                {isPlaying ? (
-                  <FaPause style={{ marginRight: "8px" }} />
-                ) : (
-                  <FaPlay style={{ marginRight: "8px" }} />
-                )}
+                {isPlaying ? <FaPause /> : <FaPlay />}
                 {isPlaying ? "Pause" : "Play"}
               </button>
               <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
@@ -344,20 +355,17 @@ export default function EscolherSom() {
               onClick={handlePublish}
               disabled={!canPublish}
               style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
                 width: "100%",
-                padding: "clamp(12px,2.5vw,14px)",
-                borderRadius: "clamp(12px,3vw,16px)",
+                padding: "12px",
+                borderRadius: "12px",
                 backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
                 color: "#000",
                 fontWeight: "bold",
                 cursor: canPublish ? "pointer" : "not-allowed",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
                 gap: "8px",
-                marginTop: "clamp(12px,2vw,16px)",
-                boxShadow: canPublish ? "0 4px 12px rgba(0,0,0,0.5)" : "none",
-                transition: "all 0.2s ease-in-out",
               }}
             >
               <FaShare />
