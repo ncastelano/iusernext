@@ -3,21 +3,11 @@
 import { useRouter } from "next/navigation";
 import { GeoPoint } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import {
-  FaShare,
-  FaArrowLeft,
-  FaBold,
-  FaItalic,
-  FaListUl,
-  FaListOl,
-} from "react-icons/fa";
+import { FaShare, FaArrowLeft } from "react-icons/fa";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { Publication } from "types/publication";
-
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 
 // Geohash
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
@@ -56,19 +46,13 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
 }
 
 export default function EscreverTexto() {
-  const [textTitle, setTextTitle] = useState("");
+  const [textContent, setTextContent] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
 
   const router = useRouter();
   const auth = getAuth();
-
-  // Tiptap editor
-  const editor = useEditor({
-    extensions: [StarterKit],
-    content: "",
-  });
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -82,9 +66,7 @@ export default function EscreverTexto() {
   }, []);
 
   const handlePublish = async () => {
-    if (!editor) return;
-    if (textTitle.trim().length < 4 || editor.getText().trim().length < 4)
-      return;
+    if (textContent.trim().length < 4) return;
     if (!position || !geohash) {
       alert("Aguardando geolocalização...");
       return;
@@ -109,15 +91,14 @@ export default function EscreverTexto() {
         visibleOnMap: true,
         deleted: false,
         textID: newDocRef.id,
-        textTitle,
-        textContent: editor.getHTML(),
+        textTitle: "", // sem título
+        textContent,
       };
 
       await setDoc(newDocRef, publication);
 
       alert("Texto publicado com sucesso!");
-      setTextTitle("");
-      editor.commands.setContent("");
+      setTextContent("");
     } catch (error) {
       console.error(error);
       alert("Erro ao publicar texto");
@@ -126,11 +107,7 @@ export default function EscreverTexto() {
     }
   };
 
-  const canPublish =
-    editor &&
-    textTitle.trim().length >= 4 &&
-    editor.getText().trim().length >= 4 &&
-    !isPublishing;
+  const canPublish = textContent.trim().length >= 4 && !isPublishing;
 
   return (
     <div
@@ -142,6 +119,8 @@ export default function EscreverTexto() {
         color: "#fff",
         fontFamily: "Inter, sans-serif",
         overflowX: "hidden",
+        padding: "16px",
+        boxSizing: "border-box",
       }}
     >
       {/* AppBar */}
@@ -154,6 +133,7 @@ export default function EscreverTexto() {
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
           fontSize: "clamp(24px,4vw,50px)",
+          marginBottom: "16px",
         }}
       >
         <button
@@ -175,131 +155,48 @@ export default function EscreverTexto() {
         </div>
       </div>
 
-      {/* Conteúdo */}
-      <div
+      {/* Área para escrever */}
+      <textarea
+        placeholder="Escreva o que você quiser..."
+        value={textContent}
+        onChange={(e) => setTextContent(e.target.value)}
         style={{
-          flex: 1,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          justifyContent: "flex-start",
-          gap: "clamp(16px,2vw,32px)",
-          padding: "16px",
           width: "100%",
+          minHeight: "400px",
+          padding: "16px",
+          borderRadius: "12px",
+          backgroundColor: "rgba(255,255,255,0.1)",
+          border: "1.5px solid rgba(255,255,255,0.3)",
+          color: "#fff",
+          fontSize: "18px",
+          resize: "vertical",
           boxSizing: "border-box",
         }}
+      />
+
+      {/* Botão publicar */}
+      <button
+        onClick={handlePublish}
+        disabled={!canPublish}
+        style={{
+          marginTop: "16px",
+          width: "100%",
+          maxWidth: "400px",
+          padding: "12px",
+          borderRadius: "12px",
+          backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
+          color: "#000",
+          fontWeight: "bold",
+          cursor: canPublish ? "pointer" : "not-allowed",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "8px",
+        }}
       >
-        {/* Título */}
-        <input
-          type="text"
-          placeholder="Digite o título do texto..."
-          value={textTitle}
-          onChange={(e) => setTextTitle(e.target.value)}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            padding: "12px",
-            borderRadius: "8px",
-            backgroundColor: "rgba(255,255,255,0.1)",
-            border: "1.5px solid rgba(255,255,255,0.3)",
-            color: "#fff",
-            fontSize: "18px",
-            boxSizing: "border-box",
-          }}
-        />
-
-        {/* Toolbar Tiptap */}
-        <div style={{ display: "flex", gap: "8px", marginBottom: "8px" }}>
-          <button
-            onClick={() => editor?.chain().focus().toggleBold().run()}
-            style={{
-              color: editor?.isActive("bold") ? "#fff" : "#888",
-              background: "transparent",
-              border: "1px solid #888",
-              padding: "4px",
-              borderRadius: "4px",
-            }}
-          >
-            <FaBold />
-          </button>
-          <button
-            onClick={() => editor?.chain().focus().toggleItalic().run()}
-            style={{
-              color: editor?.isActive("italic") ? "#fff" : "#888",
-              background: "transparent",
-              border: "1px solid #888",
-              padding: "4px",
-              borderRadius: "4px",
-            }}
-          >
-            <FaItalic />
-          </button>
-          <button
-            onClick={() => editor?.chain().focus().toggleBulletList().run()}
-            style={{
-              color: editor?.isActive("bulletList") ? "#fff" : "#888",
-              background: "transparent",
-              border: "1px solid #888",
-              padding: "4px",
-              borderRadius: "4px",
-            }}
-          >
-            <FaListUl />
-          </button>
-          <button
-            onClick={() => editor?.chain().focus().toggleOrderedList().run()}
-            style={{
-              color: editor?.isActive("orderedList") ? "#fff" : "#888",
-              background: "transparent",
-              border: "1px solid #888",
-              padding: "4px",
-              borderRadius: "4px",
-            }}
-          >
-            <FaListOl />
-          </button>
-        </div>
-
-        {/* Editor */}
-        <div
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            backgroundColor: "rgba(255,255,255,0.05)",
-            border: "1.5px solid rgba(255,255,255,0.3)",
-            borderRadius: "8px",
-            minHeight: "200px",
-            overflow: "hidden",
-            color: "#fff",
-            padding: "8px",
-          }}
-        >
-          <EditorContent editor={editor} />
-        </div>
-
-        {/* Botão publicar */}
-        <button
-          onClick={handlePublish}
-          disabled={!canPublish}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            padding: "12px",
-            borderRadius: "12px",
-            backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
-            color: "#000",
-            fontWeight: "bold",
-            cursor: canPublish ? "pointer" : "not-allowed",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "8px",
-          }}
-        >
-          <FaShare />
-          {isPublishing ? "Publicando..." : "Publicar"}
-        </button>
-      </div>
+        <FaShare />
+        {isPublishing ? "Publicando..." : "Publicar"}
+      </button>
     </div>
   );
 }
