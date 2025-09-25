@@ -15,6 +15,7 @@ import { motion } from "framer-motion";
 import { db, storage, auth } from "@/lib/firebase";
 import { ref, uploadString, getDownloadURL } from "firebase/storage";
 import { collection, addDoc, GeoPoint } from "firebase/firestore";
+import GeoHashHelper from "./geohash";
 
 export default function Fotografar() {
   const router = useRouter();
@@ -136,6 +137,7 @@ export default function Fotografar() {
 
       // 2️⃣ Obter posição do usuário
       let position = new GeoPoint(0, 0);
+      let geohash = "";
       if ("geolocation" in navigator) {
         const pos = await new Promise<GeolocationPosition>(
           (resolve, reject) => {
@@ -143,15 +145,15 @@ export default function Fotografar() {
           }
         );
         position = new GeoPoint(pos.coords.latitude, pos.coords.longitude);
+
+        // ✅ agora gerando o geohash
+        geohash = GeoHashHelper.encode(
+          pos.coords.latitude,
+          pos.coords.longitude
+        );
       }
 
-      // 3️⃣ Gerar geohash
-      const geohash = GeoHashHelper.encode(
-        position.latitude,
-        position.longitude
-      );
-
-      // 4️⃣ Criar objeto de publicação (somente campos de imagem)
+      // 3️⃣ Criar objeto de publicação
       const publication = {
         position,
         geohash,
@@ -165,7 +167,7 @@ export default function Fotografar() {
         imageName: name || `Foto_${Date.now()}`,
       };
 
-      // 5️⃣ Salvar no Firestore
+      // 4️⃣ Salvar no Firestore
       await addDoc(collection(db, "publications"), publication);
 
       alert("Foto publicada com sucesso!");

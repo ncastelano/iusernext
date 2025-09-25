@@ -1,3 +1,5 @@
+//app/publicar/fotografar/geohash.ts
+
 class GeoHashHelper {
   private static _base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 
@@ -43,3 +45,4 @@ class GeoHashHelper {
     return geohash;
   }
 }
+export default GeoHashHelper;
