@@ -110,22 +110,6 @@ export default function Publicar() {
         </div>
         <div style={{ fontSize: labelFontSize, color: "white" }}>Microfone</div>
       </div>
-
-      {/* Vídeo da Galeria */}
-      <div
-        style={optionStyle}
-        onClick={() => alert("Abrir file picker de vídeo")}
-        onMouseEnter={hoverIn}
-        onMouseLeave={hoverOut}
-      >
-        <div style={{ fontSize: iconSize, color: "#fff" }}>
-          <MdVideoLibrary />
-        </div>
-        <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Escolher Vídeo
-        </div>
-      </div>
-
       {/* Imagem da Galeria */}
       <div
         style={optionStyle}
@@ -138,6 +122,21 @@ export default function Publicar() {
         </div>
         <div style={{ fontSize: labelFontSize, color: "white" }}>
           Escolher Imagem
+        </div>
+      </div>
+
+      {/* Vídeo da Galeria */}
+      <div
+        style={optionStyle}
+        onClick={() => router.push("/publicar/escolher_video")}
+        onMouseEnter={hoverIn}
+        onMouseLeave={hoverOut}
+      >
+        <div style={{ fontSize: iconSize, color: "#fff" }}>
+          <MdVideoLibrary />
+        </div>
+        <div style={{ fontSize: labelFontSize, color: "white" }}>
+          Escolher Vídeo
         </div>
       </div>
 
