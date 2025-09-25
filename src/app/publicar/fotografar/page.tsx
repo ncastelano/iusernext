@@ -180,7 +180,6 @@ export default function Fotografar() {
     }
   }, [previewDataUrl, name, showOnMap, retake]);
 
-  const btnSize = "clamp(32px,8vw,40px)";
   const textFont = "clamp(18px,3vw,22px)";
 
   return (
