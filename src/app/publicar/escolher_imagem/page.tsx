@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
-import { FaCamera, FaArrowLeft, FaShare } from "react-icons/fa";
+import { FaCamera, FaArrowLeft, FaShare, FaTimes } from "react-icons/fa";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { doc, collection, setDoc, GeoPoint } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -86,6 +86,11 @@ export default function EscolherImagem() {
     const downloadUrl = await getDownloadURL(storageRef);
     setSelectedImageUrl(downloadUrl);
     setIsUploading(false);
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setSelectedImageUrl(null);
   };
 
   const handlePublish = async () => {
@@ -215,25 +220,45 @@ export default function EscolherImagem() {
           }}
         />
 
-        {/* Switch mostrar posição */}
-        <label
+        {/* Switch moderno para localização */}
+        <div
           style={{
             display: "flex",
             alignItems: "center",
-            gap: "8px",
+            gap: "12px",
             cursor: "pointer",
             color: "#fff",
+            marginBottom: "16px",
           }}
+          onClick={() => setUseLocation(!useLocation)}
         >
-          <input
-            type="checkbox"
-            checked={useLocation}
-            onChange={(e) => setUseLocation(e.target.checked)}
-          />
-          Mostrar no mapa (usar localização)
-        </label>
+          <div
+            style={{
+              width: "40px",
+              height: "20px",
+              background: useLocation ? "#4ade80" : "#6b7280",
+              borderRadius: "999px",
+              position: "relative",
+              transition: "background 0.3s",
+            }}
+          >
+            <div
+              style={{
+                width: "18px",
+                height: "18px",
+                background: "#fff",
+                borderRadius: "50%",
+                position: "absolute",
+                top: "1px",
+                left: useLocation ? "20px" : "2px",
+                transition: "left 0.3s",
+              }}
+            />
+          </div>
+          <span>Mostrar no mapa</span>
+        </div>
 
-        {/* Seleção da imagem */}
+        {/* Pré-visualização da imagem com botão de remover */}
         <label style={{ cursor: "pointer", width: "100%", maxWidth: "400px" }}>
           <input
             type="file"
@@ -259,12 +284,30 @@ export default function EscolherImagem() {
             {isUploading ? (
               <span style={{ color: "#fff" }}>Carregando...</span>
             ) : selectedImageUrl ? (
-              <Image
-                src={selectedImageUrl}
-                alt="Imagem selecionada"
-                fill
-                style={{ objectFit: "cover" }}
-              />
+              <>
+                <Image
+                  src={selectedImageUrl}
+                  alt="Imagem selecionada"
+                  fill
+                  style={{ objectFit: "cover" }}
+                />
+                <button
+                  onClick={handleRemoveImage}
+                  style={{
+                    position: "absolute",
+                    top: "8px",
+                    right: "8px",
+                    background: "rgba(0,0,0,0.5)",
+                    border: "none",
+                    borderRadius: "50%",
+                    padding: "6px",
+                    cursor: "pointer",
+                    color: "#fff",
+                  }}
+                >
+                  <FaTimes />
+                </button>
+              </>
             ) : (
               <div
                 style={{
