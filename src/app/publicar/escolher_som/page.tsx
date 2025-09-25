@@ -106,7 +106,6 @@ export default function EscolherSom() {
 
     setIsPublishing(true);
     try {
-      // Upload do áudio
       const storageRef = ref(
         storage,
         `songpublication/${Date.now()}_${audioFile.name}`
@@ -114,7 +113,6 @@ export default function EscolherSom() {
       await uploadBytes(storageRef, audioFile);
       const songUrl = await getDownloadURL(storageRef);
 
-      // Cria o documento com ID manual para usar como songID
       const newDocRef = doc(collection(db, "publications"));
 
       const publication: Publication = {
@@ -169,7 +167,7 @@ export default function EscolherSom() {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* AppBar no topo */}
+      {/* AppBar */}
       <div
         style={{
           height: "clamp(40px,6vh,80px)",
@@ -201,14 +199,14 @@ export default function EscolherSom() {
         </div>
       </div>
 
-      {/* Conteúdo centralizado */}
+      {/* Conteúdo alinhado ao topo, centralizado horizontalmente */}
       <div
         style={{
           flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "center",
+          justifyContent: "flex-start",
           gap: "clamp(16px,2.5vw,32px)",
           padding: "clamp(16px,2vw,32px)",
         }}
