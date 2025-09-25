@@ -299,12 +299,13 @@ export default function EscolherSom() {
               onChange={(e) => setSongName(e.target.value)}
               style={{
                 width: "100%",
-                padding: "clamp(10px,2vw,12px)",
+                padding: "clamp(12px,2vw,16px)",
                 borderRadius: "clamp(8px,2vw,12px)",
                 backgroundColor: "rgba(255,255,255,0.1)",
                 border: "1.5px solid rgba(255,255,255,0.3)",
                 color: "#fff",
-                fontSize: "clamp(0.9rem,2vw,1rem)",
+                fontSize: "clamp(18px,2vw,22px)", // mínimo 18px, máximo 22px
+                lineHeight: "1.4",
               }}
             />
 
