@@ -394,9 +394,12 @@ export default function Fotografar() {
                   padding: "0.5em",
                   borderRadius: "8px",
                   border: "1px solid #ccc",
-                  fontSize: textFont,
+                  fontSize: "clamp(16px, 3vw, 22px)",
+                  width: "100%",
+                  boxSizing: "border-box",
                 }}
               />
+
               <label
                 style={{
                   display: "flex",
