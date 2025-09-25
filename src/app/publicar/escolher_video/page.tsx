@@ -297,7 +297,7 @@ export default function EscolherVideo() {
           value={videoName}
           onChange={(e) => setVideoName(e.target.value)}
           style={{
-            width: "100%",
+            width: "80%",
             padding: "12px",
             borderRadius: "8px",
             backgroundColor: "rgba(255,255,255,0.1)",

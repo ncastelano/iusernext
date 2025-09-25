@@ -1,14 +1,8 @@
 "use client";
 import { useRouter } from "next/navigation";
 import { GeoPoint } from "firebase/firestore";
-import { useState, useRef, useEffect } from "react";
-import {
-  FaCamera,
-  FaPlay,
-  FaPause,
-  FaShare,
-  FaArrowLeft,
-} from "react-icons/fa";
+import { useState, useEffect, useRef } from "react";
+import { FaCamera, FaShare, FaArrowLeft } from "react-icons/fa";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
@@ -57,9 +51,9 @@ export default function EscolherSom() {
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
+
   const router = useRouter();
   const audioRef = useRef<HTMLAudioElement>(null);
   const auth = getAuth();
@@ -88,13 +82,6 @@ export default function EscolherSom() {
     const downloadUrl = await getDownloadURL(storageRef);
     setSelectedImageUrl(downloadUrl);
     setIsUploadingImage(false);
-  };
-
-  const handleTogglePlay = () => {
-    if (!audioRef.current) return;
-    if (isPlaying) audioRef.current.pause();
-    else audioRef.current.play();
-    setIsPlaying(!isPlaying);
   };
 
   const handlePublish = async () => {
@@ -165,7 +152,7 @@ export default function EscolherSom() {
         background: "#000",
         color: "#fff",
         fontFamily: "Inter, sans-serif",
-        overflowX: "hidden", // evita scroll horizontal
+        overflowX: "hidden",
       }}
     >
       {/* AppBar */}
@@ -213,23 +200,26 @@ export default function EscolherSom() {
           boxSizing: "border-box",
         }}
       >
+        {/* Input do áudio */}
         <input
           type="file"
           accept=".mp3,.wav,.m4a,.aac,.ogg"
           onChange={handlePickAudio}
           style={{
-            width: "100%",
-            maxWidth: "400px",
-            padding: "clamp(8px,2vw,12px)",
+            width: "80%",
+            padding: "12px",
             borderRadius: "8px",
-            backgroundColor: "#111",
+            backgroundColor: "rgba(255,255,255,0.1)",
+            border: "1.5px solid rgba(255,255,255,0.3)",
             color: "#fff",
-            border: "1px solid #444",
-            cursor: "pointer",
+            fontSize: "18px", // >= 18px
+            lineHeight: "1.4",
             boxSizing: "border-box",
+            touchAction: "manipulation", // evita zoom em alguns navegadores
           }}
         />
 
+        {/* Preview da capa e player nativo */}
         {audioFile && (
           <div
             style={{
@@ -241,6 +231,7 @@ export default function EscolherSom() {
               maxWidth: "400px",
             }}
           >
+            {/* Capa da música */}
             <label style={{ cursor: "pointer", width: "100%" }}>
               <input
                 type="file"
@@ -251,7 +242,7 @@ export default function EscolherSom() {
               <div
                 style={{
                   width: "100%",
-                  paddingTop: "100%", // deixa quadrado responsivo
+                  paddingTop: "100%",
                   position: "relative",
                   backgroundColor: "#111",
                   border: "2px solid #fff",
@@ -301,6 +292,7 @@ export default function EscolherSom() {
               </div>
             </label>
 
+            {/* Nome da música */}
             <input
               type="text"
               placeholder="Digite o nome ou título do som..."
@@ -313,44 +305,25 @@ export default function EscolherSom() {
                 backgroundColor: "rgba(255,255,255,0.1)",
                 border: "1.5px solid rgba(255,255,255,0.3)",
                 color: "#fff",
-                fontSize: "18px", // >= 18px
+                fontSize: "18px",
                 lineHeight: "1.4",
                 boxSizing: "border-box",
-                touchAction: "manipulation", // evita zoom em alguns navegadores
               }}
             />
 
-            <div
+            {/* Player de áudio nativo */}
+            <audio
+              ref={audioRef}
+              src={URL.createObjectURL(audioFile)}
+              controls
               style={{
-                display: "flex",
-                gap: "12px",
-                alignItems: "center",
                 width: "100%",
+                borderRadius: "8px",
+                backgroundColor: "#111",
               }}
-            >
-              <button
-                onClick={handleTogglePlay}
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "10px",
-                  backgroundColor: "#FFD700",
-                  color: "#000",
-                  borderRadius: "8px",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
-                  gap: "8px",
-                }}
-              >
-                {isPlaying ? <FaPause /> : <FaPlay />}
-                {isPlaying ? "Pause" : "Play"}
-              </button>
-              <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
-            </div>
+            />
 
+            {/* Botão publicar */}
             <button
               onClick={handlePublish}
               disabled={!canPublish}

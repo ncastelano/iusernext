@@ -300,7 +300,7 @@ export default function Microfone() {
           value={name}
           onChange={(e) => setName(e.target.value)}
           style={{
-            width: "100%",
+            width: "80%",
             padding: "12px",
             borderRadius: "8px",
             backgroundColor: "rgba(255,255,255,0.1)",
