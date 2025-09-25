@@ -194,6 +194,15 @@ export default function Filmar() {
         overflowX: "hidden",
         touchAction: "manipulation",
         userSelect: "none",
+        WebkitTouchCallout: "none",
+        WebkitUserSelect: "none",
+        msTouchAction: "manipulation",
+      }}
+      onTouchStart={(e) => {
+        if (e.touches.length > 1) e.preventDefault();
+      }}
+      onTouchMove={(e) => {
+        if (e.touches.length > 1) e.preventDefault();
       }}
     >
       {/* AppBar */}
@@ -398,6 +407,7 @@ export default function Filmar() {
                 background: "#111",
                 color: "#fff",
                 fontSize: "16px",
+                WebkitTextSizeAdjust: "100%",
               }}
             />
 
