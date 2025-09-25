@@ -365,17 +365,15 @@ export default function Fotografar() {
               onChange={(e) => setName(e.target.value)}
               style={{
                 width: "100%",
-                maxWidth: "400px",
                 padding: "12px",
-                borderRadius: "12px",
-                border: "2px solid #fff",
-                background: "#111",
+                borderRadius: "8px",
+                backgroundColor: "rgba(255,255,255,0.1)",
+                border: "1.5px solid rgba(255,255,255,0.3)",
                 color: "#fff",
-                fontSize: "16px",
-                WebkitTextSizeAdjust: "100%",
-                MozTextSizeAdjust: "100%",
-                textSizeAdjust: "100%",
-                outline: "none",
+                fontSize: "18px", // >= 18px
+                lineHeight: "1.4",
+                boxSizing: "border-box",
+                touchAction: "manipulation", // evita zoom em alguns navegadores
               }}
             />
 
