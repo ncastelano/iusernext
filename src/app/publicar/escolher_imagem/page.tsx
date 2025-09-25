@@ -1,27 +1,83 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FaCamera, FaArrowLeft, FaShare } from "react-icons/fa";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { doc, collection, setDoc } from "firebase/firestore";
+import { doc, collection, setDoc, GeoPoint } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db, storage } from "@/lib/firebase";
 import Image from "next/image";
 
+// Base32 para geohash
+const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
+function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
+  const latInterval = [-90.0, 90.0];
+  const lonInterval = [-180.0, 180.0];
+  let geohash = "";
+  let isEven = true;
+  let bit = 0;
+  let ch = 0;
+
+  while (geohash.length < precision) {
+    let mid: number;
+    if (isEven) {
+      mid = (lonInterval[0] + lonInterval[1]) / 2;
+      if (longitude > mid) {
+        ch |= 1 << (4 - bit);
+        lonInterval[0] = mid;
+      } else lonInterval[1] = mid;
+    } else {
+      mid = (latInterval[0] + latInterval[1]) / 2;
+      if (latitude > mid) {
+        ch |= 1 << (4 - bit);
+        latInterval[0] = mid;
+      } else latInterval[1] = mid;
+    }
+    isEven = !isEven;
+    if (bit < 4) bit++;
+    else {
+      geohash += base32[ch];
+      bit = 0;
+      ch = 0;
+    }
+  }
+  return geohash;
+}
+
 export default function EscolherImagem() {
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [position, setPosition] = useState<GeolocationPosition | null>(null);
+  const [geohash, setGeohash] = useState<string | null>(null);
+
   const router = useRouter();
   const auth = getAuth();
+
+  // Captura geolocalização
+  useEffect(() => {
+    if (!navigator.geolocation) return;
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setPosition(pos);
+        setGeohash(encodeGeoHash(pos.coords.latitude, pos.coords.longitude));
+      },
+      (err) => console.warn("Erro ao obter localização:", err.message)
+    );
+  }, []);
 
   const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
+    setSelectedFile(file);
     setIsUploading(true);
 
-    const storageRef = ref(storage, `imagepublication/${Date.now()}.jpg`);
+    const storageRef = ref(
+      storage,
+      `imagepublication/${Date.now()}_${file.name}`
+    );
     await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(storageRef);
     setSelectedImageUrl(downloadUrl);
@@ -29,20 +85,37 @@ export default function EscolherImagem() {
   };
 
   const handlePublish = async () => {
-    if (!selectedImageUrl) return;
+    if (!selectedImageUrl || !selectedFile) return;
+    if (!position || !geohash) {
+      alert("Aguardando geolocalização...");
+      return;
+    }
 
     setIsPublishing(true);
     try {
       const newDocRef = doc(collection(db, "publications"));
-      await setDoc(newDocRef, {
+      const publication = {
+        imageID: newDocRef.id,
         imageUrl: selectedImageUrl,
+        imageName: selectedFile.name,
+        position: new GeoPoint(
+          position.coords.latitude,
+          position.coords.longitude
+        ),
+        geohash,
+        ranking: 0,
+        publicationType: "image",
+        ownerType: "user",
         userID: auth.currentUser?.uid || "",
         createdDateTime: new Date(),
-        publicationType: "image",
+        publishedDateTime: new Date(),
         active: true,
-      });
+      };
+
+      await setDoc(newDocRef, publication);
 
       alert("Imagem publicada com sucesso!");
+      setSelectedFile(null);
       setSelectedImageUrl(null);
     } catch (error) {
       console.error(error);
@@ -52,7 +125,7 @@ export default function EscolherImagem() {
     }
   };
 
-  const canPublish = !!selectedImageUrl && !isPublishing;
+  const canPublish = !!selectedImageUrl && !!selectedFile && !isPublishing;
 
   return (
     <div
