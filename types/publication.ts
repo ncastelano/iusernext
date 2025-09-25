@@ -7,7 +7,7 @@ export type Publication = {
   position: GeoPoint; // posição nativa do Firebase (latitude/longitude)
   geohash: string; // geohash para buscas geográficas rápidas
   ranking: number; // ranking/score da publicação
-  publicationType: string; // tipo principal: "video", "image", "pdf", "song", etc.
+  publicationType: string; // tipo principal: "video", "image", "pdf", "song", "text", etc.
   ownerType: string; // dono da publicação: "user", "store", "product"
   userID: string; // id do usuário que postou
   createdDateTime: Date; // data de criação do registro
@@ -55,6 +55,15 @@ export type Publication = {
   songUrl?: string;
   songDuration?: number;
   songName?: string;
+
+  // -----------------------------
+  // Campos de texto
+  // -----------------------------
+  textID?: string; // id único do texto
+  textTitle?: string; // título do texto (opcional)
+  textContent?: string; // conteúdo principal do texto
+  textExcerpt?: string; // resumo ou primeira linha do texto (opcional)
+  textLanguage?: string; // idioma do texto, ex: "pt", "en" (opcional)
 
   // -----------------------------
   // Preço e moeda (se for produto/loja)
