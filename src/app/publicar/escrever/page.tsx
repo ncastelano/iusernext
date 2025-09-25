@@ -151,7 +151,7 @@ export default function EscreverTexto() {
           <FaArrowLeft />
         </button>
         <div style={{ fontWeight: 700, fontSize: "clamp(24px,4vw,50px)" }}>
-          Escolher Texto
+          Escrever
         </div>
       </div>
 
@@ -169,25 +169,6 @@ export default function EscreverTexto() {
           boxSizing: "border-box",
         }}
       >
-        {/* Preview do ícone de texto */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            width: "100%",
-            maxWidth: "400px",
-            padding: "12px",
-            border: "2px solid #fff",
-            borderRadius: "12px",
-            backgroundColor: "#111",
-            justifyContent: "center",
-          }}
-        >
-          <FaFileAlt style={{ fontSize: "32px", color: "#3498DB" }} />
-          <span>Texto para publicação</span>
-        </div>
-
         {/* Título do texto */}
         <input
           type="text"
