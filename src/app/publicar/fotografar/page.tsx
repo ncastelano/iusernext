@@ -394,7 +394,7 @@ export default function Fotografar() {
                   padding: "0.5em",
                   borderRadius: "8px",
                   border: "1px solid #ccc",
-                  fontSize: "clamp(16px, 3vw, 22px)",
+                  fontSize: "clamp(20px, 4vw, 28px)",
                   width: "100%",
                   boxSizing: "border-box",
                 }}
