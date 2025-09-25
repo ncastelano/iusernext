@@ -372,6 +372,10 @@ export default function Fotografar() {
                 background: "#111",
                 color: "#fff",
                 fontSize: "16px",
+                WebkitTextSizeAdjust: "100%",
+                MozTextSizeAdjust: "100%",
+                textSizeAdjust: "100%",
+                outline: "none",
               }}
             />
 

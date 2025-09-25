@@ -81,7 +81,7 @@ export default function Publicar() {
           <FaCamera />
         </div>
         <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Tirar Foto
+          Fotografar
         </div>
       </div>
 
@@ -95,9 +95,7 @@ export default function Publicar() {
         <div style={{ fontSize: iconSize, color: "#fff" }}>
           <FaVideo />
         </div>
-        <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Gravar Vídeo
-        </div>
+        <div style={{ fontSize: labelFontSize, color: "white" }}>Filmar</div>
       </div>
 
       {/* Gravar Áudio */}
@@ -126,7 +124,7 @@ export default function Publicar() {
           <MdVideoLibrary />
         </div>
         <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Vídeo da Galeria
+          Escolher Vídeo
         </div>
       </div>
 
@@ -141,7 +139,7 @@ export default function Publicar() {
           <MdImage />
         </div>
         <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Imagem da Galeria
+          Escolher Imagem
         </div>
       </div>
 
