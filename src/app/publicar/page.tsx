@@ -101,16 +101,14 @@ export default function Publicar() {
       {/* Gravar Áudio */}
       <div
         style={optionStyle}
-        onClick={() => router.push("/publicar/gravar_som")}
+        onClick={() => router.push("/publicar/microfone")}
         onMouseEnter={hoverIn}
         onMouseLeave={hoverOut}
       >
         <div style={{ fontSize: iconSize, color: "#fff" }}>
           <FaMicrophone />
         </div>
-        <div style={{ fontSize: labelFontSize, color: "white" }}>
-          Gravar Áudio
-        </div>
+        <div style={{ fontSize: labelFontSize, color: "white" }}>Microfone</div>
       </div>
 
       {/* Vídeo da Galeria */}
