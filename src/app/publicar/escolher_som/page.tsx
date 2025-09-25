@@ -131,7 +131,7 @@ export default function EscolherSom() {
         active: true,
         visibleOnMap: true,
         deleted: false,
-        songID: newDocRef.id, // ID já definido
+        songID: newDocRef.id,
         songUrl,
         songDuration: audioRef.current?.duration || 0,
         songName,
@@ -169,7 +169,7 @@ export default function EscolherSom() {
         fontFamily: "Inter, sans-serif",
       }}
     >
-      {/* AppBar com botão de voltar */}
+      {/* AppBar no topo */}
       <div
         style={{
           height: "clamp(40px,6vh,80px)",
@@ -182,9 +182,7 @@ export default function EscolherSom() {
         }}
       >
         <button
-          onClick={() => {
-            router.back();
-          }}
+          onClick={() => router.back()}
           aria-label="Voltar"
           style={{
             background: "transparent",
@@ -203,155 +201,172 @@ export default function EscolherSom() {
         </div>
       </div>
 
-      <input
-        type="file"
-        accept=".mp3,.wav,.m4a,.aac,.ogg"
-        onChange={handlePickAudio}
+      {/* Conteúdo centralizado */}
+      <div
         style={{
-          padding: "clamp(6px,1.5vw,12px)",
-          borderRadius: "clamp(8px,1.5vw,12px)",
-          backgroundColor: "#111",
-          color: "#fff",
-          border: "1px solid #444",
-          cursor: "pointer",
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "center",
+          gap: "clamp(16px,2.5vw,32px)",
+          padding: "clamp(16px,2vw,32px)",
         }}
-      />
-
-      {audioFile && (
-        <div
+      >
+        <input
+          type="file"
+          accept=".mp3,.wav,.m4a,.aac,.ogg"
+          onChange={handlePickAudio}
           style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "clamp(12px,2vw,16px)",
-            width: "100%",
-            maxWidth: "clamp(320px,80%,400px)",
+            padding: "clamp(6px,1.5vw,12px)",
+            borderRadius: "clamp(8px,1.5vw,12px)",
+            backgroundColor: "#111",
+            color: "#fff",
+            border: "1px solid #444",
+            cursor: "pointer",
           }}
-        >
-          <label style={{ cursor: "pointer" }}>
-            <input
-              type="file"
-              accept="image/*"
-              style={{ display: "none" }}
-              onChange={handlePickImage}
-            />
-            <div
-              style={{
-                width: "clamp(160px, 40vw, 192px)",
-                height: "clamp(160px, 40vw, 192px)",
-                backgroundColor: "#111",
-                border: "2px solid #fff",
-                borderRadius: "clamp(12px,4vw,16px)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                overflow: "hidden",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
-              }}
-            >
-              {isUploadingImage ? (
-                <span>Carregando...</span>
-              ) : selectedImageUrl ? (
-                <Image
-                  src={selectedImageUrl}
-                  alt="Capa"
-                  width={192}
-                  height={192}
-                  style={{ objectFit: "cover", width: "100%", height: "100%" }}
-                />
-              ) : (
-                <div
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    color: "#fff",
-                  }}
-                >
-                  <FaCamera
-                    style={{
-                      fontSize: "clamp(24px,6vw,32px)",
-                      marginBottom: "8px",
-                    }}
-                  />
-                  <span>Selecionar capa</span>
-                </div>
-              )}
-            </div>
-          </label>
+        />
 
-          <input
-            type="text"
-            placeholder="Digite o nome ou título do som..."
-            value={songName}
-            onChange={(e) => setSongName(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "clamp(10px,2vw,12px)",
-              borderRadius: "clamp(8px,2vw,12px)",
-              backgroundColor: "rgba(255,255,255,0.1)",
-              border: "1.5px solid rgba(255,255,255,0.3)",
-              color: "#fff",
-              fontSize: "clamp(0.9rem,2vw,1rem)",
-            }}
-          />
-
+        {audioFile && (
           <div
             style={{
               display: "flex",
-              gap: "clamp(12px,2vw,16px)",
+              flexDirection: "column",
               alignItems: "center",
+              gap: "clamp(12px,2vw,16px)",
+              width: "100%",
+              maxWidth: "clamp(320px,80%,400px)",
             }}
           >
+            <label style={{ cursor: "pointer" }}>
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={handlePickImage}
+              />
+              <div
+                style={{
+                  width: "clamp(160px, 40vw, 192px)",
+                  height: "clamp(160px, 40vw, 192px)",
+                  backgroundColor: "#111",
+                  border: "2px solid #fff",
+                  borderRadius: "clamp(12px,4vw,16px)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  overflow: "hidden",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
+                }}
+              >
+                {isUploadingImage ? (
+                  <span>Carregando...</span>
+                ) : selectedImageUrl ? (
+                  <Image
+                    src={selectedImageUrl}
+                    alt="Capa"
+                    width={192}
+                    height={192}
+                    style={{
+                      objectFit: "cover",
+                      width: "100%",
+                      height: "100%",
+                    }}
+                  />
+                ) : (
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      color: "#fff",
+                    }}
+                  >
+                    <FaCamera
+                      style={{
+                        fontSize: "clamp(24px,6vw,32px)",
+                        marginBottom: "8px",
+                      }}
+                    />
+                    <span>Selecionar capa</span>
+                  </div>
+                )}
+              </div>
+            </label>
+
+            <input
+              type="text"
+              placeholder="Digite o nome ou título do som..."
+              value={songName}
+              onChange={(e) => setSongName(e.target.value)}
+              style={{
+                width: "100%",
+                padding: "clamp(10px,2vw,12px)",
+                borderRadius: "clamp(8px,2vw,12px)",
+                backgroundColor: "rgba(255,255,255,0.1)",
+                border: "1.5px solid rgba(255,255,255,0.3)",
+                color: "#fff",
+                fontSize: "clamp(0.9rem,2vw,1rem)",
+              }}
+            />
+
+            <div
+              style={{
+                display: "flex",
+                gap: "clamp(12px,2vw,16px)",
+                alignItems: "center",
+              }}
+            >
+              <button
+                onClick={handleTogglePlay}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  padding: "clamp(8px,1.5vw,10px) clamp(12px,2vw,16px)",
+                  backgroundColor: "#FFD700",
+                  color: "#000",
+                  borderRadius: "clamp(8px,2vw,12px)",
+                  fontWeight: "bold",
+                  cursor: "pointer",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                }}
+              >
+                {isPlaying ? (
+                  <FaPause style={{ marginRight: "8px" }} />
+                ) : (
+                  <FaPlay style={{ marginRight: "8px" }} />
+                )}
+                {isPlaying ? "Pause" : "Play"}
+              </button>
+              <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
+            </div>
+
             <button
-              onClick={handleTogglePlay}
+              onClick={handlePublish}
+              disabled={!canPublish}
               style={{
                 display: "flex",
                 alignItems: "center",
-                padding: "clamp(8px,1.5vw,10px) clamp(12px,2vw,16px)",
-                backgroundColor: "#FFD700",
+                justifyContent: "center",
+                width: "100%",
+                padding: "clamp(12px,2.5vw,14px)",
+                borderRadius: "clamp(12px,3vw,16px)",
+                backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
                 color: "#000",
-                borderRadius: "clamp(8px,2vw,12px)",
                 fontWeight: "bold",
-                cursor: "pointer",
-                boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+                cursor: canPublish ? "pointer" : "not-allowed",
+                gap: "8px",
+                marginTop: "clamp(12px,2vw,16px)",
+                boxShadow: canPublish ? "0 4px 12px rgba(0,0,0,0.5)" : "none",
+                transition: "all 0.2s ease-in-out",
               }}
             >
-              {isPlaying ? (
-                <FaPause style={{ marginRight: "8px" }} />
-              ) : (
-                <FaPlay style={{ marginRight: "8px" }} />
-              )}
-              {isPlaying ? "Pause" : "Play"}
+              <FaShare />
+              {isPublishing ? "Publicando..." : "Publicar"}
             </button>
-            <audio ref={audioRef} src={URL.createObjectURL(audioFile)} />
           </div>
-
-          <button
-            onClick={handlePublish}
-            disabled={!canPublish}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              width: "100%",
-              padding: "clamp(12px,2.5vw,14px)",
-              borderRadius: "clamp(12px,3vw,16px)",
-              backgroundColor: canPublish ? "#fff" : "rgba(128,128,128,0.5)",
-              color: "#000",
-              fontWeight: "bold",
-              cursor: canPublish ? "pointer" : "not-allowed",
-              gap: "8px",
-              marginTop: "clamp(12px,2vw,16px)",
-              boxShadow: canPublish ? "0 4px 12px rgba(0,0,0,0.5)" : "none",
-              transition: "all 0.2s ease-in-out",
-            }}
-          >
-            <FaShare />
-            {isPublishing ? "Publicando..." : "Publicar"}
-          </button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 }
