@@ -10,7 +10,6 @@ import { db, storage } from "@/lib/firebase";
 import Image from "next/image";
 
 export default function EscolherImagem() {
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
@@ -20,7 +19,6 @@ export default function EscolherImagem() {
   const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
-    setSelectedImage(file);
     setIsUploading(true);
 
     const storageRef = ref(storage, `imagepublication/${Date.now()}.jpg`);
@@ -45,7 +43,6 @@ export default function EscolherImagem() {
       });
 
       alert("Imagem publicada com sucesso!");
-      setSelectedImage(null);
       setSelectedImageUrl(null);
     } catch (error) {
       console.error(error);
@@ -124,7 +121,7 @@ export default function EscolherImagem() {
           <div
             style={{
               width: "100%",
-              paddingTop: "100%", // quadrado responsivo
+              paddingTop: "100%",
               position: "relative",
               backgroundColor: "#111",
               border: "2px solid #fff",
