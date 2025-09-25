@@ -161,14 +161,12 @@ export default function EscolherSom() {
   return (
     <div
       style={{
-        minHeight: "100vh",
-        backgroundColor: "#000",
-        color: "#fff",
-        padding: "clamp(16px, 2vw, 32px)",
         display: "flex",
         flexDirection: "column",
-        alignItems: "center",
-        gap: "clamp(16px, 2.5vw, 32px)",
+        height: "100dvh",
+        background: "#000",
+        color: "#fff",
+        fontFamily: "Inter, sans-serif",
       }}
     >
       {/* AppBar com botão de voltar */}
@@ -184,7 +182,9 @@ export default function EscolherSom() {
         }}
       >
         <button
-          onClick={() => router.back()}
+          onClick={() => {
+            router.back();
+          }}
           aria-label="Voltar"
           style={{
             background: "transparent",
