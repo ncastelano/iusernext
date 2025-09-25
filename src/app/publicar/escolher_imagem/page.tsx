@@ -220,63 +220,6 @@ export default function EscolherImagem() {
           boxSizing: "border-box",
         }}
       >
-        {/* Input nome da imagem */}
-        <input
-          type="text"
-          placeholder="Digite o nome da imagem"
-          value={imageName}
-          onChange={(e) => setImageName(e.target.value)}
-          style={{
-            width: "100%",
-            maxWidth: "400px",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "2px solid #fff",
-            background: "#111",
-            color: "#fff",
-            fontSize: "16px",
-            marginBottom: "8px",
-          }}
-        />
-
-        {/* Switch moderno para localização */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            cursor: "pointer",
-            color: "#fff",
-            marginBottom: "16px",
-          }}
-          onClick={() => setUseLocation(!useLocation)}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "20px",
-              background: useLocation ? "#4ade80" : "#6b7280",
-              borderRadius: "999px",
-              position: "relative",
-              transition: "background 0.3s",
-            }}
-          >
-            <div
-              style={{
-                width: "18px",
-                height: "18px",
-                background: "#fff",
-                borderRadius: "50%",
-                position: "absolute",
-                top: "1px",
-                left: useLocation ? "20px" : "2px",
-                transition: "left 0.3s",
-              }}
-            />
-          </div>
-          <span>Mostrar no mapa</span>
-        </div>
-
         {/* Pré-visualização da imagem com botão de remover */}
         <label style={{ cursor: "pointer", width: "100%", maxWidth: "400px" }}>
           <input
@@ -342,6 +285,62 @@ export default function EscolherImagem() {
             )}
           </div>
         </label>
+        {/* Input nome da imagem */}
+        <input
+          type="text"
+          placeholder="Digite o nome da imagem"
+          value={imageName}
+          onChange={(e) => setImageName(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "2px solid #fff",
+            background: "#111",
+            color: "#fff",
+            fontSize: "16px",
+            marginBottom: "8px",
+          }}
+        />
+
+        {/* Switch moderno para localização */}
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "12px",
+            cursor: "pointer",
+            color: "#fff",
+            marginBottom: "16px",
+          }}
+          onClick={() => setUseLocation(!useLocation)}
+        >
+          <div
+            style={{
+              width: "40px",
+              height: "20px",
+              background: useLocation ? "#4ade80" : "#6b7280",
+              borderRadius: "999px",
+              position: "relative",
+              transition: "background 0.3s",
+            }}
+          >
+            <div
+              style={{
+                width: "18px",
+                height: "18px",
+                background: "#fff",
+                borderRadius: "50%",
+                position: "absolute",
+                top: "1px",
+                left: useLocation ? "20px" : "2px",
+                transition: "left 0.3s",
+              }}
+            />
+          </div>
+          <span>Mostrar no mapa</span>
+        </div>
 
         {/* Botão publicar */}
         <button
