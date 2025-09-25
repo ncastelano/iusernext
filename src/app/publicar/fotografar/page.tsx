@@ -232,7 +232,7 @@ export default function Fotografar() {
       >
         {!previewDataUrl ? (
           <motion.div
-            animate={{ width: "95%", height: "95%" }}
+            animate={{ width: "100%", height: "60vh" }} // altura maior
             transition={{ duration: 0.5, ease: "easeInOut" }}
             style={{
               position: "relative",
@@ -300,7 +300,7 @@ export default function Fotografar() {
             <div
               style={{
                 width: "100%",
-                maxWidth: "400px",
+                maxWidth: "600px", // maior que antes
                 aspectRatio: "3/4",
                 borderRadius: "16px",
                 overflow: "hidden",
