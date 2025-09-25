@@ -180,6 +180,8 @@ export default function Fotografar() {
         color: "#fff",
         fontFamily: "Inter, sans-serif",
         overflowX: "hidden",
+        touchAction: "manipulation", // evita gestos de pinch/zoom
+        userSelect: "none", // evita seleção de texto ao tocar
       }}
     >
       {/* AppBar */}
