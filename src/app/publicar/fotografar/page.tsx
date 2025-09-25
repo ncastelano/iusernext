@@ -8,6 +8,7 @@ import {
   FaDownload,
   FaArrowLeft,
   FaSyncAlt,
+  FaShare,
 } from "react-icons/fa";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -92,26 +93,21 @@ export default function Fotografar() {
 
   const downloadPhoto = useCallback(async () => {
     if (!previewDataUrl) return;
-    try {
-      const res = await fetch(previewDataUrl);
-      const blob = await res.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `photo_${Date.now()}.jpg`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Erro ao baixar imagem:", err);
-      setError("Falha ao baixar a imagem.");
-    }
+    const res = await fetch(previewDataUrl);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `photo_${Date.now()}.jpg`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
   }, [previewDataUrl]);
 
-  const toggleFacingMode = useCallback(() => {
+  const toggleFacingMode = () => {
     setFacingMode((prev) => (prev === "user" ? "environment" : "user"));
-  }, []);
+  };
 
   useEffect(() => {
     startCamera();
@@ -119,7 +115,7 @@ export default function Fotografar() {
   }, [facingMode, startCamera, stopCamera]);
 
   // ================================
-  // FUNÇÃO DE PUBLICAÇÃO
+  // PUBLICAR FOTO
   // ================================
   const publishPhoto = useCallback(async () => {
     if (!previewDataUrl) return alert("Tire uma foto antes de publicar.");
@@ -129,13 +125,11 @@ export default function Fotografar() {
     setError(null);
 
     try {
-      // 1️⃣ Salvar imagem no Firebase Storage
       const imageID = `img_${Date.now()}`;
       const storageRef = ref(storage, `images/${imageID}.jpg`);
       await uploadString(storageRef, previewDataUrl, "data_url");
       const imageUrl = await getDownloadURL(storageRef);
 
-      // 2️⃣ Obter posição do usuário
       let position = new GeoPoint(0, 0);
       let geohash = "";
       if ("geolocation" in navigator) {
@@ -145,15 +139,12 @@ export default function Fotografar() {
           }
         );
         position = new GeoPoint(pos.coords.latitude, pos.coords.longitude);
-
-        // ✅ agora gerando o geohash
         geohash = GeoHashHelper.encode(
           pos.coords.latitude,
           pos.coords.longitude
         );
       }
 
-      // 3️⃣ Criar objeto de publicação
       const publication = {
         position,
         geohash,
@@ -167,7 +158,6 @@ export default function Fotografar() {
         imageName: name || `Foto_${Date.now()}`,
       };
 
-      // 4️⃣ Salvar no Firestore
       await addDoc(collection(db, "publications"), publication);
 
       alert("Foto publicada com sucesso!");
@@ -180,17 +170,16 @@ export default function Fotografar() {
     }
   }, [previewDataUrl, name, showOnMap, retake]);
 
-  const textFont = "clamp(18px,3vw,22px)";
-
   return (
     <div
       style={{
         display: "flex",
         flexDirection: "column",
-        height: "100dvh",
+        minHeight: "100dvh",
         background: "#000",
         color: "#fff",
         fontFamily: "Inter, sans-serif",
+        overflowX: "hidden",
       }}
     >
       {/* AppBar */}
@@ -199,7 +188,7 @@ export default function Fotografar() {
           height: "clamp(40px,6vh,80px)",
           display: "flex",
           alignItems: "center",
-          padding: "0 clamp(20px,5vw,60px)",
+          padding: "0 16px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
           fontSize: "clamp(24px,4vw,50px)",
@@ -217,8 +206,7 @@ export default function Fotografar() {
             color: "#fff",
             fontSize: "clamp(24px,4vw,50px)",
             cursor: "pointer",
-            marginRight: "2vw",
-            marginTop: "1vw",
+            marginRight: "12px",
           }}
         >
           <FaArrowLeft />
@@ -228,22 +216,21 @@ export default function Fotografar() {
         </div>
       </div>
 
-      {/* Área de preview */}
+      {/* Conteúdo */}
       <div
         style={{
-          flex: previewDataUrl ? "0" : 1,
-          alignItems: previewDataUrl ? "flex-start" : "center",
-          justifyContent: previewDataUrl ? "flex-start" : "center",
-
-          position: "relative",
+          flex: 1,
           display: "flex",
           flexDirection: "column",
-          padding: "2vh 2vw",
-          gap: "2vh",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          gap: "16px",
+          padding: "16px",
+          width: "100%",
+          boxSizing: "border-box",
         }}
       >
         {!previewDataUrl ? (
-          // ======= MODO "ANTES DE TIRAR FOTO" =======
           <motion.div
             animate={{ width: "95%", height: "95%" }}
             transition={{ duration: 0.5, ease: "easeInOut" }}
@@ -255,6 +242,7 @@ export default function Fotografar() {
               alignItems: "center",
               justifyContent: "center",
               overflow: "hidden",
+              border: "2px solid #fff",
             }}
           >
             <video
@@ -266,7 +254,6 @@ export default function Fotografar() {
                 width: "100%",
                 height: "100%",
                 objectFit: "cover",
-                borderRadius: "16px",
               }}
             />
             <button
@@ -275,17 +262,13 @@ export default function Fotografar() {
                 position: "absolute",
                 top: 20,
                 right: 20,
-                padding: "0.6em 1.2em",
+                padding: "8px 16px",
                 borderRadius: "9999px",
                 border: "none",
-                background: "rgba(0,0,0,0.5)",
+                background: "rgba(0,0,0,0.6)",
                 color: "#fff",
-                display: "flex",
-                alignItems: "center",
-                gap: 8,
-                fontSize: textFont,
+                fontSize: "16px",
                 cursor: "pointer",
-                backdropFilter: "blur(6px)",
               }}
             >
               <FaSyncAlt /> {facingMode === "user" ? "Frontal" : "Traseira"}
@@ -294,15 +277,14 @@ export default function Fotografar() {
               onClick={takePhoto}
               style={{
                 position: "absolute",
-                bottom: 60,
-                width: "clamp(50px,10vw,80px)",
-                height: "clamp(50px,10vw,80px)",
+                bottom: 20,
+                width: "clamp(60px,12vw,80px)",
+                height: "clamp(60px,12vw,80px)",
                 borderRadius: "50%",
-                background: "linear-gradient(180deg,#22c55e,#16a34a)",
+                background: "#fff",
                 border: "none",
-                boxShadow: "0 20px 60px rgba(34,197,94,0.25)",
                 cursor: "pointer",
-                fontSize: "clamp(20px,8vw,25px)",
+                fontSize: "24px",
                 color: "#000",
                 display: "flex",
                 alignItems: "center",
@@ -313,24 +295,17 @@ export default function Fotografar() {
             </button>
           </motion.div>
         ) : (
-          // ======= MODO "DEPOIS DE TIRAR FOTO" =======
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              width: "100%",
-              gap: "2vh",
-            }}
-          >
+          <>
             {/* Foto tirada */}
             <div
               style={{
-                width: "90%",
+                width: "100%",
+                maxWidth: "400px",
                 aspectRatio: "3/4",
                 borderRadius: "16px",
                 overflow: "hidden",
                 background: "#111",
+                border: "2px solid #fff",
                 position: "relative",
               }}
             >
@@ -343,21 +318,20 @@ export default function Fotografar() {
               />
             </div>
 
-            {/* Botões refazer / baixar */}
-            <div style={{ display: "flex", gap: "1em" }}>
+            {/* Botões */}
+            <div style={{ display: "flex", gap: "12px" }}>
               <button
                 onClick={retake}
                 style={{
-                  padding: "0.6em 1.5em",
+                  padding: "10px 20px",
                   borderRadius: "9999px",
                   border: "none",
                   background: "rgba(255,255,255,0.2)",
                   color: "#fff",
-                  fontSize: textFont,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.5em",
+                  gap: "8px",
                 }}
               >
                 <FaRedo /> Refazer
@@ -365,17 +339,16 @@ export default function Fotografar() {
               <button
                 onClick={downloadPhoto}
                 style={{
-                  padding: "0.6em 1.5em",
+                  padding: "10px 20px",
                   borderRadius: "9999px",
                   border: "none",
                   background: "#22c55e",
                   color: "#000",
                   fontWeight: 700,
-                  fontSize: textFont,
                   cursor: "pointer",
                   display: "flex",
                   alignItems: "center",
-                  gap: "0.5em",
+                  gap: "8px",
                 }}
               >
                 <FaDownload /> Baixar
@@ -383,105 +356,82 @@ export default function Fotografar() {
             </div>
 
             {/* Inputs */}
+            <input
+              type="text"
+              placeholder="Digite o nome da foto"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: "100%",
+                maxWidth: "400px",
+                padding: "12px",
+                borderRadius: "12px",
+                border: "2px solid #fff",
+                background: "#111",
+                color: "#fff",
+                fontSize: "16px",
+              }}
+            />
+
             <div
               style={{
                 display: "flex",
-                flexDirection: "column",
-                width: "80%",
-                gap: "1em",
+                alignItems: "center",
+                gap: "12px",
+                cursor: "pointer",
+                color: "#fff",
               }}
+              onClick={() => setShowOnMap(!showOnMap)}
             >
-              <input
-                type="text"
-                placeholder="Nome da foto"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
+              <div
                 style={{
-                  padding: "0.5em",
-                  borderRadius: "8px",
-                  border: "1px solid #ccc",
-                  fontSize: "clamp(20px, 4vw, 28px)",
-                  width: "100%",
-                  boxSizing: "border-box",
-                }}
-              />
-
-              <label
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  fontSize: textFont,
+                  width: "40px",
+                  height: "20px",
+                  background: showOnMap ? "#4ade80" : "#6b7280",
+                  borderRadius: "999px",
+                  position: "relative",
+                  transition: "background 0.3s",
                 }}
               >
-                Mostrar no mapa
-                <input
-                  type="checkbox"
-                  checked={showOnMap}
-                  onChange={() => setShowOnMap(!showOnMap)}
+                <div
+                  style={{
+                    width: "18px",
+                    height: "18px",
+                    background: "#fff",
+                    borderRadius: "50%",
+                    position: "absolute",
+                    top: "1px",
+                    left: showOnMap ? "20px" : "2px",
+                    transition: "left 0.3s",
+                  }}
                 />
-              </label>
+              </div>
+              <span>Mostrar no mapa</span>
             </div>
 
-            {/* Botão publicar */}
+            {/* Publicar */}
             <button
               onClick={publishPhoto}
               disabled={uploading}
               style={{
-                padding: "0.6em 2em",
+                width: "100%",
+                maxWidth: "400px",
+                padding: "12px",
                 borderRadius: "9999px",
-                border: "none",
-                background: uploading ? "#999" : "#2563eb",
-                color: "#fff",
-                fontWeight: 700,
-                fontSize: textFont,
+                backgroundColor: uploading ? "#999" : "#fff",
+                color: "#000",
+                fontWeight: "bold",
                 cursor: uploading ? "not-allowed" : "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "0.5em",
+                justifyContent: "center",
+                gap: "8px",
               }}
             >
-              <FaCamera /> {uploading ? "Publicando..." : "Publicar"}
+              <FaShare />
+              {uploading ? "Publicando..." : "Publicar"}
             </button>
-          </div>
-        )}
-
-        {/* Error */}
-        {error && (
-          <div
-            style={{
-              position: "absolute",
-              top: 20,
-              left: 20,
-              background: "#ff4d4f",
-              color: "#fff",
-              padding: "20px 30px",
-              borderRadius: 30,
-              fontSize: 40,
-              zIndex: 50,
-            }}
-          >
-            {error}
-          </div>
-        )}
-
-        {/* Loading */}
-        {loadingCamera && (
-          <div
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%,-50%)",
-              zIndex: 40,
-              background: "rgba(0,0,0,0.6)",
-              padding: 50,
-              borderRadius: 30,
-              fontSize: 40,
-            }}
-          >
-            Carregando câmera...
-          </div>
+          </>
         )}
       </div>
 
