@@ -133,7 +133,7 @@ export default function Publicar() {
       {/* Imagem da Galeria */}
       <div
         style={optionStyle}
-        onClick={() => alert("Abrir file picker de imagem")}
+        onClick={() => router.push("/publicar/escolher_imagem")}
         onMouseEnter={hoverIn}
         onMouseLeave={hoverOut}
       >
