@@ -158,7 +158,7 @@ export default function Publicar() {
       {/* Escolher PDF */}
       <div
         style={optionStyle}
-        onClick={() => alert("Abrir file picker de PDF")}
+        onClick={() => router.push("/publicar/escolher_pdf")}
         onMouseEnter={hoverIn}
         onMouseLeave={hoverOut}
       >
