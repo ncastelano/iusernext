@@ -8,10 +8,9 @@ import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { Publication } from "types/publication";
-import dynamic from "next/dynamic";
 
-// Importação dinâmica do React Quill com tipagem
-const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
 // Geohash
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
@@ -51,13 +50,18 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
 
 export default function EscreverTexto() {
   const [textTitle, setTextTitle] = useState("");
-  const [textContent, setTextContent] = useState("");
   const [isPublishing, setIsPublishing] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
 
   const router = useRouter();
   const auth = getAuth();
+
+  // Tiptap editor
+  const editor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+  });
 
   useEffect(() => {
     if (!navigator.geolocation) return;
@@ -71,7 +75,12 @@ export default function EscreverTexto() {
   }, []);
 
   const handlePublish = async () => {
-    if (textTitle.trim().length < 4 || textContent.trim().length < 4) return;
+    if (
+      textTitle.trim().length < 4 ||
+      !editor ||
+      editor.getText().trim().length < 4
+    )
+      return;
     if (!position || !geohash) {
       alert("Aguardando geolocalização...");
       return;
@@ -97,14 +106,14 @@ export default function EscreverTexto() {
         deleted: false,
         textID: newDocRef.id,
         textTitle,
-        textContent,
+        textContent: editor.getHTML(),
       };
 
       await setDoc(newDocRef, publication);
 
       alert("Texto publicado com sucesso!");
       setTextTitle("");
-      setTextContent("");
+      editor.commands.setContent("");
     } catch (error) {
       console.error(error);
       alert("Erro ao publicar texto");
@@ -115,7 +124,7 @@ export default function EscreverTexto() {
 
   const canPublish =
     textTitle.trim().length >= 4 &&
-    textContent.trim().length >= 4 &&
+    editor?.getText().trim().length >= 4 &&
     !isPublishing;
 
   return (
@@ -204,19 +213,10 @@ export default function EscreverTexto() {
             borderRadius: "8px",
             minHeight: "200px",
             overflow: "hidden",
+            color: "#fff",
           }}
         >
-          <ReactQuill
-            theme="snow"
-            value={textContent}
-            onChange={setTextContent}
-            placeholder="Digite o conteúdo do texto..."
-            style={{
-              backgroundColor: "transparent",
-              color: "#fff",
-              minHeight: "200px",
-            }}
-          />
+          <EditorContent editor={editor} />
         </div>
 
         {/* Botão publicar */}
