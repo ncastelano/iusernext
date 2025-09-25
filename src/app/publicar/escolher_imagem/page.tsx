@@ -52,13 +52,17 @@ export default function EscolherImagem() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
+  const [imageName, setImageName] = useState<string>(""); // input para o nome da imagem
+  const [useLocation, setUseLocation] = useState<boolean>(true); // switch para pegar posição
 
   const router = useRouter();
   const auth = getAuth();
 
-  // Captura geolocalização
+  // Captura geolocalização se habilitado
   useEffect(() => {
+    if (!useLocation) return;
     if (!navigator.geolocation) return;
+
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setPosition(pos);
@@ -66,7 +70,7 @@ export default function EscolherImagem() {
       },
       (err) => console.warn("Erro ao obter localização:", err.message)
     );
-  }, []);
+  }, [useLocation]);
 
   const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -86,7 +90,7 @@ export default function EscolherImagem() {
 
   const handlePublish = async () => {
     if (!selectedImageUrl || !selectedFile) return;
-    if (!position || !geohash) {
+    if (useLocation && (!position || !geohash)) {
       alert("Aguardando geolocalização...");
       return;
     }
@@ -94,15 +98,10 @@ export default function EscolherImagem() {
     setIsPublishing(true);
     try {
       const newDocRef = doc(collection(db, "publications"));
-      const publication = {
+      const publication: any = {
         imageID: newDocRef.id,
         imageUrl: selectedImageUrl,
-        imageName: selectedFile.name,
-        position: new GeoPoint(
-          position.coords.latitude,
-          position.coords.longitude
-        ),
-        geohash,
+        imageName: imageName || selectedFile.name,
         ranking: 0,
         publicationType: "image",
         ownerType: "user",
@@ -112,11 +111,20 @@ export default function EscolherImagem() {
         active: true,
       };
 
+      if (useLocation && position && geohash) {
+        publication.position = new GeoPoint(
+          position.coords.latitude,
+          position.coords.longitude
+        );
+        publication.geohash = geohash;
+      }
+
       await setDoc(newDocRef, publication);
 
       alert("Imagem publicada com sucesso!");
       setSelectedFile(null);
       setSelectedImageUrl(null);
+      setImageName("");
     } catch (error) {
       console.error(error);
       alert("Erro ao publicar imagem");
@@ -125,7 +133,11 @@ export default function EscolherImagem() {
     }
   };
 
-  const canPublish = !!selectedImageUrl && !!selectedFile && !isPublishing;
+  const canPublish =
+    !!selectedImageUrl &&
+    !!selectedFile &&
+    !isPublishing &&
+    imageName.trim() !== "";
 
   return (
     <div
@@ -184,6 +196,44 @@ export default function EscolherImagem() {
           boxSizing: "border-box",
         }}
       >
+        {/* Input nome da imagem */}
+        <input
+          type="text"
+          placeholder="Digite o nome da imagem"
+          value={imageName}
+          onChange={(e) => setImageName(e.target.value)}
+          style={{
+            width: "100%",
+            maxWidth: "400px",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "2px solid #fff",
+            background: "#111",
+            color: "#fff",
+            fontSize: "16px",
+            marginBottom: "8px",
+          }}
+        />
+
+        {/* Switch mostrar posição */}
+        <label
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            cursor: "pointer",
+            color: "#fff",
+          }}
+        >
+          <input
+            type="checkbox"
+            checked={useLocation}
+            onChange={(e) => setUseLocation(e.target.checked)}
+          />
+          Mostrar no mapa (usar localização)
+        </label>
+
+        {/* Seleção da imagem */}
         <label style={{ cursor: "pointer", width: "100%", maxWidth: "400px" }}>
           <input
             type="file"
@@ -231,6 +281,7 @@ export default function EscolherImagem() {
           </div>
         </label>
 
+        {/* Botão publicar */}
         <button
           onClick={handlePublish}
           disabled={!canPublish}
