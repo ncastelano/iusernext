@@ -1,13 +1,19 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { GeoPoint } from "firebase/firestore";
 import { useState, useEffect } from "react";
-import { FaFileAlt, FaShare, FaArrowLeft } from "react-icons/fa";
+import { FaShare, FaArrowLeft } from "react-icons/fa";
 import { doc, collection, setDoc } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db } from "@/lib/firebase";
 import { Publication } from "types/publication";
+import dynamic from "next/dynamic";
 
+// Importação dinâmica do React Quill com tipagem
+const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
+
+// Geohash
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
 function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
   const latInterval = [-90.0, 90.0];
@@ -188,25 +194,30 @@ export default function EscreverTexto() {
           }}
         />
 
-        {/* Conteúdo do texto */}
-        <textarea
-          placeholder="Digite o conteúdo do texto..."
-          value={textContent}
-          onChange={(e) => setTextContent(e.target.value)}
-          rows={6}
+        {/* Editor Rich Text */}
+        <div
           style={{
             width: "100%",
             maxWidth: "400px",
-            padding: "12px",
-            borderRadius: "8px",
-            backgroundColor: "rgba(255,255,255,0.1)",
+            backgroundColor: "rgba(255,255,255,0.05)",
             border: "1.5px solid rgba(255,255,255,0.3)",
-            color: "#fff",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            resize: "vertical",
+            borderRadius: "8px",
+            minHeight: "200px",
+            overflow: "hidden",
           }}
-        />
+        >
+          <ReactQuill
+            theme="snow"
+            value={textContent}
+            onChange={setTextContent}
+            placeholder="Digite o conteúdo do texto..."
+            style={{
+              backgroundColor: "transparent",
+              color: "#fff",
+              minHeight: "200px",
+            }}
+          />
+        </div>
 
         {/* Botão publicar */}
         <button
