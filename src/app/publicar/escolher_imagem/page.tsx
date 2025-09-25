@@ -45,6 +45,22 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
   return geohash;
 }
 
+// Interface para tipar a publicação
+interface Publication {
+  imageID: string;
+  imageUrl: string;
+  imageName: string;
+  ranking: number;
+  publicationType: "image";
+  ownerType: "user";
+  userID: string;
+  createdDateTime: Date;
+  publishedDateTime: Date;
+  active: boolean;
+  position?: GeoPoint;
+  geohash?: string;
+}
+
 export default function EscolherImagem() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
@@ -103,7 +119,7 @@ export default function EscolherImagem() {
     setIsPublishing(true);
     try {
       const newDocRef = doc(collection(db, "publications"));
-      const publication: any = {
+      const publication: Publication = {
         imageID: newDocRef.id,
         imageUrl: selectedImageUrl,
         imageName: imageName || selectedFile.name,
