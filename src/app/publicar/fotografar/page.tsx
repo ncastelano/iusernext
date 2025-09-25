@@ -433,6 +433,38 @@ export default function Fotografar() {
             </button>
           </>
         )}
+
+        {/* Mostra erro */}
+        {error && (
+          <div
+            style={{
+              color: "#f87171",
+              background: "rgba(255,0,0,0.1)",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              fontSize: "14px",
+              marginTop: "8px",
+              maxWidth: "400px",
+              textAlign: "center",
+            }}
+          >
+            {error}
+          </div>
+        )}
+
+        {/* Loading da câmera */}
+        {loadingCamera && !previewDataUrl && (
+          <div
+            style={{
+              marginTop: "16px",
+              fontSize: "16px",
+              color: "#9ca3af",
+              fontStyle: "italic",
+            }}
+          >
+            Iniciando câmera...
+          </div>
+        )}
       </div>
 
       <canvas ref={canvasRef} style={{ display: "none" }} />
