@@ -1,14 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FaCamera, FaArrowLeft, FaShare, FaTimes } from "react-icons/fa";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { doc, collection, setDoc, GeoPoint } from "firebase/firestore";
+import {
+  ref as storageRefFn,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+import {
+  doc,
+  collection,
+  setDoc,
+  GeoPoint,
+  query,
+  where,
+  getDocs,
+} from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { db, storage } from "@/lib/firebase";
-import Image from "next/image";
-import { query, where, getDocs } from "firebase/firestore";
+// use <img> for preview to accept blob URLs easily
 
 // Base32 para geohash
 const base32 = "0123456789bcdefghjkmnpqrstuvwxyz";
@@ -46,7 +57,7 @@ function encodeGeoHash(latitude: number, longitude: number, precision = 9) {
   return geohash;
 }
 
-// Interface para tipar a publicação
+// Interface local (ajuste se você já tem types/publication)
 interface Publication {
   imageID: string;
   imageUrl: string;
@@ -54,7 +65,7 @@ interface Publication {
   storePage: string;
   ranking: number;
   publicationType: "image";
-  ownerType: "store";
+  ownerType: "store" | "user";
   userID: string;
   createdDateTime: Date;
   publishedDateTime: Date;
@@ -64,24 +75,27 @@ interface Publication {
 }
 
 export default function CriarLoja() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
-  const [position, setPosition] = useState<GeolocationPosition | null>(null);
-  const [geohash, setGeohash] = useState<string | null>(null);
-  const [imageName, setImageName] = useState<string>("");
-  const [useLocation, setUseLocation] = useState<boolean>(true);
-  const [storePage, setStorePage] = useState<string>("");
-
-  // 🔍 estados para validação em tempo real
-  const [isCheckingPage, setIsCheckingPage] = useState(false);
-  const [isPageAvailable, setIsPageAvailable] = useState<boolean | null>(null);
-
   const router = useRouter();
   const auth = getAuth();
 
-  // Captura geolocalização se habilitado
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null); // preview (local blob or uploaded url)
+  const previewUrlRef = useRef<string | null>(null); // para revogar o objectURL
+
+  const [imageName, setImageName] = useState<string>("");
+  const [storePage, setStorePage] = useState<string>("");
+
+  const [useLocation, setUseLocation] = useState<boolean>(true);
+  const [position, setPosition] = useState<GeolocationPosition | null>(null);
+  const [geohash, setGeohash] = useState<string | null>(null);
+
+  const [isCheckingPage, setIsCheckingPage] = useState(false);
+  const [isPageAvailable, setIsPageAvailable] = useState<boolean | null>(null);
+
+  const [isUploading, setIsUploading] = useState(false); // upload -> storage
+  const [isPublishing, setIsPublishing] = useState(false); // saving doc
+
+  // pega localização (se habilitado)
   useEffect(() => {
     if (!useLocation) return;
     if (!navigator.geolocation) return;
@@ -91,79 +105,130 @@ export default function CriarLoja() {
         setPosition(pos);
         setGeohash(encodeGeoHash(pos.coords.latitude, pos.coords.longitude));
       },
-      (err) => console.warn("Erro ao obter localização:", err.message)
+      (err) => {
+        console.warn("Erro ao obter localização:", err.message);
+        // não interrompe fluxo — usuário pode desativar "Mostrar no mapa"
+      }
     );
   }, [useLocation]);
 
-  // 🔍 Verificação em tempo real do storePage
+  // Verificação em tempo real do storePage (debounce)
   useEffect(() => {
     if (!storePage.trim()) {
       setIsPageAvailable(null);
       return;
     }
 
-    let active = true; // para evitar corrida de estado
+    let active = true;
     setIsCheckingPage(true);
 
     const checkPage = async () => {
-      const q = query(
-        collection(db, "publications"),
-        where("storePage", "==", storePage)
-      );
-      const snap = await getDocs(q);
-
-      if (!active) return;
-      setIsPageAvailable(snap.empty);
-      setIsCheckingPage(false);
+      try {
+        const q = query(
+          collection(db, "publications"),
+          where("storePage", "==", storePage)
+        );
+        const snap = await getDocs(q);
+        if (!active) return;
+        setIsPageAvailable(snap.empty);
+      } catch (err) {
+        console.error("Erro verificando storePage:", err);
+        if (active) setIsPageAvailable(null);
+      } finally {
+        if (active) setIsCheckingPage(false);
+      }
     };
 
-    const delay = setTimeout(checkPage, 500); // debounce 500ms
+    const timeout = setTimeout(checkPage, 500); // 500ms debounce
     return () => {
       active = false;
-      clearTimeout(delay);
+      clearTimeout(timeout);
     };
   }, [storePage]);
 
-  const handlePickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files?.[0]) return;
-    const file = e.target.files[0];
-    setSelectedFile(file);
+  // limpa objectURL quando componente desmonta
+  useEffect(() => {
+    return () => {
+      if (previewUrlRef.current) {
+        URL.revokeObjectURL(previewUrlRef.current);
+        previewUrlRef.current = null;
+      }
+    };
+  }, []);
 
-    // Mostra pré-visualização local antes do upload
-    const localUrl = URL.createObjectURL(file);
-    setSelectedImageUrl(localUrl);
+  // seleção de arquivo -> cria preview local (sem upload)
+  const handlePickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // revoga preview anterior, se existir
+    if (previewUrlRef.current) {
+      try {
+        URL.revokeObjectURL(previewUrlRef.current);
+      } catch (err) {
+        /* ignore */
+      }
+      previewUrlRef.current = null;
+    }
+
+    const url = URL.createObjectURL(file);
+    previewUrlRef.current = url;
+
+    setSelectedFile(file);
+    setSelectedImageUrl(url);
   };
 
   const handleRemoveImage = () => {
+    if (previewUrlRef.current) {
+      try {
+        URL.revokeObjectURL(previewUrlRef.current);
+      } catch (err) {
+        /* ignore */
+      }
+      previewUrlRef.current = null;
+    }
     setSelectedFile(null);
     setSelectedImageUrl(null);
   };
 
   const handlePublish = async () => {
-    if (!selectedFile) return;
-    if (useLocation && (!position || !geohash)) {
-      alert("Aguardando geolocalização...");
+    if (!selectedFile) {
+      alert("Selecione uma imagem antes de publicar.");
+      return;
+    }
+    if (!imageName.trim()) {
+      alert("Digite o nome da loja.");
       return;
     }
     if (!storePage.trim()) {
-      alert("Escolha um /storePage");
+      alert("Escolha um /storePage.");
       return;
     }
-    if (!isPageAvailable) {
-      alert("Esse /storePage já está em uso!");
+    if (isPageAvailable === false) {
+      alert("Esse /storePage já está em uso.");
       return;
     }
 
+    // se usuário pediu uso de localização, garanta que a posição esteja obtida (ou dê opção)
+    if (useLocation && (!position || !geohash)) {
+      alert(
+        "Aguardando geolocalização... permita localização ou desative 'Mostrar no mapa'."
+      );
+      return;
+    }
+
+    setIsUploading(true);
     setIsPublishing(true);
     try {
-      // 🔥 Upload só aqui
-      const storageRef = ref(
+      // upload para storage
+      const sRef = storageRefFn(
         storage,
-        `imagepublication/${Date.now()}_${selectedFile.name}`
+        `stores/${Date.now()}_${selectedFile.name}`
       );
-      await uploadBytes(storageRef, selectedFile);
-      const downloadUrl = await getDownloadURL(storageRef);
+      await uploadBytes(sRef, selectedFile);
+      const downloadUrl = await getDownloadURL(sRef);
 
+      // criar documento
       const newDocRef = doc(collection(db, "publications"));
       const imageID = newDocRef.id;
 
@@ -191,27 +256,37 @@ export default function CriarLoja() {
 
       await setDoc(newDocRef, publication);
 
-      alert("Imagem publicada com sucesso!");
+      alert("Loja criada com sucesso!");
+      // limpar estados e revogar preview (se for blob)
+      if (previewUrlRef.current) {
+        try {
+          URL.revokeObjectURL(previewUrlRef.current);
+        } catch (err) {
+          /* ignore */
+        }
+        previewUrlRef.current = null;
+      }
       setSelectedFile(null);
       setSelectedImageUrl(null);
       setImageName("");
       setStorePage("");
       setIsPageAvailable(null);
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao publicar imagem");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao criar loja. Veja console para detalhes.");
     } finally {
+      setIsUploading(false);
       setIsPublishing(false);
     }
   };
 
   const canPublish =
-    !!selectedImageUrl &&
     !!selectedFile &&
+    imageName.trim().length >= 1 &&
+    storePage.trim().length >= 1 &&
+    isPageAvailable === true &&
     !isPublishing &&
-    imageName.trim() !== "" &&
-    storePage.trim() !== "" &&
-    isPageAvailable === true;
+    !isUploading;
 
   return (
     <div
@@ -270,7 +345,7 @@ export default function CriarLoja() {
           boxSizing: "border-box",
         }}
       >
-        {/* Pré-visualização da imagem */}
+        {/* Preview / seletor */}
         <label style={{ cursor: "pointer", width: "100%", maxWidth: "400px" }}>
           <input
             type="file"
@@ -293,18 +368,25 @@ export default function CriarLoja() {
               justifyContent: "center",
             }}
           >
-            {isUploading ? (
-              <span style={{ color: "#fff" }}>Carregando...</span>
-            ) : selectedImageUrl ? (
+            {selectedImageUrl ? (
               <>
-                <Image
+                <img
                   src={selectedImageUrl}
-                  alt="Imagem selecionada"
-                  fill
-                  style={{ objectFit: "cover" }}
+                  alt="Preview"
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    width: "100%",
+                    height: "100%",
+                    objectFit: "cover",
+                  }}
                 />
                 <button
-                  onClick={handleRemoveImage}
+                  type="button"
+                  onClick={(ev) => {
+                    ev.stopPropagation(); // evita reabrir picker
+                    handleRemoveImage();
+                  }}
                   style={{
                     position: "absolute",
                     top: "8px",
@@ -319,6 +401,21 @@ export default function CriarLoja() {
                 >
                   <FaTimes />
                 </button>
+                {isUploading && (
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "8px",
+                      left: "8px",
+                      padding: "6px 8px",
+                      borderRadius: 8,
+                      background: "rgba(0,0,0,0.6)",
+                      fontSize: 12,
+                    }}
+                  >
+                    Enviando...
+                  </div>
+                )}
               </>
             ) : (
               <div
@@ -336,7 +433,7 @@ export default function CriarLoja() {
           </div>
         </label>
 
-        {/* Input nome da loja */}
+        {/* Nome da loja */}
         <input
           type="text"
           placeholder="Digite o nome da loja"
@@ -344,49 +441,46 @@ export default function CriarLoja() {
           onChange={(e) => setImageName(e.target.value)}
           style={{
             width: "80%",
+            maxWidth: "400px",
             padding: "12px",
             borderRadius: "8px",
             backgroundColor: "rgba(255,255,255,0.1)",
             border: "1.5px solid rgba(255,255,255,0.3)",
             color: "#fff",
             fontSize: "18px",
-            lineHeight: "1.4",
             boxSizing: "border-box",
-            touchAction: "manipulation",
           }}
         />
 
-        {/* Input storePage */}
+        {/* storePage */}
         <input
           type="text"
-          placeholder="Escolha seu /NomeDeLoja"
+          placeholder="Escolha seu /NomeDeLoja (sem espaços)"
           value={storePage}
           onChange={(e) =>
             setStorePage(e.target.value.toLowerCase().replace(/\s+/g, ""))
           }
           style={{
             width: "80%",
+            maxWidth: "400px",
             padding: "12px",
             borderRadius: "8px",
             backgroundColor: "rgba(255,255,255,0.1)",
             border: "1.5px solid rgba(255,255,255,0.3)",
             color: "#fff",
             fontSize: "18px",
-            lineHeight: "1.4",
             boxSizing: "border-box",
-            touchAction: "manipulation",
           }}
         />
-        {/* Status do storePage */}
         {storePage.trim() && (
           <span
             style={{
-              fontSize: "14px",
+              fontSize: 14,
               color: isCheckingPage
                 ? "yellow"
                 : isPageAvailable
                 ? "limegreen"
-                : "red",
+                : "salmon",
             }}
           >
             {isCheckingPage
@@ -397,7 +491,7 @@ export default function CriarLoja() {
           </span>
         )}
 
-        {/* Switch moderno */}
+        {/* Mostrar no mapa */}
         <div
           style={{
             display: "flex",
@@ -407,27 +501,27 @@ export default function CriarLoja() {
             color: "#fff",
             marginBottom: "16px",
           }}
-          onClick={() => setUseLocation(!useLocation)}
+          onClick={() => setUseLocation((s) => !s)}
         >
           <div
             style={{
-              width: "40px",
-              height: "20px",
+              width: 40,
+              height: 20,
               background: useLocation ? "#4ade80" : "#6b7280",
-              borderRadius: "999px",
+              borderRadius: 999,
               position: "relative",
               transition: "background 0.3s",
             }}
           >
             <div
               style={{
-                width: "18px",
-                height: "18px",
+                width: 18,
+                height: 18,
                 background: "#fff",
                 borderRadius: "50%",
                 position: "absolute",
-                top: "1px",
-                left: useLocation ? "20px" : "2px",
+                top: 1,
+                left: useLocation ? 20 : 2,
                 transition: "left 0.3s",
               }}
             />
@@ -455,7 +549,7 @@ export default function CriarLoja() {
           }}
         >
           <FaShare />
-          {isPublishing ? "Publicando..." : "Publicar"}
+          {isPublishing ? "Publicando..." : "Criar Loja"}
         </button>
       </div>
     </div>
