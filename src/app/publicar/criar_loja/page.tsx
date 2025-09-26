@@ -54,7 +54,7 @@ interface Publication {
   storePage: string;
   ranking: number;
   publicationType: "image";
-  ownerType: "user";
+  ownerType: "store";
   userID: string;
   createdDateTime: Date;
   publishedDateTime: Date;
@@ -174,7 +174,7 @@ export default function CriarLoja() {
         storePage,
         ranking: 0,
         publicationType: "image",
-        ownerType: "user",
+        ownerType: "store",
         userID: auth.currentUser?.uid || "",
         createdDateTime: new Date(),
         publishedDateTime: new Date(),
@@ -252,7 +252,7 @@ export default function CriarLoja() {
           <FaArrowLeft />
         </button>
         <div style={{ fontWeight: 700, fontSize: "clamp(24px,4vw,50px)" }}>
-          Escolher Imagem
+          Criar Loja
         </div>
       </div>
 

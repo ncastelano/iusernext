@@ -91,7 +91,6 @@ export default function EscreverTexto() {
         visibleOnMap: true,
         deleted: false,
         textID: newDocRef.id,
-        textTitle: "", // sem título
         textContent,
       };
 

@@ -60,7 +60,6 @@ export type Publication = {
   // Campos de texto
   // -----------------------------
   textID?: string; // id único do texto
-  textTitle?: string; // título do texto (opcional)
   textContent?: string; // conteúdo principal do texto
   textExcerpt?: string; // resumo ou primeira linha do texto (opcional)
   textLanguage?: string; // idioma do texto, ex: "pt", "en" (opcional)
