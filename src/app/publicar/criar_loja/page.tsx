@@ -51,11 +51,9 @@ interface Store {
   storeImageUrl: string;
   storeName: string;
   ranking: number;
-  publicationType: "image";
   ownerType: "store";
   userID: string;
   createdDateTime: Date;
-  publishedDateTime: Date;
   active: boolean;
   position?: GeoPoint;
   geohash?: string;
@@ -68,17 +66,14 @@ export default function CriarLoja() {
   const [isPublishing, setIsPublishing] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
-  const [storeName, setStoreName] = useState<string>(""); // input para o nome da loja
-  const [useLocation, setUseLocation] = useState<boolean>(true); // switch para pegar posição
+  const [storeName, setStoreName] = useState<string>("");
 
   const router = useRouter();
   const auth = getAuth();
 
-  // Captura geolocalização se habilitado
+  // Captura geolocalização (opcional)
   useEffect(() => {
-    if (!useLocation) return;
     if (!navigator.geolocation) return;
-
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setPosition(pos);
@@ -86,7 +81,7 @@ export default function CriarLoja() {
       },
       (err) => console.warn("Erro ao obter localização:", err.message)
     );
-  }, [useLocation]);
+  }, []);
 
   const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
@@ -94,7 +89,7 @@ export default function CriarLoja() {
     setSelectedFile(file);
     setIsUploading(true);
 
-    const storageRef = ref(storage, `storeImages/${Date.now()}_${file.name}`);
+    const storageRef = ref(storage, `stores/${Date.now()}_${file.name}`);
     await uploadBytes(storageRef, file);
     const downloadUrl = await getDownloadURL(storageRef);
     setSelectedImageUrl(downloadUrl);
@@ -108,31 +103,29 @@ export default function CriarLoja() {
 
   const handlePublish = async () => {
     if (!selectedImageUrl || !selectedFile) return;
-    if (useLocation && (!position || !geohash)) {
-      alert("Aguardando geolocalização...");
+    if (storeName.trim() === "") {
+      alert("Digite o nome da loja!");
       return;
     }
 
     setIsPublishing(true);
     try {
-      // 🔥 Gera docRef com ID antes de salvar
       const newDocRef = doc(collection(db, "stores"));
       const storeID = newDocRef.id;
 
       const store: Store = {
         storeID,
         storeImageUrl: selectedImageUrl,
-        storeName: storeName || selectedFile.name,
+        storeName,
         ranking: 0,
-        publicationType: "image",
         ownerType: "store",
         userID: auth.currentUser?.uid || "",
         createdDateTime: new Date(),
-        publishedDateTime: new Date(),
         active: true,
       };
 
-      if (useLocation && position && geohash) {
+      // Só adiciona posição se conseguiu pegar
+      if (position && geohash) {
         store.position = new GeoPoint(
           position.coords.latitude,
           position.coords.longitude
@@ -168,8 +161,6 @@ export default function CriarLoja() {
         minHeight: "100dvh",
         background: "#000",
         color: "#fff",
-        fontFamily: "Inter, sans-serif",
-        overflowX: "hidden",
       }}
     >
       {/* AppBar */}
@@ -181,12 +172,10 @@ export default function CriarLoja() {
           padding: "0 16px",
           borderBottom: "1px solid rgba(255,255,255,0.06)",
           background: "rgba(0,0,0,0.7)",
-          fontSize: "clamp(24px,4vw,50px)",
         }}
       >
         <button
           onClick={() => router.back()}
-          aria-label="Voltar"
           style={{
             background: "transparent",
             border: "none",
@@ -210,14 +199,11 @@ export default function CriarLoja() {
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
-          justifyContent: "flex-start",
           gap: "16px",
           padding: "16px",
-          width: "100%",
-          boxSizing: "border-box",
         }}
       >
-        {/* Pré-visualização da imagem */}
+        {/* Upload da imagem */}
         <label style={{ cursor: "pointer", width: "100%", maxWidth: "400px" }}>
           <input
             type="file"
@@ -234,10 +220,6 @@ export default function CriarLoja() {
               border: "2px solid #fff",
               borderRadius: "12px",
               overflow: "hidden",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.6)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
             }}
           >
             {isUploading ? (
@@ -246,7 +228,7 @@ export default function CriarLoja() {
               <>
                 <Image
                   src={selectedImageUrl}
-                  alt="Imagem selecionada"
+                  alt="Imagem da loja"
                   fill
                   style={{ objectFit: "cover" }}
                 />
@@ -277,13 +259,13 @@ export default function CriarLoja() {
                 }}
               >
                 <FaCamera style={{ fontSize: "32px", marginBottom: "8px" }} />
-                <span>Selecionar imagem da loja</span>
+                <span>Selecionar imagem</span>
               </div>
             )}
           </div>
         </label>
 
-        {/* Input nome da loja */}
+        {/* Nome da loja */}
         <input
           type="text"
           placeholder="Digite o nome da loja"
@@ -297,49 +279,8 @@ export default function CriarLoja() {
             border: "1.5px solid rgba(255,255,255,0.3)",
             color: "#fff",
             fontSize: "18px",
-            lineHeight: "1.4",
-            boxSizing: "border-box",
-            touchAction: "manipulation",
           }}
         />
-
-        {/* Switch localização */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "12px",
-            cursor: "pointer",
-            color: "#fff",
-            marginBottom: "16px",
-          }}
-          onClick={() => setUseLocation(!useLocation)}
-        >
-          <div
-            style={{
-              width: "40px",
-              height: "20px",
-              background: useLocation ? "#4ade80" : "#6b7280",
-              borderRadius: "999px",
-              position: "relative",
-              transition: "background 0.3s",
-            }}
-          >
-            <div
-              style={{
-                width: "18px",
-                height: "18px",
-                background: "#fff",
-                borderRadius: "50%",
-                position: "absolute",
-                top: "1px",
-                left: useLocation ? "20px" : "2px",
-                transition: "left 0.3s",
-              }}
-            />
-          </div>
-          <span>Mostrar no mapa</span>
-        </div>
 
         {/* Botão publicar */}
         <button
