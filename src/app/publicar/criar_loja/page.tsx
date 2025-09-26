@@ -146,30 +146,36 @@ export default function CriarLoja() {
   };
 
   const handlePublish = async () => {
-    if (!selectedImageUrl || !selectedFile) return;
+    if (!selectedFile) return;
     if (useLocation && (!position || !geohash)) {
       alert("Aguardando geolocalização...");
       return;
     }
-
     if (!storePage.trim()) {
-      alert("Escolha um @storePage");
+      alert("Escolha um /storePage");
       return;
     }
     if (!isPageAvailable) {
-      alert("Esse @storePage já está em uso!");
+      alert("Esse /storePage já está em uso!");
       return;
     }
 
     setIsPublishing(true);
     try {
-      // 🔥 Cria doc novo
+      // 🔥 Upload só aqui
+      const storageRef = ref(
+        storage,
+        `imagepublication/${Date.now()}_${selectedFile.name}`
+      );
+      await uploadBytes(storageRef, selectedFile);
+      const downloadUrl = await getDownloadURL(storageRef);
+
       const newDocRef = doc(collection(db, "publications"));
       const imageID = newDocRef.id;
 
       const publication: Publication = {
         imageID,
-        imageUrl: selectedImageUrl,
+        imageUrl: downloadUrl,
         storeName: imageName || selectedFile.name,
         storePage,
         ranking: 0,
