@@ -73,7 +73,6 @@ interface Publication {
 export default function CriarLoja() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const [position, setPosition] = useState<GeolocationPosition | null>(null);
   const [geohash, setGeohash] = useState<string | null>(null);
@@ -307,9 +306,7 @@ export default function CriarLoja() {
               justifyContent: "center",
             }}
           >
-            {isUploading ? (
-              <span style={{ color: "#fff" }}>Carregando...</span>
-            ) : selectedImageUrl ? (
+            {selectedImageUrl ? (
               <>
                 <Image
                   src={selectedImageUrl}
