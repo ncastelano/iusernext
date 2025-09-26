@@ -135,39 +135,25 @@ export default function CriarLoja() {
     };
   }, [storePage]);
 
-  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
     setSelectedFile(file);
-    setIsUploading(true);
 
-    try {
-      const storageRef = ref(
-        storage,
-        `imagepublication/${Date.now()}_${file.name}`
-      );
-      await uploadBytes(storageRef, file);
-      const downloadUrl = await getDownloadURL(storageRef);
-      setSelectedImageUrl(downloadUrl);
-    } catch (err) {
-      console.error("Erro ao carregar imagem:", err);
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handleRemoveImage = () => {
-    setSelectedFile(null);
-    setSelectedImageUrl(null);
+    // gera preview local sem upload
+    const localUrl = URL.createObjectURL(file);
+    setSelectedImageUrl(localUrl);
   };
 
   const handlePublish = async () => {
-    if (!selectedImageUrl || !selectedFile) return;
+    if (!selectedFile) {
+      alert("Selecione uma imagem primeiro");
+      return;
+    }
     if (useLocation && (!position || !geohash)) {
       alert("Aguardando geolocalização...");
       return;
     }
-
     if (!storePage.trim()) {
       alert("Escolha um @storePage");
       return;
@@ -179,12 +165,20 @@ export default function CriarLoja() {
 
     setIsPublishing(true);
     try {
+      // 🔼 agora só faz upload no momento da publicação
+      const storageRef = ref(
+        storage,
+        `imagepublication/${Date.now()}_${selectedFile.name}`
+      );
+      await uploadBytes(storageRef, selectedFile);
+      const downloadUrl = await getDownloadURL(storageRef);
+
       const newDocRef = doc(collection(db, "publications"));
       const imageID = newDocRef.id;
 
       const publication: Publication = {
         imageID,
-        imageUrl: selectedImageUrl,
+        imageUrl: downloadUrl, // 🔗 link real do storage
         storeName: imageName || selectedFile.name,
         storePage,
         ranking: 0,
@@ -218,6 +212,11 @@ export default function CriarLoja() {
     } finally {
       setIsPublishing(false);
     }
+  };
+
+  const handleRemoveImage = () => {
+    setSelectedFile(null);
+    setSelectedImageUrl(null);
   };
 
   const canPublish =
