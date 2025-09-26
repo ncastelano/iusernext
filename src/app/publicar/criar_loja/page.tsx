@@ -124,20 +124,14 @@ export default function CriarLoja() {
     };
   }, [storePage]);
 
-  const handlePickImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePickImage = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files?.[0]) return;
     const file = e.target.files[0];
     setSelectedFile(file);
-    setIsUploading(true);
 
-    const storageRef = ref(
-      storage,
-      `imagepublication/${Date.now()}_${file.name}`
-    );
-    await uploadBytes(storageRef, file);
-    const downloadUrl = await getDownloadURL(storageRef);
-    setSelectedImageUrl(downloadUrl);
-    setIsUploading(false);
+    // Mostra pré-visualização local antes do upload
+    const localUrl = URL.createObjectURL(file);
+    setSelectedImageUrl(localUrl);
   };
 
   const handleRemoveImage = () => {
