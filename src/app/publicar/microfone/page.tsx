@@ -70,6 +70,12 @@ export default function Microfone() {
     setError(null);
   }, []);
 
+  // Função para alternar gravação
+  const toggleRecording = () => {
+    if (recording) stopRecording();
+    else startRecording();
+  };
+
   const downloadAudio = useCallback(() => {
     if (!previewUrl) return;
     const a = document.createElement("a");
@@ -122,11 +128,11 @@ export default function Microfone() {
       };
 
       await addDoc(collection(db, "publications"), publication);
-      alert("Áudio publicado com sucesso!");
+      alert("Som publicado com sucesso!");
       retake();
     } catch (err) {
-      console.error("Erro ao publicar áudio:", err);
-      setError("Falha ao publicar o áudio.");
+      console.error("Erro ao publicar Som:", err);
+      setError("Falha ao publicar o Som.");
     } finally {
       setUploading(false);
     }
@@ -192,6 +198,7 @@ export default function Microfone() {
       >
         {!previewUrl ? (
           <div
+            onClick={toggleRecording} // 🔹 clique no container
             style={{
               width: "100%",
               maxWidth: "400px",
@@ -204,6 +211,8 @@ export default function Microfone() {
               justifyContent: "center",
               fontSize: "24px",
               color: "#fff",
+              cursor: "pointer", // 🔹 indica que é clicável
+              userSelect: "none",
             }}
           >
             {!recording ? "Pressione para gravar" : "Gravando..."}
