@@ -7,7 +7,6 @@ import {
   FaDownload,
   FaArrowLeft,
   FaMicrophone,
-  FaStop,
   FaShare,
 } from "react-icons/fa";
 
@@ -28,6 +27,7 @@ export default function Microfone() {
   const [showOnMap, setShowOnMap] = useState(true);
   const [uploading, setUploading] = useState(false);
 
+  // Inicia a gravação
   const startRecording = useCallback(async () => {
     setError(null);
     try {
@@ -58,6 +58,7 @@ export default function Microfone() {
     }
   }, []);
 
+  // Para a gravação
   const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && recording) {
       mediaRecorderRef.current.stop();
@@ -65,17 +66,19 @@ export default function Microfone() {
     }
   }, [recording]);
 
-  const retake = useCallback(() => {
-    setPreviewUrl(null);
-    setError(null);
-  }, []);
-
-  // Função para alternar gravação
+  // Alterna gravação (container clicável)
   const toggleRecording = () => {
     if (recording) stopRecording();
     else startRecording();
   };
 
+  // Refazer gravação
+  const retake = useCallback(() => {
+    setPreviewUrl(null);
+    setError(null);
+  }, []);
+
+  // Baixar áudio
   const downloadAudio = useCallback(() => {
     if (!previewUrl) return;
     const a = document.createElement("a");
@@ -86,6 +89,7 @@ export default function Microfone() {
     a.remove();
   }, [previewUrl]);
 
+  // Publicar áudio no Firestore/Storage
   const publishAudio = useCallback(async () => {
     if (!previewUrl) return alert("Grave um áudio antes de publicar.");
     if (!auth.currentUser) return alert("Você precisa estar logado.");
@@ -196,26 +200,30 @@ export default function Microfone() {
           boxSizing: "border-box",
         }}
       >
+        {/* Container clicável para gravar/parar */}
         {!previewUrl ? (
           <div
-            onClick={toggleRecording} // 🔹 clique no container
+            onClick={toggleRecording}
             style={{
               width: "100%",
               maxWidth: "400px",
               height: "200px",
               borderRadius: "16px",
-              background: "#111",
+              background: recording ? "#f87171" : "#111",
               border: "2px solid #fff",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: "24px",
               color: "#fff",
-              cursor: "pointer", // 🔹 indica que é clicável
+              cursor: "pointer",
               userSelect: "none",
+              transition: "background 0.3s",
             }}
           >
-            {!recording ? "Pressione para gravar" : "Gravando..."}
+            {!recording
+              ? "Pressione para gravar"
+              : "Gravando... Clique para parar"}
           </div>
         ) : (
           <audio
@@ -225,32 +233,16 @@ export default function Microfone() {
           />
         )}
 
-        <div style={{ display: "flex", gap: "12px" }}>
-          {!recording ? (
+        {/* Botões de ação após gravar */}
+        {previewUrl && (
+          <div style={{ display: "flex", gap: "12px" }}>
             <button
-              onClick={startRecording}
+              onClick={retake}
               style={{
                 padding: "10px 20px",
                 borderRadius: "9999px",
                 border: "none",
-                background: "#fff",
-                color: "#000",
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-              }}
-            >
-              <FaMicrophone /> Gravar
-            </button>
-          ) : (
-            <button
-              onClick={stopRecording}
-              style={{
-                padding: "10px 20px",
-                borderRadius: "9999px",
-                border: "none",
-                background: "#f87171",
+                background: "rgba(255,255,255,0.2)",
                 color: "#fff",
                 cursor: "pointer",
                 display: "flex",
@@ -258,49 +250,28 @@ export default function Microfone() {
                 gap: "8px",
               }}
             >
-              <FaStop /> Parar
+              <FaRedo /> Refazer
             </button>
-          )}
 
-          {previewUrl && (
-            <>
-              <button
-                onClick={retake}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: "9999px",
-                  border: "none",
-                  background: "rgba(255,255,255,0.2)",
-                  color: "#fff",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <FaRedo /> Refazer
-              </button>
-
-              <button
-                onClick={downloadAudio}
-                style={{
-                  padding: "10px 20px",
-                  borderRadius: "9999px",
-                  border: "none",
-                  background: "#22c55e",
-                  color: "#000",
-                  fontWeight: 700,
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "8px",
-                }}
-              >
-                <FaDownload /> Baixar
-              </button>
-            </>
-          )}
-        </div>
+            <button
+              onClick={downloadAudio}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "9999px",
+                border: "none",
+                background: "#22c55e",
+                color: "#000",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+              }}
+            >
+              <FaDownload /> Baixar
+            </button>
+          </div>
+        )}
 
         {/* Nome do áudio */}
         <input
@@ -315,13 +286,14 @@ export default function Microfone() {
             backgroundColor: "rgba(255,255,255,0.1)",
             border: "1.5px solid rgba(255,255,255,0.3)",
             color: "#fff",
-            fontSize: "18px", // >= 18px
+            fontSize: "18px",
             lineHeight: "1.4",
             boxSizing: "border-box",
-            touchAction: "manipulation", // evita zoom em alguns navegadores
+            touchAction: "manipulation",
           }}
         />
 
+        {/* Mostrar no mapa */}
         <div
           style={{
             display: "flex",
