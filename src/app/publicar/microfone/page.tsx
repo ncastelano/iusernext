@@ -2,13 +2,7 @@
 
 import { useCallback, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  FaRedo,
-  FaDownload,
-  FaArrowLeft,
-  FaMicrophone,
-  FaShare,
-} from "react-icons/fa";
+import { FaRedo, FaDownload, FaArrowLeft, FaShare } from "react-icons/fa";
 
 import { db, storage, auth } from "@/lib/firebase";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
